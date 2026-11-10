@@ -18,8 +18,8 @@ export default async function handler(req, res) {
     const auth = new google.auth.GoogleAuth({
       credentials,
       scopes: [
-        'https://www.googleapis.com/auth/drive.file',
         'https://www.googleapis.com/auth/drive',
+        'https://www.googleapis.com/auth/drive.file'
       ],
     });
 
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
         const buffer = Buffer.concat(fileBuffer);
         const stream = Readable.from(buffer);
 
-        // Upload file vào thư mục Drive
+        // Upload file vào Google Drive
         const response = await drive.files.create({
           supportsAllDrives: true,
           requestBody: {
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 
         const fileId = response.data.id;
 
-        // Cấp quyền xem cho bất kỳ ai có link để Tổ trưởng/BGH duyệt
+        // Cấp quyền đọc cho bất kỳ ai có link (để Tổ trưởng và BGH mở xem trực tiếp)
         await drive.permissions.create({
           fileId: fileId,
           supportsAllDrives: true,
