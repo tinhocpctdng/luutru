@@ -163,7 +163,7 @@
         </div>
       </section>
 
-      <!-- TAB 4: DUYỆT BÀI / QUẢN LÝ HỒ SƠ TOÀN TRƯỜNG -->
+      <!-- TAB 4: DUYỆT BÀI (Dành cho Admin và Tổ trưởng) -->
       <section id="tab-review" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
           <div>
@@ -172,13 +172,12 @@
           </div>
           
           <div class="flex flex-wrap items-center gap-3">
-            <!-- BỘ LỌC THEO TỔ BỘ MÔN -->
+            <!-- BỘ LỌC THEO TỔ BÔ MÔN -->
             <select id="filter_department" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white">
               <option value="all">Tất cả các tổ bộ môn</option>
-              <!-- Sẽ được nạp động 14 tổ từ CSDL -->
             </select>
 
-            <!-- BỘ LỌC THEO TRẠNG THÁI (Mới) -->
+            <!-- BỘ LỌC THEO TRẠNG THÁI -->
             <select id="filter_status" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white font-medium text-slate-700">
               <option value="all">Tất cả trạng thái</option>
               <option value="pending">⏳ Chờ duyệt</option>
@@ -190,6 +189,25 @@
               Xuất báo cáo tiến độ (.xlsx)
             </button>
           </div>
+        </div>
+
+        <!-- BẢNG HIỂN THỊ DANH SÁCH (Đoạn này đang bị thiếu trên giao diện của bạn) -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b text-slate-600">
+                <th class="p-3">Giáo viên</th>
+                <th class="p-3">Tổ</th>
+                <th class="p-3">Khối / Tuần</th>
+                <th class="p-3">Tiêu đề</th>
+                <th class="p-3">Trạng thái</th>
+                <th class="p-3 text-right">Hành động</th>
+              </tr>
+            </thead>
+            <tbody id="review-body" class="divide-y divide-slate-100">
+              <!-- Dữ liệu sẽ tự động đổ vào đây -->
+            </tbody>
+          </table>
         </div>
       </section>
       <!-- TAB 5: QUẢN LÝ NGƯỜI DÙNG (Chỉ Admin) -->
