@@ -4,7 +4,7 @@ import { Readable } from 'stream';
 
 export const config = {
   api: {
-    bodyParser: false, // Tắt parser mặc định để nhận file stream lớn
+    bodyParser: false,
   },
 };
 
@@ -17,7 +17,10 @@ export default async function handler(req, res) {
     const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
     const auth = new google.auth.GoogleAuth({
       credentials,
-      scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive'],
+      scopes: [
+        'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive',
+      ],
     });
 
     const drive = google.drive({ version: 'v3', auth });
@@ -43,8 +46,9 @@ export default async function handler(req, res) {
         const buffer = Buffer.concat(fileBuffer);
         const stream = Readable.from(buffer);
 
-        // Đẩy file lên Google Drive
+        // Upload file vào thư mục Drive
         const response = await drive.files.create({
+          supportsAllDrives: true,
           requestBody: {
             name: `${fields.teacher_name || 'GV'}_Tuan${fields.week || 'X'}_${fileName}`,
             parents: [process.env.GOOGLE_DRIVE_FOLDER_ID],
@@ -58,9 +62,10 @@ export default async function handler(req, res) {
 
         const fileId = response.data.id;
 
-        // Cấp quyền xem cho bất kỳ ai có link (để Tổ trưởng/BGH bấm vào xem được ngay)
+        // Cấp quyền xem cho bất kỳ ai có link để Tổ trưởng/BGH duyệt
         await drive.permissions.create({
           fileId: fileId,
+          supportsAllDrives: true,
           requestBody: {
             role: 'reader',
             type: 'anyone',
