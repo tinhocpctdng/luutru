@@ -462,7 +462,7 @@
       }
     }
 
-    // 5. Tải file lên theo đúng cây thư mục phân tầng
+    // 5. Tải file lên Google Drive qua Vercel API và lưu dữ liệu vào Supabase
     async function handleUpload(e) {
       e.preventDefault();
       const fileInput = document.getElementById("file_input");
@@ -476,67 +476,59 @@
       const btn = document.getElementById("btn-submit");
 
       btn.disabled = true;
-      btn.innerText = "Đang tải tệp lên...";
+      btn.innerText = "Đang đẩy tệp lên Google Drive...";
 
-      let storagePath = "";
-      const ext = file.name.split('.').pop();
-      const safeName = `K${grade || 'Chung'}_Tuan${week_no || '0'}_${Date.now()}.${ext}`;
-      const deptSlug = toSlug(userProfile.department);
+      try {
+        // Gói dữ liệu gửi qua API Serverless của Vercel
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("teacher_name", userProfile.full_name);
+        formData.append("week", week_no);
 
-      // Phân luồng thư mục dựa vào danh mục (category)
-      if (['quy-che', 'bieu-mau'].includes(category)) {
-        storagePath = `00_cong-khai/${category}/${Date.now()}_${file.name}`;
-      } 
-      else if (['tai-chinh', 'nhan-su', 'kiem-tra-noi-bo'].includes(category)) {
-        storagePath = `01_ban-giam-hieu/${category}/${Date.now()}_${file.name}`;
-      } 
-      else if (['chu-nhiem', 'doan-thanh-nien'].includes(category)) {
-        storagePath = `03_chu-nhiem-doan-the/${category}/${safeName}`;
-      } 
-      else {
-        storagePath = `02_to-chuyen-mon/${deptSlug}/${category}/${safeName}`;
-      }
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      // Upload vào Supabase Storage
-      const { error: uploadError } = await client.storage
-        .from("school-documents")
-        .upload(storagePath, file);
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          throw new Error(result.error || "Lỗi khi đẩy tệp lên Google Drive");
+        }
 
-      if (uploadError) {
-        alert("Từ chối truy cập hoặc lỗi mạng: " + uploadError.message);
-        btn.disabled = false;
-        btn.innerText = "Nộp hồ sơ lên hệ thống";
-        return;
-      }
+        const driveFileUrl = result.fileUrl; // Đường link xem file trên Google Drive
+        const deptSlug = toSlug(userProfile.department);
+        const storageLabel = `GoogleDrive/02_to-chuyen-mon/${deptSlug}/${category}`;
 
-      const { data: urlData } = client.storage.from("school-documents").getPublicUrl(storagePath);
+        // Ghi nhận metadata vào bảng submissions trên Supabase
+        const { error: dbError } = await client.from("submissions").insert({
+          teacher_id: currentUser.id,
+          teacher_name: userProfile.full_name,
+          department: userProfile.department,
+          category: category,
+          grade: grade ? parseInt(grade) : null,
+          week_no: week_no ? parseInt(week_no) : null,
+          title: title,
+          file_name: file.name,
+          file_url: driveFileUrl,
+          storage_path: storageLabel
+        });
 
-      // Ghi nhận metadata vào Database
-      const { error: dbError } = await client.from("submissions").insert({
-        teacher_id: currentUser.id,
-        teacher_name: userProfile.full_name,
-        department: userProfile.department,
-        category: category,
-        grade: grade ? parseInt(grade) : null,
-        week_no: week_no ? parseInt(week_no) : null,
-        title: title,
-        file_name: file.name,
-        file_url: urlData.publicUrl,
-        storage_path: storagePath
-      });
+        if (dbError) {
+          throw new Error("Lỗi lưu cơ sở dữ liệu: " + dbError.message);
+        }
 
-      if (dbError) {
-        alert("Lỗi lưu dữ liệu: " + dbError.message);
-      } else {
-        alert(`Đã nộp thành công vào thư mục: ${storagePath.split('/')[0]}`);
+        alert("Đã tải lên Google Drive và nộp hồ sơ thành công!");
         fileInput.value = "";
         document.getElementById("doc_title").value = "";
         loadMySubmissions();
         switchTab('my-docs');
-      }
 
-      btn.disabled = false;
-      btn.innerText = "Nộp hồ sơ lên hệ thống";
+      } catch (err) {
+        alert("Thao tác thất bại: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Nộp hồ sơ lên hệ thống";
+      }
     }
 
     // 6. Lấy danh sách hồ sơ cá nhân
