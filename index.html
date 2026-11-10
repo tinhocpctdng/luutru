@@ -174,14 +174,8 @@
           <div class="flex flex-wrap items-center gap-3">
             <!-- BỘ LỌC THEO TỔ (Dành cho Admin/Tổ trưởng) -->
             <select id="filter_department" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white">
-              <option value="all">Tất cả các tổ bộ môn</option>
-              <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
-              <option value="Tin học">Tổ Tin học</option>
-              <option value="Toán">Tổ Toán</option>
-              <option value="Ngữ văn">Tổ Ngữ văn</option>
-              <option value="Vật lý">Tổ Vật lý</option>
-              <option value="Hóa học">Tổ Hóa học</option>
-              <option value="Ngoại ngữ">Tổ Ngoại ngữ</option>
+              <option value="all">Tất cả các tổ bộ môn (Tất cả)</option>
+              <!-- Danh sách 14 tổ sẽ tự động được nạp vào đây bằng JavaScript -->
             </select>
 
             <button onclick="exportProgressReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
@@ -424,6 +418,7 @@
       if (userProfile.role === 'admin') {
         document.getElementById("tab-btn-users").classList.remove("hidden");
         loadAllUsers(); // Tải danh sách giáo viên
+        loadDepartmentOptions(); // <--- Thêm dòng này để tự động nạp danh sách 14 tổ cho Admin
       }
 
       // 3. Tải các dữ liệu cơ bản
@@ -997,6 +992,27 @@
       
       const dateStr = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(workbook, `${reportTitle}_${dateStr}.xlsx`);
+    }
+    // Hàm tự động quét và nạp danh sách các tổ bộ môn từ cơ sở dữ liệu vào ô chọn bộ lọc
+    async function loadDepartmentOptions() {
+      const { data, error } = await client.from("profiles").select("department");
+      if (error) return;
+
+      // Lọc ra danh sách tên tổ độc lập (không bị trùng lặp)
+      const departments = [...new Set(data.map(item => item.department))].filter(Boolean).sort();
+
+      const filterSelect = document.getElementById("filter_department");
+      if (!filterSelect) return;
+
+      // Giữ lại tùy chọn "Tất cả", sau đó thêm danh sách các tổ thực tế từ cơ sở dữ liệu
+      filterSelect.innerHTML = `<option value="all">Tất cả các tổ bộ môn (${departments.length} tổ)</option>`;
+
+      departments.forEach(dept => {
+        const option = document.createElement("option");
+        option.value = dept;
+        option.innerText = dept;
+        filterSelect.appendChild(option);
+      });
     }
   </script>
 </body>
