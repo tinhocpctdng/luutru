@@ -168,14 +168,21 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
           <div>
             <h2 class="text-lg font-bold text-slate-900">Duyệt và theo dõi hồ sơ chuyên môn</h2>
-            <p class="text-sm text-slate-500">Quản lý và thống kê tiến độ nộp bài của giáo viên trong trường.</p>
+            <p class="text-sm text-slate-500">Quản lý, kiểm tra trạng thái và tiến độ nộp bài của giáo viên.</p>
           </div>
           
           <div class="flex flex-wrap items-center gap-3">
-            <!-- BỘ LỌC THEO TỔ (Dành cho Admin/Tổ trưởng) -->
+            <!-- BỘ LỌC THEO TỔ BỘ MÔN -->
             <select id="filter_department" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white">
-              <option value="all">Tất cả các tổ bộ môn (Tất cả)</option>
-              <!-- Danh sách 14 tổ sẽ tự động được nạp vào đây bằng JavaScript -->
+              <option value="all">Tất cả các tổ bộ môn</option>
+              <!-- Sẽ được nạp động 14 tổ từ CSDL -->
+            </select>
+
+            <!-- BỘ LỌC THEO TRẠNG THÁI (Mới) -->
+            <select id="filter_status" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white font-medium text-slate-700">
+              <option value="all">Tất cả trạng thái</option>
+              <option value="pending">⏳ Chờ duyệt</option>
+              <option value="approved">✅ Đã duyệt</option>
             </select>
 
             <button onclick="exportProgressReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
@@ -609,24 +616,31 @@
       });
     }
 
-    // 8. Tải danh sách duyệt dành cho Tổ trưởng và Admin (có tích hợp bộ lọc theo Tổ)
+    // 8. Tải danh sách duyệt dành cho Tổ trưởng và Admin (có tích hợp bộ lọc Tổ và Trạng thái)
     async function loadReviewSubmissions() {
       let query = client.from("submissions").select("*").order("submitted_at", { ascending: false });
       
-      // Nếu là Tổ trưởng (hod), ép buộc chỉ lấy dữ liệu trong tổ của mình
+      // 1. Phân quyền theo tài khoản đăng nhập
       if (userProfile.role === 'hod') {
+        // Tổ trưởng chỉ xem dữ liệu trong tổ của mình
         query = query.eq("department", userProfile.department);
         
-        // Ẩn luôn ô chọn tổ đi vì Tổ trưởng không cần chọn tổ khác
-        const filterEl = document.getElementById("filter_department");
-        if (filterEl) filterEl.classList.add("hidden");
+        // Ẩn ô chọn tổ đi vì không cần thiết cho tổ trưởng
+        const filterDeptEl = document.getElementById("filter_department");
+        if (filterDeptEl) filterDeptEl.classList.add("hidden");
       } 
       else if (userProfile.role === 'admin') {
-        // Nếu là Admin, kiểm tra giá trị đang chọn trên dropdown bộ lọc
+        // Admin chọn xem theo tổ cụ thể (nếu có chọn)
         const selectedDept = document.getElementById("filter_department").value;
         if (selectedDept && selectedDept !== 'all') {
           query = query.eq("department", selectedDept);
         }
+      }
+
+      // 2. Lọc theo Trạng thái (Chờ duyệt / Đã duyệt)
+      const selectedStatus = document.getElementById("filter_status").value;
+      if (selectedStatus && selectedStatus !== 'all') {
+        query = query.eq("status", selectedStatus);
       }
 
       const { data, error } = await query;
@@ -634,10 +648,11 @@
       tbody.innerHTML = "";
 
       if (error || !data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Không có hồ sơ nào phù hợp</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Không tìm thấy hồ sơ nào phù hợp với bộ lọc</td></tr>`;
         return;
       }
 
+      // 3. Hiển thị danh sách ra bảng
       data.forEach(item => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -652,7 +667,7 @@
           </td>
           <td class="p-3 text-right space-x-2">
             <a href="${item.file_url}" target="_blank" class="text-blue-600 hover:underline">Xem file</a>
-            ${item.status === 'pending' ? `<button onclick="approveSubmission(${item.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 rounded">Duyệt</button>` : ''}
+            ${item.status === 'pending' ? `<button onclick="approveSubmission(${item.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 rounded shadow-sm">Duyệt</button>` : '<span class="text-xs text-slate-400 font-medium">Đã hoàn tất</span>'}
           </td>
         `;
         tbody.appendChild(tr);
