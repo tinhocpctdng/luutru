@@ -910,7 +910,7 @@
       }
     });
     // ==========================================
-    // CHỨC NĂNG XUẤT BÁO CÁO TIẾN ĐỘ NỘP BÀI
+    // CHỨC NĂNG XUẤT BÁO CÁO TIẾN ĐỘ NỘP BÀI (PHÂN THEO QUYỀN)
     // ==========================================
     async function exportProgressReport() {
       // 1. Lấy toàn bộ danh sách giáo viên từ bảng profiles
@@ -921,8 +921,18 @@
       const { data: submissions, error: subErr } = await client.from("submissions").select("*");
       if (subErr) return alert("Lỗi tải danh sách nộp bài: " + subErr.message);
 
-      // 3. Tổng hợp dữ liệu cho từng giáo viên
-      const reportData = profiles.map(teacher => {
+      // 3. Lọc danh sách giáo viên theo quyền hạn
+      let targetProfiles = profiles;
+      let reportTitle = "BaoCaoTienDo_ToanTruong";
+
+      // Nếu là Tổ trưởng (hod), chỉ lọc lấy giáo viên cùng tổ
+      if (userProfile.role === 'hod') {
+        targetProfiles = profiles.filter(p => p.department === userProfile.department);
+        reportTitle = `BaoCaoTienDo_${toSlug(userProfile.department)}`;
+      }
+
+      // 4. Tổng hợp dữ liệu cho danh sách giáo viên đã được phân quyền
+      const reportData = targetProfiles.map(teacher => {
         // Lọc các bài nộp của giáo viên này
         const teacherSubs = submissions.filter(s => s.teacher_id === teacher.id);
         const totalSubmitted = teacherSubs.length;
@@ -949,10 +959,10 @@
         return alert("Không có dữ liệu để xuất báo cáo!");
       }
 
-      // 4. Sử dụng SheetJS (đã tích hợp sẵn trên đầu trang) để xuất file Excel
+      // 5. Xuất file Excel bằng thư viện SheetJS
       const worksheet = XLSX.utils.json_to_sheet(reportData);
       
-      // Tùy chỉnh độ rộng cột tự động cho đẹp mắt
+      // Tùy chỉnh độ rộng cột
       worksheet['!cols'] = [
         {wch: 25}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 20}, {wch: 15}, {wch: 30}, {wch: 22}
       ];
@@ -960,9 +970,8 @@
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoTienDo");
       
-      // Tên file xuất ra có gắn kèm ngày tháng năm hiện tại
       const dateStr = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(workbook, `BaoCaoTienDoNopBai_${dateStr}.xlsx`);
+      XLSX.writeFile(workbook, `${reportTitle}_${dateStr}.xlsx`);
     }
   </script>
 </body>
