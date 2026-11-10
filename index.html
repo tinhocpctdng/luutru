@@ -484,6 +484,7 @@
           formData.append('fileData', base64Data);
           formData.append('teacherName', userProfile.full_name);
           formData.append('week', week_no);
+          formData.append('department', userProfile.department);
 
           // ĐẶT URL ỨNG DỤNG WEB CỦA BẠN VÀO ĐÂY:
           const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1U_rlh5XhQ_9z6q34DwAACCDAOnvXYSiTfjOgH4Qrx27QXGHrZY1E3iNVG0D3ZLRa/exec";
