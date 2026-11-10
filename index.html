@@ -165,23 +165,17 @@
 
       <!-- TAB 4: DUYỆT BÀI (Dành riêng cho HOD và Admin) -->
       <section id="tab-review" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900 mb-4 border-b pb-2">Duyệt và theo dõi hồ sơ chuyên môn</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="bg-slate-50 border-b text-slate-600">
-                <th class="p-3">Giáo viên</th>
-                <th class="p-3">Tổ</th>
-                <th class="p-3">Khối / Tuần</th>
-                <th class="p-3">Tiêu đề</th>
-                <th class="p-3">Trạng thái</th>
-                <th class="p-3 text-right">Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="review-body" class="divide-y divide-slate-100">
-              <!-- Render hồ sơ toàn tổ -->
-            </tbody>
-          </table>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Duyệt và theo dõi hồ sơ chuyên môn</h2>
+            <p class="text-sm text-slate-500">Quản lý và thống kê tiến độ nộp bài của giáo viên trong trường.</p>
+          </div>
+          <div>
+            <button onclick="exportProgressReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              Xuất báo cáo tiến độ (.xlsx)
+            </button>
+          </div>
         </div>
       </section>
       <!-- TAB 5: QUẢN LÝ NGƯỜI DÙNG (Chỉ Admin) -->
@@ -915,6 +909,61 @@
         document.getElementById("login-screen").classList.remove("hidden");
       }
     });
+    // ==========================================
+    // CHỨC NĂNG XUẤT BÁO CÁO TIẾN ĐỘ NỘP BÀI
+    // ==========================================
+    async function exportProgressReport() {
+      // 1. Lấy toàn bộ danh sách giáo viên từ bảng profiles
+      const { data: profiles, error: profileErr } = await client.from("profiles").select("*");
+      if (profileErr) return alert("Lỗi tải danh sách giáo viên: " + profileErr.message);
+
+      // 2. Lấy toàn bộ danh sách bài đã nộp từ bảng submissions
+      const { data: submissions, error: subErr } = await client.from("submissions").select("*");
+      if (subErr) return alert("Lỗi tải danh sách nộp bài: " + subErr.message);
+
+      // 3. Tổng hợp dữ liệu cho từng giáo viên
+      const reportData = profiles.map(teacher => {
+        // Lọc các bài nộp của giáo viên này
+        const teacherSubs = submissions.filter(s => s.teacher_id === teacher.id);
+        const totalSubmitted = teacherSubs.length;
+        
+        // Kiểm tra xem đã nộp giáo án (giao-an) chưa
+        const hasLessonPlan = teacherSubs.some(s => s.category === 'giao-an');
+        
+        // Lấy danh sách các tuần đã nộp
+        const weeksList = teacherSubs.map(s => s.week_no).filter(Boolean).join(", ");
+
+        return {
+          "Họ và tên": teacher.full_name,
+          "Email": teacher.email || 'N/A',
+          "Tổ bộ môn": teacher.department,
+          "Chức vụ": teacher.role === 'admin' ? 'Ban Giám Hiệu' : (teacher.role === 'hod' ? 'Tổ trưởng' : 'Giáo viên'),
+          "Tổng số bài đã nộp": totalSubmitted,
+          "Đã nộp Giáo án": hasLessonPlan ? "Đã nộp" : "Chưa nộp",
+          "Các tuần đã nộp": weeksList || "Không có",
+          "Trạng thái chung": totalSubmitted > 0 ? "Đã tham gia nộp bài" : "Chưa nộp bài nào"
+        };
+      });
+
+      if (reportData.length === 0) {
+        return alert("Không có dữ liệu để xuất báo cáo!");
+      }
+
+      // 4. Sử dụng SheetJS (đã tích hợp sẵn trên đầu trang) để xuất file Excel
+      const worksheet = XLSX.utils.json_to_sheet(reportData);
+      
+      // Tùy chỉnh độ rộng cột tự động cho đẹp mắt
+      worksheet['!cols'] = [
+        {wch: 25}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 20}, {wch: 15}, {wch: 30}, {wch: 22}
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoTienDo");
+      
+      // Tên file xuất ra có gắn kèm ngày tháng năm hiện tại
+      const dateStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(workbook, `BaoCaoTienDoNopBai_${dateStr}.xlsx`);
+    }
   </script>
 </body>
 </html>
