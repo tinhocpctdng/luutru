@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Cổng Quản Lý Hồ Sơ Chuyên Môn</title>
+  <!-- Tailwind CSS CDN để làm đẹp giao diện -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 min-h-screen p-6">
+  <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md p-6">
+    <h1 class="text-2xl font-bold text-gray-800 text-center mb-6">HỆ THỐNG LƯU TRỮ VÀ NỘP HỒ SƠ GIÁO VIÊN</h1>
+
+    <!-- 1. KHU VỰC ĐĂNG NHẬP (Ẩn khi đã vào) -->
+    <div id="login-section" class="max-w-md mx-auto space-y-4">
+      <input type="email" id="email" placeholder="Email giáo viên (@...)" class="w-full border p-2 rounded">
+      <input type="password" id="password" placeholder="Mật khẩu" class="w-full border p-2 rounded">
+      <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Đăng Nhập</button>
+    </div>
+
+    <!-- 2. KHU VỰC THAO TÁC CỦA GIÁO VIÊN -->
+    <div id="app-section" class="hidden space-y-6">
+      <div class="flex justify-between items-center border-b pb-4">
+        <div>
+          Xin chào: <span id="user-display" class="font-bold text-blue-600"></span>
+          (<span id="dept-display"></span>)
+        </div>
+        <button onclick="handleLogout()" class="text-sm text-red-500 hover:underline">Đăng xuất</button>
+      </div>
+
+      <!-- FORM NỘP BÀI -->
+      <form id="upload-form" class="bg-blue-50 p-4 rounded-lg space-y-4" onsubmit="handleUpload(event)">
+        <h2 class="font-semibold text-lg text-gray-700">Nộp Kế hoạch bài dạy / Tài liệu</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm">Khối dạy:</label>
+            <select id="grade" class="w-full border p-2 rounded bg-white" required>
+              <option value="10">Khối 10</option>
+              <option value="11">Khối 11</option>
+              <option value="12">Khối 12</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm">Tuần dạy:</label>
+            <input type="number" id="week" min="1" max="35" value="1" class="w-full border p-2 rounded" required>
+          </div>
+          <div>
+            <label class="block text-sm">Tên bài dạy / Tài liệu:</label>
+            <input type="text" id="title" placeholder="VD: Bài 5 - Cấu trúc rẽ nhánh" class="w-full border p-2 rounded" required>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm">Chọn file (Word, PDF, Excel):</label>
+          <input type="file" id="fileInput" class="w-full border p-2 rounded bg-white" accept=".pdf,.docx,.doc,.xlsx" required>
+        </div>
+
+        <button type="submit" id="submit-btn" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+          Tải Lên Hệ Thống
+        </button>
+      </form>
+
+      <!-- DANH SÁCH BÀI ĐÃ NỘP -->
+      <div>
+        <h2 class="font-semibold text-lg text-gray-700 mb-2">Lịch sử bài đã nộp</h2>
+        <table class="w-full border-collapse border border-gray-200 text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="border p-2">Tuần</th>
+              <th class="border p-2">Khối</th>
+              <th class="border p-2">Tên bài học</th>
+              <th class="border p-2">Thời gian nộp</th>
+              <th class="border p-2">Trạng thái</th>
+              <th class="border p-2">Tệp đính kèm</th>
+            </tr>
+          </thead>
+          <tbody id="submission-list" class="divide-y text-center">
+            <!-- Dữ liệu được render bằng JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Điền URL và Anon Key lấy ở Bước 1
+    const SUPABASE_URL = "https://YOUR_PROJECT_ID.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_ANON_KEY";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let currentUser = null;
+    let userProfile = null;
+
+    // Đăng nhập
+    async function handleLogin() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      
+      if (error) return alert("Sai thông tin: " + error.message);
+      currentUser = data.user;
+      loadUserProfile();
+    }
+
+    // Đăng xuất
+    async function handleLogout() {
+      await client.auth.signOut();
+      location.reload();
+    }
+
+    // Tải thông tin giáo viên và danh sách bài
+    async function loadUserProfile() {
+      const { data } = await client.from("profiles").select("*").eq("id", currentUser.id).single();
+      userProfile = data;
+
+      document.getElementById("login-section").classList.add("hidden");
+      document.getElementById("app-section").classList.remove("hidden");
+      document.getElementById("user-display").innerText = userProfile.full_name;
+      document.getElementById("dept-display").innerText = "Tổ: " + userProfile.department;
+
+      loadSubmissions();
+    }
+
+    // Tải danh sách đã nộp
+    async function loadSubmissions() {
+      const { data } = await client.from("submissions")
+        .select("*")
+        .eq("teacher_id", currentUser.id)
+        .order("submitted_at", { ascending: false });
+
+      const tbody = document.getElementById("submission-list");
+      tbody.innerHTML = "";
+      data.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="p-2 border">${item.week_no}</td>
+          <td class="p-2 border">${item.grade}</td>
+          <td class="p-2 border text-left">${item.title}</td>
+          <td class="p-2 border">${new Date(item.submitted_at).toLocaleString("vi-VN")}</td>
+          <td class="p-2 border">
+            <span class="px-2 py-1 rounded text-xs ${item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+              ${item.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
+            </span>
+          </td>
+          <td class="p-2 border"><a href="${item.file_url}" target="_blank" class="text-blue-600 underline">Tải về</a></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Xử lý nộp file lên Storage và ghi nhận vào Database
+    async function handleUpload(e) {
+      e.preventDefault();
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const grade = document.getElementById("grade").value;
+      const week = document.getElementById("week").value;
+      const title = document.getElementById("title").value;
+      const btn = document.getElementById("submit-btn");
+
+      btn.disabled = true;
+      btn.innerText = "Đang tải lên...";
+
+      // Chuẩn hóa tên file theo tuần và môn
+      const fileExt = file.name.split('.').pop();
+      const safeFileName = `${userProfile.department}_K${grade}_Tuan${week}_${Date.now()}.${fileExt}`;
+      const filePath = `${userProfile.department}/${safeFileName}`;
+
+      // 1. Upload vào Storage
+      const { error: uploadError } = await client.storage
+        .from("school-documents")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        alert("Lỗi tải tệp: " + uploadError.message);
+        btn.disabled = false;
+        btn.innerText = "Tải Lên Hệ Thống";
+        return;
+      }
+
+      // 2. Lấy URL công khai
+      const { data: urlData } = client.storage.from("school-documents").getPublicUrl(filePath);
+
+      // 3. Ghi thông tin vào Database
+      await client.from("submissions").insert({
+        teacher_id: currentUser.id,
+        teacher_name: userProfile.full_name,
+        department: userProfile.department,
+        grade: parseInt(grade),
+        week_no: parseInt(week),
+        title: title,
+        file_name: file.name,
+        file_url: urlData.publicUrl
+      });
+
+      alert("Nộp kế hoạch bài dạy thành công!");
+      btn.disabled = false;
+      btn.innerText = "Tải Lên Hệ Thống";
+      fileInput.value = "";
+      loadSubmissions();
+    }
+  </script>
+</body>
+</html>
