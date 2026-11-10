@@ -192,6 +192,11 @@
             <p class="text-sm text-slate-500">Mẹo: Cấp tài khoản mới tại bảng điều khiển Supabase, sau đó dùng Excel để cập nhật thông tin tại đây.</p>
           </div>
           <div class="flex space-x-2">
+            <!-- Nút Thêm tài khoản mới -->
+            <button onclick="openAddModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+              Thêm tài khoản
+            </button>
             <!-- Nút Xuất Excel -->
             <button onclick="exportUsersToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
@@ -261,6 +266,53 @@
           <div class="mt-6 flex justify-end space-x-3">
             <button onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium">Hủy</button>
             <button onclick="saveUserUpdate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Lưu thay đổi</button>
+          </div>
+        </div>
+      </div>
+      <!-- MODAL THÊM TÀI KHOẢN MỚI -->
+      <div id="add-user-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <h3 class="text-lg font-bold text-slate-900 mb-4">Tạo tài khoản giáo viên mới</h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Email đăng nhập</label>
+              <input type="email" id="add_email" placeholder="giao.vien@tentruong.edu.vn" class="w-full border p-2 rounded-lg text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu khởi tạo (Ít nhất 6 ký tự)</label>
+              <input type="password" id="add_password" class="w-full border p-2 rounded-lg text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Họ và tên tiếng Việt</label>
+              <input type="text" id="add_full_name" placeholder="Nguyễn Văn A" class="w-full border p-2 rounded-lg text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Tổ chuyên môn</label>
+              <select id="add_department" class="w-full border p-2 rounded-lg text-sm">
+                <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
+                <option value="Tin học" selected>Tin học</option>
+                <option value="Toán">Toán</option>
+                <option value="Ngữ văn">Ngữ văn</option>
+                <option value="Vật lý">Vật lý</option>
+                <option value="Hóa học">Hóa học</option>
+                <option value="Ngoại ngữ">Ngoại ngữ</option>
+                <option value="Chưa phân tổ">Chưa phân tổ</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Cấp quyền hệ thống</label>
+              <select id="add_role" class="w-full border p-2 rounded-lg text-sm">
+                <option value="teacher" selected>Giáo viên (Chỉ xem/nộp bài mình)</option>
+                <option value="hod">Tổ trưởng (Duyệt bài trong tổ)</option>
+                <option value="admin">Quản trị viên / BGH (Toàn quyền)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex justify-end space-x-3">
+            <button onclick="closeAddModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium">Hủy</button>
+            <button onclick="saveNewUser()" id="btn-save-new-user" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium">Tạo tài khoản</button>
           </div>
         </div>
       </div>
@@ -740,6 +792,67 @@
       
       reader.readAsArrayBuffer(file);
       e.target.value = ""; // Reset input file để có thể chọn lại file cũ nếu muốn
+    }
+    // ==========================================
+    // CHỨC NĂNG THÊM TÀI KHOẢN MỚI
+    // ==========================================
+
+    function openAddModal() {
+      document.getElementById("add_email").value = "";
+      document.getElementById("add_password").value = "";
+      document.getElementById("add_full_name").value = "";
+      document.getElementById("add-user-modal").classList.remove("hidden");
+    }
+
+    function closeAddModal() {
+      document.getElementById("add-user-modal").classList.add("hidden");
+    }
+
+    async function saveNewUser() {
+      const email = document.getElementById("add_email").value.trim();
+      const password = document.getElementById("add_password").value;
+      const full_name = document.getElementById("add_full_name").value.trim();
+      const department = document.getElementById("add_department").value;
+      const role = document.getElementById("add_role").value;
+      const btn = document.getElementById("btn-save-new-user");
+
+      if (!email || !password || !full_name) {
+        return alert("Vui lòng nhập đầy đủ Email, Mật khẩu và Họ tên!");
+      }
+      if (password.length < 6) {
+        return alert("Mật khẩu phải có ít nhất 6 ký tự!");
+      }
+
+      btn.disabled = true;
+      btn.innerText = "Đang tạo...";
+
+      // Gọi API đăng ký của Supabase, đẩy thông tin metadata kèm theo
+      const { data, error } = await client.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: full_name,
+            department: department,
+            role: role
+          }
+        }
+      });
+
+      btn.disabled = false;
+      btn.innerText = "Tạo tài khoản";
+
+      if (error) {
+        alert("Lỗi tạo tài khoản: " + error.message);
+      } else {
+        alert("Tạo tài khoản thành công! Giáo viên đã có thể đăng nhập bằng email và mật khẩu vừa cấp.");
+        closeAddModal();
+        
+        // Đợi 1 giây để Trigger chạy xong rồi tải lại bảng
+        setTimeout(() => {
+          loadAllUsers();
+        }, 1000);
+      }
     }
   </script>
 </body>
