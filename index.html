@@ -462,7 +462,7 @@
       }
     }
 
-    // 5. Tải file lên Google Drive qua Vercel API và lưu dữ liệu vào Supabase
+    // 5. Tải file lên Google Drive qua Google Apps Script (Khắc phục lỗi Quota)
     async function handleUpload(e) {
       e.preventDefault();
       const fileInput = document.getElementById("file_input");
@@ -479,53 +479,68 @@
       btn.innerText = "Đang đẩy tệp lên Google Drive...";
 
       try {
-        // Gói dữ liệu gửi qua API Serverless của Vercel
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("teacher_name", userProfile.full_name);
-        formData.append("week", week_no);
+        // Chuyển file sang Base64 để gửi mượt mà qua Apps Script
+        const reader = new FileReader();
+        reader.onload = async function() {
+          const base64Data = reader.result.split(',')[1];
 
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+          const formData = new URLSearchParams();
+          formData.append('fileName', file.name);
+          formData.append('mimeType', file.type);
+          formData.append('fileData', base64Data);
+          formData.append('teacherName', userProfile.full_name);
+          formData.append('week', week_no);
 
-        const result = await res.json();
-        if (!res.ok || !result.success) {
-          throw new Error(result.error || "Lỗi khi đẩy tệp lên Google Drive");
-        }
+          // ĐẶT URL ỨNG DỤNG WEB CỦA BẠN VÀO ĐÂY:
+          const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1U_rlh5XhQ_9z6q34DwAACCDAOnvXYSiTfjOgH4Qrx27QXGHrZY1E3iNVG0D3ZLRa/exec";
 
-        const driveFileUrl = result.fileUrl; // Đường link xem file trên Google Drive
-        const deptSlug = toSlug(userProfile.department);
-        const storageLabel = `GoogleDrive/02_to-chuyen-mon/${deptSlug}/${category}`;
+          const res = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            body: formData,
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          });
 
-        // Ghi nhận metadata vào bảng submissions trên Supabase
-        const { error: dbError } = await client.from("submissions").insert({
-          teacher_id: currentUser.id,
-          teacher_name: userProfile.full_name,
-          department: userProfile.department,
-          category: category,
-          grade: grade ? parseInt(grade) : null,
-          week_no: week_no ? parseInt(week_no) : null,
-          title: title,
-          file_name: file.name,
-          file_url: driveFileUrl,
-          storage_path: storageLabel
-        });
+          const result = await res.json();
+          if (!result.success) {
+            throw new Error(result.error || "Lỗi Google Drive");
+          }
 
-        if (dbError) {
-          throw new Error("Lỗi lưu cơ sở dữ liệu: " + dbError.message);
-        }
+          const driveFileUrl = result.fileUrl; 
+          const deptSlug = toSlug(userProfile.department);
+          const storageLabel = `GoogleDrive/02_to-chuyen-mon/${deptSlug}/${category}`;
 
-        alert("Đã tải lên Google Drive và nộp hồ sơ thành công!");
-        fileInput.value = "";
-        document.getElementById("doc_title").value = "";
-        loadMySubmissions();
-        switchTab('my-docs');
+          // Ghi dữ liệu vào Supabase
+          const { error: dbError } = await client.from("submissions").insert({
+            teacher_id: currentUser.id,
+            teacher_name: userProfile.full_name,
+            department: userProfile.department,
+            category: category,
+            grade: grade ? parseInt(grade) : null,
+            week_no: week_no ? parseInt(week_no) : null,
+            title: title,
+            file_name: file.name,
+            file_url: driveFileUrl,
+            storage_path: storageLabel
+          });
+
+          if (dbError) throw new Error("Lỗi lưu DB: " + dbError.message);
+
+          alert("Đã nộp hồ sơ thành công vào thẳng Google Drive của bạn!");
+          fileInput.value = "";
+          document.getElementById("doc_title").value = "";
+          loadMySubmissions();
+          switchTab('my-docs');
+
+          btn.disabled = false;
+          btn.innerText = "Nộp hồ sơ lên hệ thống";
+        };
+        
+        reader.readAsDataURL(file);
 
       } catch (err) {
         alert("Thao tác thất bại: " + err.message);
-      } finally {
         btn.disabled = false;
         btn.innerText = "Nộp hồ sơ lên hệ thống";
       }
