@@ -163,14 +163,27 @@
         </div>
       </section>
 
-      <!-- TAB 4: DUYỆT BÀI (Dành riêng cho HOD và Admin) -->
+      <!-- TAB 4: DUYỆT BÀI / QUẢN LÝ HỒ SƠ TOÀN TRƯỜNG -->
       <section id="tab-review" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
           <div>
             <h2 class="text-lg font-bold text-slate-900">Duyệt và theo dõi hồ sơ chuyên môn</h2>
             <p class="text-sm text-slate-500">Quản lý và thống kê tiến độ nộp bài của giáo viên trong trường.</p>
           </div>
-          <div>
+          
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- BỘ LỌC THEO TỔ (Dành cho Admin/Tổ trưởng) -->
+            <select id="filter_department" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white">
+              <option value="all">Tất cả các tổ bộ môn</option>
+              <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
+              <option value="Tin học">Tổ Tin học</option>
+              <option value="Toán">Tổ Toán</option>
+              <option value="Ngữ văn">Tổ Ngữ văn</option>
+              <option value="Vật lý">Tổ Vật lý</option>
+              <option value="Hóa học">Tổ Hóa học</option>
+              <option value="Ngoại ngữ">Tổ Ngoại ngữ</option>
+            </select>
+
             <button onclick="exportProgressReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
               Xuất báo cáo tiến độ (.xlsx)
@@ -601,20 +614,32 @@
       });
     }
 
-    // 8. Tải danh sách duyệt dành cho Tổ trưởng và Admin
+    // 8. Tải danh sách duyệt dành cho Tổ trưởng và Admin (có tích hợp bộ lọc theo Tổ)
     async function loadReviewSubmissions() {
       let query = client.from("submissions").select("*").order("submitted_at", { ascending: false });
       
+      // Nếu là Tổ trưởng (hod), ép buộc chỉ lấy dữ liệu trong tổ của mình
       if (userProfile.role === 'hod') {
         query = query.eq("department", userProfile.department);
+        
+        // Ẩn luôn ô chọn tổ đi vì Tổ trưởng không cần chọn tổ khác
+        const filterEl = document.getElementById("filter_department");
+        if (filterEl) filterEl.classList.add("hidden");
+      } 
+      else if (userProfile.role === 'admin') {
+        // Nếu là Admin, kiểm tra giá trị đang chọn trên dropdown bộ lọc
+        const selectedDept = document.getElementById("filter_department").value;
+        if (selectedDept && selectedDept !== 'all') {
+          query = query.eq("department", selectedDept);
+        }
       }
 
-      const { data } = await query;
+      const { data, error } = await query;
       const tbody = document.getElementById("review-body");
       tbody.innerHTML = "";
 
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Không có hồ sơ cần duyệt</td></tr>`;
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Không có hồ sơ nào phù hợp</td></tr>`;
         return;
       }
 
@@ -623,7 +648,7 @@
         tr.innerHTML = `
           <td class="p-3 font-medium text-slate-900">${item.teacher_name}</td>
           <td class="p-3 text-slate-600">${item.department}</td>
-          <td class="p-3 text-slate-600">Khối ${item.grade} - T${item.week_no}</td>
+          <td class="p-3 text-slate-600">Khối ${item.grade || '-'} - T${item.week_no || '-'}</td>
           <td class="p-3 text-slate-800">${item.title}</td>
           <td class="p-3">
             <span class="px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
@@ -638,7 +663,6 @@
         tbody.appendChild(tr);
       });
     }
-
     // Duyệt nhanh hồ sơ
     async function approveSubmission(id) {
       const { error } = await client.from("submissions").update({ status: 'approved' }).eq("id", id);
