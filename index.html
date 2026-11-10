@@ -78,11 +78,26 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Mục lưu trữ</label>
-              <select id="category" class="w-full border p-2 rounded-lg text-sm bg-white" required>
-                <option value="giao-an">Kế hoạch bài dạy (Giáo án)</option>
-                <option value="de-thi">Ngân hàng đề thi / Ma trận</option>
-                <option value="bien-ban">Biên bản sinh hoạt tổ</option>
-              </select>
+<select id="category" class="w-full border p-2 rounded-lg text-sm bg-white" required>
+  <optgroup label="02. Tổ chuyên môn">
+    <option value="giao-an">Kế hoạch bài dạy (Giáo án)</option>
+    <option value="de-thi">Ngân hàng đề thi / Ma trận</option>
+    <option value="bien-ban">Biên bản sinh hoạt tổ</option>
+  </optgroup>
+  <optgroup label="00. Kho chung toàn trường">
+    <option value="quy-che">Quy chế / Văn bản chỉ đạo</option>
+    <option value="bieu-mau">Biểu mẫu hành chính</option>
+  </optgroup>
+  <optgroup label="01. Ban Giám Hiệu & Hành chính">
+    <option value="tai-chinh">Tài chính - Cơ sở vật chất</option>
+    <option value="nhan-su">Nhân sự</option>
+    <option value="kiem-tra-noi-bo">Kiểm tra nội bộ</option>
+  </optgroup>
+  <optgroup label="03. Công tác Chủ nhiệm & Đoàn thể">
+    <option value="chu-nhiem">Hồ sơ chủ nhiệm</option>
+    <option value="doan-thanh-nien">Đoàn Thanh niên / Công đoàn</option>
+  </optgroup>
+</select>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Khối lớp</label>
@@ -296,19 +311,32 @@
       if (!file) return;
 
       const category = document.getElementById("category").value;
-      const grade = parseInt(document.getElementById("grade").value);
-      const week_no = parseInt(document.getElementById("week_no").value);
+      const grade = document.getElementById("grade").value;
+      const week_no = document.getElementById("week_no").value;
       const title = document.getElementById("doc_title").value.trim();
       const btn = document.getElementById("btn-submit");
 
       btn.disabled = true;
       btn.innerText = "Đang tải tệp lên...";
 
-      // Tạo đường dẫn chuẩn: 02_to-chuyen-mon/{dept-slug}/{category}/{filename}
-      const deptSlug = toSlug(userProfile.department);
+      let storagePath = "";
       const ext = file.name.split('.').pop();
-      const safeName = `K${grade}_Tuan${week_no}_${Date.now()}.${ext}`;
-      const storagePath = `02_to-chuyen-mon/${deptSlug}/${category}/${safeName}`;
+      const safeName = `K${grade || 'Chung'}_Tuan${week_no || '0'}_${Date.now()}.${ext}`;
+      const deptSlug = toSlug(userProfile.department);
+
+      // Phân luồng thư mục dựa vào danh mục (category)
+      if (['quy-che', 'bieu-mau'].includes(category)) {
+        storagePath = `00_cong-khai/${category}/${Date.now()}_${file.name}`;
+      } 
+      else if (['tai-chinh', 'nhan-su', 'kiem-tra-noi-bo'].includes(category)) {
+        storagePath = `01_ban-giam-hieu/${category}/${Date.now()}_${file.name}`;
+      } 
+      else if (['chu-nhiem', 'doan-thanh-nien'].includes(category)) {
+        storagePath = `03_chu-nhiem-doan-the/${category}/${safeName}`;
+      } 
+      else {
+        storagePath = `02_to-chuyen-mon/${deptSlug}/${category}/${safeName}`;
+      }
 
       // Upload vào Supabase Storage
       const { error: uploadError } = await client.storage
@@ -316,7 +344,7 @@
         .upload(storagePath, file);
 
       if (uploadError) {
-        alert("Lỗi tải tệp: " + uploadError.message);
+        alert("Từ chối truy cập hoặc lỗi mạng: " + uploadError.message);
         btn.disabled = false;
         btn.innerText = "Nộp hồ sơ lên hệ thống";
         return;
@@ -324,14 +352,14 @@
 
       const { data: urlData } = client.storage.from("school-documents").getPublicUrl(storagePath);
 
-      // Ghi nhận vào Database
+      // Ghi nhận metadata vào Database
       const { error: dbError } = await client.from("submissions").insert({
         teacher_id: currentUser.id,
         teacher_name: userProfile.full_name,
         department: userProfile.department,
         category: category,
-        grade: grade,
-        week_no: week_no,
+        grade: grade ? parseInt(grade) : null,
+        week_no: week_no ? parseInt(week_no) : null,
         title: title,
         file_name: file.name,
         file_url: urlData.publicUrl,
@@ -341,7 +369,7 @@
       if (dbError) {
         alert("Lỗi lưu dữ liệu: " + dbError.message);
       } else {
-        alert("Đã nộp hồ sơ thành công vào kho " + userProfile.department);
+        alert(`Đã nộp thành công vào thư mục: ${storagePath.split('/')[0]}`);
         fileInput.value = "";
         document.getElementById("doc_title").value = "";
         loadMySubmissions();
