@@ -858,6 +858,37 @@
         }, 1000);
       }
     }
+    // ==========================================
+    // GIỮ PHIÊN ĐĂNG NHẬP KHI TẢI LẠI TRANG (F5)
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Kiểm tra xem trình duyệt có lưu phiên đăng nhập cũ không
+      const { data: { session }, error } = await client.auth.getSession();
+      
+      if (session && session.user) {
+        // Nếu có, khôi phục lại thông tin user và chạy thẳng vào trang trong
+        currentUser = session.user;
+        
+        // Đổi nút thành trạng thái đang tải để người dùng biết
+        const btn = document.getElementById("btn-login");
+        if(btn) {
+          btn.disabled = true;
+          btn.innerText = "Đang khôi phục phiên...";
+        }
+
+        await initApplication();
+      }
+    });
+
+    // Lắng nghe sự kiện hệ thống (ví dụ: bị Admin xóa tài khoản hoặc token hết hạn)
+    client.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        userProfile = null;
+        document.getElementById("app-screen").classList.add("hidden");
+        document.getElementById("login-screen").classList.remove("hidden");
+      }
+    });
   </script>
 </body>
 </html>
