@@ -407,17 +407,21 @@
       const roleNames = { admin: "Ban Giám Hiệu", hod: "Tổ Trưởng", teacher: "Giáo Viên" };
       document.getElementById("user-role").innerText = roleNames[userProfile.role] || "Giáo Viên";
 
-      // Hiển thị Tab duyệt nếu là HOD hoặc Admin
+      // 1. Hiển thị Tab duyệt bài chung cho HOD và Admin
       if (userProfile.role === 'admin' || userProfile.role === 'hod') {
         document.getElementById("tab-btn-review").classList.remove("hidden");
-        loadAllUsers(); // Load dữ liệu
-      }
-
-      loadMySubmissions();
-      loadSharedDocs();
-      if (userProfile.role === 'admin' || userProfile.role === 'hod') {
         loadReviewSubmissions();
       }
+
+      // 2. HIỂN THỊ NÚT QUẢN LÝ TÀI KHOẢN DÀNH RIÊNG CHO ADMIN
+      if (userProfile.role === 'admin') {
+        document.getElementById("tab-btn-users").classList.remove("hidden");
+        loadAllUsers(); // Tải danh sách giáo viên
+      }
+
+      // 3. Tải các dữ liệu cơ bản
+      loadMySubmissions();
+      loadSharedDocs();
     }
 
     // 3. Đăng Xuất
