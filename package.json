@@ -1,6 +1,7 @@
 {
-  "name": "school-docs-portal",
+  "name": "luutru",
   "version": "1.0.0",
+  "type": "module",
   "dependencies": {
     "googleapis": "^144.0.0",
     "busboy": "^1.6.0"
