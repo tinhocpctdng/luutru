@@ -8,6 +8,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Supabase JS Client v2 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Thư viện SheetJS để đọc/xuất file Excel/CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
@@ -69,6 +71,7 @@
         <button onclick="switchTab('my-docs')" id="tab-btn-docs" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Hồ sơ đã nộp</button>
         <button onclick="switchTab('shared')" id="tab-btn-shared" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">00. Kho biểu mẫu chung</button>
         <button onclick="switchTab('review')" id="tab-btn-review" class="hidden px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium">Duyệt hồ sơ tổ</button>
+        <button onclick="switchTab('users')" id="tab-btn-users" class="hidden px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium">Quản lý Tài khoản (Admin)</button>
       </div>
 
       <!-- TAB 1: FORM NỘP BÀI GIẢNG / TÀI LIỆU -->
@@ -181,6 +184,86 @@
           </table>
         </div>
       </section>
+      <!-- TAB 5: QUẢN LÝ NGƯỜI DÙNG (Chỉ Admin) -->
+      <section id="tab-users" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Quản lý Tài khoản Hệ thống</h2>
+            <p class="text-sm text-slate-500">Mẹo: Cấp tài khoản mới tại bảng điều khiển Supabase, sau đó dùng Excel để cập nhật thông tin tại đây.</p>
+          </div>
+          <div class="flex space-x-2">
+            <!-- Nút Xuất Excel -->
+            <button onclick="exportUsersToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              Xuất Excel
+            </button>
+
+            <!-- Nút Nhập Excel (Ẩn input file, giả lập bằng label) -->
+            <input type="file" id="import_excel" accept=".xlsx, .xls, .csv" class="hidden" onchange="importUsersFromExcel(event)">
+            <label for="import_excel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm cursor-pointer">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              Nhập cập nhật từ Excel
+            </label>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-50 border-b text-slate-600">
+                <th class="p-3">Họ và tên</th>
+                <th class="p-3">Email</th>
+                <th class="p-3">Tổ bộ môn</th>
+                <th class="p-3">Quyền hạn</th>
+                <th class="p-3 text-right">Tác vụ</th>
+              </tr>
+            </thead>
+            <tbody id="users-body" class="divide-y divide-slate-100">
+              <!-- Render danh sách user -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- MODAL SỬA NGƯỜI DÙNG (Ẩn mặc định) -->
+      <div id="edit-user-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+          <h3 class="text-lg font-bold text-slate-900 mb-4">Cập nhật thông tin giáo viên</h3>
+          <input type="hidden" id="edit_user_id">
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Họ và tên</label>
+              <input type="text" id="edit_full_name" class="w-full border p-2 rounded-lg text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Tổ chuyên môn</label>
+              <select id="edit_department" class="w-full border p-2 rounded-lg text-sm">
+                <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
+                <option value="Tin học">Tin học</option>
+                <option value="Toán">Toán</option>
+                <option value="Ngữ văn">Ngữ văn</option>
+                <option value="Vật lý">Vật lý</option>
+                <option value="Hóa học">Hóa học</option>
+                <option value="Ngoại ngữ">Ngoại ngữ</option>
+                <option value="Chưa phân tổ">Chưa phân tổ</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Cấp quyền hệ thống</label>
+              <select id="edit_role" class="w-full border p-2 rounded-lg text-sm">
+                <option value="teacher">Giáo viên (Chỉ xem/nộp bài mình)</option>
+                <option value="hod">Tổ trưởng (Duyệt bài trong tổ)</option>
+                <option value="admin">Quản trị viên / BGH (Toàn quyền)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="mt-6 flex justify-end space-x-3">
+            <button onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium">Hủy</button>
+            <button onclick="saveUserUpdate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Lưu thay đổi</button>
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>
@@ -275,6 +358,7 @@
       // Hiển thị Tab duyệt nếu là HOD hoặc Admin
       if (userProfile.role === 'admin' || userProfile.role === 'hod') {
         document.getElementById("tab-btn-review").classList.remove("hidden");
+        loadAllUsers(); // Load dữ liệu
       }
 
       loadMySubmissions();
@@ -292,7 +376,7 @@
 
     // 4. Chuyển đổi qua lại giữa các Tab
     function switchTab(tab) {
-      const tabs = ['upload', 'my-docs', 'shared', 'review'];
+      const tabs = ['upload', 'my-docs', 'shared', 'review', 'users'];
       tabs.forEach(t => {
         document.getElementById(`tab-${t}`).classList.add("hidden");
         const btn = document.getElementById(`tab-btn-${t}`);
@@ -486,6 +570,176 @@
         loadReviewSubmissions();
         loadMySubmissions();
       }
+    }
+    // ==========================================
+    // CHỨC NĂNG QUẢN LÝ NGƯỜI DÙNG (DÀNH CHO ADMIN)
+    // ==========================================
+    
+    // Đọc danh sách User
+    async function loadAllUsers() {
+      const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
+      const tbody = document.getElementById("users-body");
+      tbody.innerHTML = "";
+
+      if (error) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Lỗi tải danh sách: ${error.message}</td></tr>`;
+        return;
+      }
+
+      data.forEach(user => {
+        const roleLabel = user.role === 'admin' ? '<span class="text-purple-600 font-bold">Admin</span>' : 
+                          user.role === 'hod' ? '<span class="text-blue-600 font-bold">Tổ trưởng</span>' : 'Giáo viên';
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="p-3 font-medium text-slate-900">${user.full_name}</td>
+          <td class="p-3 text-slate-600">${user.email || 'N/A'}</td>
+          <td class="p-3 text-slate-600">${user.department}</td>
+          <td class="p-3">${roleLabel}</td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="openEditModal('${user.id}', '${user.full_name}', '${user.department}', '${user.role}')" 
+                    class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded text-xs font-semibold">Sửa</button>
+            <button onclick="deleteUserProfile('${user.id}')" 
+                    class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded text-xs font-semibold">Xóa</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Bật hộp thoại Sửa
+    function openEditModal(id, name, dept, role) {
+      document.getElementById("edit_user_id").value = id;
+      document.getElementById("edit_full_name").value = name;
+      document.getElementById("edit_department").value = dept;
+      document.getElementById("edit_role").value = role;
+      document.getElementById("edit-user-modal").classList.remove("hidden");
+    }
+
+    // Đóng hộp thoại Sửa
+    function closeEditModal() {
+      document.getElementById("edit-user-modal").classList.add("hidden");
+    }
+
+    // Lưu thay đổi Cập nhật (Update)
+    async function saveUserUpdate() {
+      const id = document.getElementById("edit_user_id").value;
+      const full_name = document.getElementById("edit_full_name").value.trim();
+      const department = document.getElementById("edit_department").value;
+      const role = document.getElementById("edit_role").value;
+
+      if (!full_name) return alert("Vui lòng nhập tên");
+
+      const { error } = await client.from("profiles")
+        .update({ full_name, department, role })
+        .eq("id", id);
+
+      if (error) {
+        alert("Lỗi cập nhật: " + error.message);
+      } else {
+        alert("Cập nhật thông tin thành công!");
+        closeEditModal();
+        loadAllUsers();
+      }
+    }
+
+    // Xóa hồ sơ người dùng (Delete)
+    async function deleteUserProfile(id) {
+      if (id === currentUser.id) {
+        return alert("Bạn không thể tự xóa tài khoản của chính mình đang đăng nhập!");
+      }
+
+      const confirmDelete = confirm("CẢNH BÁO: Hành động này sẽ thu hồi toàn bộ quyền đăng nhập hệ thống của giáo viên này. Bạn có chắc chắn xóa?");
+      if (!confirmDelete) return;
+
+      const { error } = await client.from("profiles").delete().eq("id", id);
+
+      if (error) {
+        alert("Lỗi xóa tài khoản: " + error.message);
+      } else {
+        alert("Đã xóa hồ sơ giáo viên thành công!");
+        loadAllUsers();
+      }
+    }
+    // ==========================================
+    // CHỨC NĂNG XUẤT / NHẬP EXCEL NGƯỜI DÙNG
+    // ==========================================
+
+    // 1. Xuất danh sách hiện tại ra file Excel (.xlsx)
+    async function exportUsersToExcel() {
+      const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
+      if (error) return alert("Lỗi tải dữ liệu: " + error.message);
+
+      // Chuẩn hóa dữ liệu mảng trước khi đưa vào Excel
+      const excelData = data.map(user => ({
+        "Email": user.email,
+        "Họ và tên": user.full_name,
+        "Tổ bộ môn": user.department,
+        "Quyền hạn": user.role === 'admin' ? 'Quản trị viên' : (user.role === 'hod' ? 'Tổ trưởng' : 'Giáo viên')
+      }));
+
+      // Tạo workbook và xuất file
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachGiaoVien");
+      XLSX.writeFile(workbook, "DanhSachGiaoVien.xlsx");
+    }
+
+    // 2. Nhập file Excel/CSV để cập nhật thông tin hàng loạt
+    async function importUsersFromExcel(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+
+          if (jsonData.length === 0) return alert("File Excel trống!");
+
+          let successCount = 0;
+          let failCount = 0;
+
+          // Hiển thị trạng thái đang xử lý
+          document.getElementById("users-body").innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ ${jsonData.length} dòng dữ liệu... Vui lòng đợi.</td></tr>`;
+
+          for (const row of jsonData) {
+            const email = row["Email"];
+            const fullName = row["Họ và tên"];
+            const dept = row["Tổ bộ môn"];
+            const roleStr = row["Quyền hạn"];
+
+            if (!email) continue; // Bỏ qua nếu không có email
+
+            // Chuẩn hóa quyền
+            let role = 'teacher';
+            if (roleStr === 'Quản trị viên') role = 'admin';
+            else if (roleStr === 'Tổ trưởng') role = 'hod';
+
+            // Gọi API Update của Supabase dựa theo Email
+            const { error } = await client.from("profiles").update({
+              full_name: fullName,
+              department: dept,
+              role: role
+            }).eq("email", email.trim());
+
+            if (!error) successCount++;
+            else failCount++;
+          }
+
+          alert(`Đã cập nhật thành công ${successCount} tài khoản! \nThất bại/Bỏ qua: ${failCount} tài khoản.`);
+          loadAllUsers(); // Tải lại bảng
+
+        } catch (error) {
+          alert("Lỗi đọc file Excel: " + error.message);
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
+      e.target.value = ""; // Reset input file để có thể chọn lại file cũ nếu muốn
     }
   </script>
 </body>
