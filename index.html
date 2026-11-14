@@ -1004,8 +1004,17 @@
       btn.disabled = true;
       btn.innerText = "Đang tạo...";
 
-      // Gọi API đăng ký của Supabase, đẩy thông tin metadata kèm theo
-      const { data, error } = await client.auth.signUp({
+      // THỦ THUẬT: Khởi tạo kết nối phụ không ghi đè session để giữ vững tài khoản Admin
+      const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false
+        }
+      });
+
+      // Gọi API đăng ký qua kết nối phụ thay vì dùng client mặc định
+      const { data, error } = await adminAuthClient.auth.signUp({
         email: email,
         password: password,
         options: {
@@ -1023,10 +1032,10 @@
       if (error) {
         alert("Lỗi tạo tài khoản: " + error.message);
       } else {
-        alert("Tạo tài khoản thành công! Giáo viên đã có thể đăng nhập bằng email và mật khẩu vừa cấp.");
+        alert("Tạo tài khoản thành công! Bạn vẫn đang giữ quyền Admin.");
         closeAddModal();
         
-        // Đợi 1 giây để Trigger chạy xong rồi tải lại bảng
+        // Làm mới lại danh sách bảng
         setTimeout(() => {
           loadAllUsers();
         }, 1000);
