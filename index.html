@@ -65,13 +65,32 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
       
       <!-- CÂY PHÂN VÙNG / BREADCRUMB BẢNG ĐIỀU KHIỂN -->
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-2 items-center text-sm">
-        <span class="text-slate-400 font-medium">Khu vực lưu trữ:</span>
-        <button onclick="switchTab('upload')" id="tab-btn-upload" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-medium">Nộp hồ sơ</button>
-        <button onclick="switchTab('my-docs')" id="tab-btn-docs" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">Hồ sơ đã nộp</button>
-        <button onclick="switchTab('shared')" id="tab-btn-shared" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium">00. Kho biểu mẫu chung</button>
-        <button onclick="switchTab('review')" id="tab-btn-review" class="hidden px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium">Duyệt hồ sơ tổ</button>
-        <button onclick="switchTab('users')" id="tab-btn-users" class="hidden px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium">Quản lý Tài khoản (Admin)</button>
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-2 items-center text-sm mb-6">
+        <span class="text-slate-500 font-semibold flex items-center mr-2">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+          Khu vực lưu trữ:
+        </span>
+        
+        <!-- Nhóm Tab dành cho mọi giáo viên -->
+        <button onclick="switchTab('upload')" id="tab-btn-upload" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-medium shadow-sm transition">
+          Nộp / Cập nhật hồ sơ
+        </button>
+        <button onclick="switchTab('my-docs')" id="tab-btn-docs" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
+          Hồ sơ cá nhân
+        </button>
+        <button onclick="switchTab('shared')" id="tab-btn-shared" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
+          Kho chung toàn trường
+        </button>
+
+        <!-- Nhóm Tab dành cho Quản lý (Tổ trưởng / BGH) -->
+        <button onclick="switchTab('review')" id="tab-btn-review" class="hidden px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium transition">
+          Quản lý & Duyệt hồ sơ
+        </button>
+        
+        <!-- Nhóm Tab dành riêng cho Admin -->
+        <button onclick="switchTab('users')" id="tab-btn-users" class="hidden px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 font-medium transition">
+          Quản trị Hệ thống
+        </button>
       </div>
 
       <!-- TAB 1: FORM NỘP BÀI GIẢNG / TÀI LIỆU -->
