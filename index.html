@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -329,7 +329,7 @@
               <option value="Địa lý">Địa lý</option>
               <option value="Tiếng Anh">Tiếng Anh</option>
               <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-              <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+              <option value="Giáo dục KT&PL">Giáo dục KT&PL</option>
               <option value="Giáo dục thể chất">Giáo dục thể chất</option>
               <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
               <option value="Văn phòng">Văn phòng</option>
@@ -486,6 +486,15 @@
       document.getElementById("login-screen").classList.add("hidden");
       document.getElementById("app-screen").classList.remove("hidden");
       document.getElementById("user-name").innerText = userProfile.full_name;
+      
+      // Ẩn hoàn toàn thẻ "Tổ bộ môn" đối với Admin (Quản trị hệ thống)
+      const deptBadge = document.getElementById("dept-badge");
+      if (userProfile.role === 'admin' || currentUser.email === 'vulongdng@gmail.com') {
+        deptBadge.classList.add("hidden");
+      } else {
+        deptBadge.innerText = "Tổ: " + userProfile.department;
+        deptBadge.classList.remove("hidden");
+      }
       
       // Ẩn chữ "Tổ:" đối với Ban Giám Hiệu để giao diện chuyên nghiệp hơn
       if (userProfile.role === 'admin' && userProfile.department === 'Ban Giám Hiệu') {
@@ -867,7 +876,7 @@
         tr.innerHTML = `
           <td class="p-3 font-medium text-slate-900">${user.full_name}</td>
           <td class="p-3 text-slate-600">${user.email || 'N/A'}</td>
-          <td class="p-3 text-slate-600">${user.department}</td>
+          <td class="p-3 text-slate-600">${user.role === 'admin' ? '<span class="text-slate-400 italic">- Không yêu cầu -</span>' : user.department}</td>
           <td class="p-3">${roleLabel}</td>
           <td class="p-3 text-right space-x-2">
             <button onclick="openEditModal('${user.id}', '${user.full_name}', '${user.department}', '${user.role}')" 
@@ -887,6 +896,7 @@
       document.getElementById("edit_department").value = dept;
       document.getElementById("edit_role").value = role;
       document.getElementById("edit-user-modal").classList.remove("hidden");
+      document.getElementById("edit_department").disabled = (role === 'admin');
     }
 
     // Đóng hộp thoại Sửa
@@ -896,10 +906,15 @@
 
     // Lưu thay đổi Cập nhật (Update)
     async function saveUserUpdate() {
+      async function saveUserUpdate() {
       const id = document.getElementById("edit_user_id").value;
       const full_name = document.getElementById("edit_full_name").value.trim();
-      const department = document.getElementById("edit_department").value;
+      
+      let department = document.getElementById("edit_department").value; // Đổi const thành let
       const role = document.getElementById("edit_role").value;
+
+      // Xử lý làm sạch dữ liệu TRƯỚC KHI cập nhật
+      if (role === 'admin') department = 'Không áp dụng';
 
       if (!full_name) return alert("Vui lòng nhập tên");
 
@@ -947,7 +962,7 @@
       const excelData = data.map(user => ({
         "Email": user.email,
         "Họ và tên": user.full_name,
-        "Tổ bộ môn": user.department,
+        "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
         "Quyền hạn": user.role === 'admin' ? 'Quản trị viên' : 
                      (user.role === 'hod' ? 'Tổ trưởng' : 
                      (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))
@@ -1026,6 +1041,9 @@
       document.getElementById("add_password").value = "";
       document.getElementById("add_full_name").value = "";
       document.getElementById("add-user-modal").classList.remove("hidden");
+      
+      // Khóa ô Tổ bộ môn nếu đang chọn mặc định là Admin
+      document.getElementById("add_department").disabled = (document.getElementById("add_role").value === 'admin');
     }
 
     function closeAddModal() {
@@ -1036,10 +1054,15 @@
       const email = document.getElementById("add_email").value.trim();
       const password = document.getElementById("add_password").value;
       const full_name = document.getElementById("add_full_name").value.trim();
-      const department = document.getElementById("add_department").value;
+      
+      let department = document.getElementById("add_department").value; // Đổi const thành let
       const role = document.getElementById("add_role").value;
-      const btn = document.getElementById("btn-save-new-user");
 
+      // Xử lý làm sạch dữ liệu TRƯỚC KHI tạo tài khoản
+      if (role === 'admin') department = 'Không áp dụng';
+
+      const btn = document.getElementById("btn-save-new-user");
+    
       if (!email || !password || !full_name) {
         return alert("Vui lòng nhập đầy đủ Email, Mật khẩu và Họ tên!");
       }
@@ -1091,6 +1114,13 @@
     // GIỮ PHIÊN ĐĂNG NHẬP KHI TẢI LẠI TRANG (F5)
     // ==========================================
     document.addEventListener("DOMContentLoaded", async () => {
+      // Tự động Khóa/Mở ô chọn Tổ khi thay đổi Quyền hạn
+      document.getElementById("add_role").addEventListener("change", (e) => {
+        document.getElementById("add_department").disabled = (e.target.value === 'admin');
+      });
+      document.getElementById("edit_role").addEventListener("change", (e) => {
+        document.getElementById("edit_department").disabled = (e.target.value === 'admin');
+      });
       // Kiểm tra xem trình duyệt có lưu phiên đăng nhập cũ không
       const { data: { session }, error } = await client.auth.getSession();
       
