@@ -514,11 +514,11 @@
         loadReviewSubmissions();
       }
 
-      // 2. HIỂN THỊ NÚT QUẢN LÝ TÀI KHOẢN DÀNH RIÊNG CHO ADMIN
-      if (userProfile.role === 'admin') {
+      // 2. HIỂN THỊ NÚT QUẢN LÝ TÀI KHOẢN VÀ NẠP DỮ LIỆU TỔ CHỈ DÀNH CHO QUẢN TRỊ VIÊN GỐC
+      if (currentUser.email === 'vulongdng@gmail.com') {
         document.getElementById("tab-btn-users").classList.remove("hidden");
-        loadAllUsers(); // Tải danh sách giáo viên
-        loadDepartmentOptions(); // <--- Thêm dòng này để tự động nạp danh sách 14 tổ cho Admin
+        loadAllUsers(); 
+        loadDepartmentOptions(); 
       }
 
       // 3. Tải các dữ liệu cơ bản
