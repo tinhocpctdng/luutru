@@ -190,7 +190,7 @@
 
       <!-- TAB 3: KHO BIỂU MẪU CHUNG (00_cong-khai) -->
       <section id="tab-shared" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900 mb-2 border-b pb-2">00. Kho văn bản và biểu mẫu hành chính chung</h2>
+        <h2 class="text-lg font-bold text-slate-900 mb-2 border-b pb-2">Kho văn bản và biểu mẫu hành chính chung</h2>
         <p class="text-sm text-slate-500 mb-4">Mọi giáo viên trong trường có thể tải về các mẫu quy chế, khung phân phối chương trình và biểu mẫu hành chính.</p>
         
         <!-- KHUNG TẢI BIỂU MẪU (Chỉ hiện với Ban Giám Hiệu và Nhân viên Văn thư) -->
@@ -490,7 +490,7 @@
       };
       document.getElementById("user-role").innerText = roleNames[userProfile.role] || "Giáo Viên";
 
-      // Mở khung đăng tải ở "00. Kho biểu mẫu chung" CHỈ CHO Admin và Nhân viên Văn thư
+      // Mở khung đăng tải ở "Kho biểu mẫu chung" CHỈ CHO Admin và Nhân viên Văn thư
       if (userProfile.role === 'admin' || userProfile.role === 'clerk') {
         const uploadBox = document.getElementById("upload-template-box");
         if (uploadBox) uploadBox.classList.remove("hidden");
