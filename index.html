@@ -318,22 +318,24 @@
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Tổ chuyên môn</label>
-              <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
-              <option value="Toán học">Toán học</option>
-              <option value="Vật lý">Vật lý</option>
-              <option value="Hóa học">Hóa học</option>
-              <option value="Sinh học">Sinh học</option>
-              <option value="Tin học">Tin học</option>
-              <option value="Ngữ văn">Ngữ văn</option>
-              <option value="Lịch sử">Lịch sử</option>
-              <option value="Địa lý">Địa lý</option>
-              <option value="Tiếng Anh">Tiếng Anh</option>
-              <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-              <option value="Giáo dục KT&PL">Giáo dục KT&PL</option>
-              <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-              <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
-              <option value="Văn phòng">Văn phòng</option>
-              <option value="Chưa phân tổ">Chưa phân tổ</option>
+              <select id="edit_department" class="w-full border p-2 rounded-lg text-sm">
+                <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
+                <option value="Toán học">Toán học</option>
+                <option value="Vật lý">Vật lý</option>
+                <option value="Hóa học">Hóa học</option>
+                <option value="Sinh học">Sinh học</option>
+                <option value="Tin học">Tin học</option>
+                <option value="Ngữ văn">Ngữ văn</option>
+                <option value="Lịch sử">Lịch sử</option>
+                <option value="Địa lý">Địa lý</option>
+                <option value="Tiếng Anh">Tiếng Anh</option>
+                <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
+                <option value="Giáo dục KT&PL">Giáo dục KT&PL</option>
+                <option value="Giáo dục thể chất">Giáo dục thể chất</option>
+                <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                <option value="Văn phòng">Văn phòng</option>
+                <option value="Chưa phân tổ">Chưa phân tổ</option>
+              </select>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Cấp quyền hệ thống</label>
@@ -411,6 +413,7 @@
     const SUPABASE_URL = "https://kprcbeqbwsslbojedmvr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcmNiZXFid3NzbGJvamVkbXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNjQ5ODUsImV4cCI6MjEwOTg0MDk4NX0.qYqQojqnXJrpfCzrKYKgRezAlqEpq2Us5RRhGyD65b4";
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUdZgK7dYQFhJIUmhQRlDR8N1o9zjyw_A58qudOPxRVBqYjsGzpKCH8x8kffUefNfS/exec";
 
     let currentUser = null;
     let userProfile = null;
@@ -603,10 +606,7 @@
           formData.append('week', week_no);
           formData.append('department', userProfile.department);
 
-          // ĐẶT URL ỨNG DỤNG WEB CỦA BẠN VÀO ĐÂY:
-          const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUdZgK7dYQFhJIUmhQRlDR8N1o9zjyw_A58qudOPxRVBqYjsGzpKCH8x8kffUefNfS/exec";
-
-          const res = await fetch(APPS_SCRIPT_URL, {
+         const res = await fetch(APPS_SCRIPT_URL, {
             method: "POST",
             body: formData,
             headers: {
@@ -906,7 +906,6 @@
 
     // Lưu thay đổi Cập nhật (Update)
     async function saveUserUpdate() {
-      async function saveUserUpdate() {
       const id = document.getElementById("edit_user_id").value;
       const full_name = document.getElementById("edit_full_name").value.trim();
       
