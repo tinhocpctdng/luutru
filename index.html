@@ -532,12 +532,105 @@
         loadAllUsers(); 
         loadDepartmentOptions(); 
       }
+      // Lọc danh sách Mục lưu trữ theo đúng quyền hạn tài khoản
+      renderAllowedCategories();
 
       // 3. Tải các dữ liệu cơ bản
       loadMySubmissions();
       loadSharedDocs();
     }
+  // Hàm tự động lọc và hiển thị các Mục lưu trữ đúng theo Quyền hạn & Tổ bộ môn
+    function renderAllowedCategories() {
+      const categorySelect = document.getElementById("category");
+      if (!categorySelect) return;
 
+      const role = userProfile.role;
+      const isVanPhong = userProfile.department && userProfile.department.toLowerCase().includes("văn phòng");
+
+      const categoryGroups = [
+        {
+          label: "Kho chung toàn trường",
+          roles: ["admin", "clerk"], // Chỉ BGH và Văn thư được nộp trực tiếp lên kho chung
+          options: [
+            { value: "van-ban-chi-dao", text: "Văn bản chỉ đạo cấp trên" },
+            { value: "quy-che", text: "Nội quy / Quy chế hoạt động" },
+            { value: "bieu-mau", text: "Biểu mẫu hành chính / Kế hoạch chung" }
+          ]
+        },
+        {
+          label: "01. Ban Giám Hiệu",
+          roles: ["admin"], // Chỉ BGH được nộp
+          options: [
+            { value: "nghi-quyet", text: "Nghị quyết / Kế hoạch chiến lược" },
+            { value: "kiem-tra-noi-bo", text: "Hồ sơ Kiểm tra nội bộ" },
+            { value: "thi-dua", text: "Hồ sơ Thi đua - Khen thưởng" }
+          ]
+        },
+        {
+          label: "02. Tổ chuyên môn",
+          roles: ["admin", "hod", "teacher"],
+          excludeDept: "văn phòng", // Ẩn nhóm này nếu là nhân viên Tổ Văn phòng (trừ BGH)
+          options: [
+            { value: "ke-hoach-giao-duc", text: "Kế hoạch giáo dục tổ/nhóm", allowedRoles: ["admin", "hod"] },
+            { value: "giao-an", text: "Kế hoạch bài dạy (Giáo án)" },
+            { value: "de-thi", text: "Ngân hàng đề thi / Ma trận" },
+            { value: "bien-ban", text: "Biên bản sinh hoạt tổ chuyên môn", allowedRoles: ["admin", "hod"] },
+            { value: "hsg-khkt", text: "Bồi dưỡng HSG / Chuyên đề KHKT" },
+            { value: "so-diem", text: "Sổ theo dõi và đánh giá" }
+          ]
+        },
+        {
+          label: "03. Tổ Văn phòng (Hành chính)",
+          roles: ["admin", "clerk", "teacher"],
+          onlyDept: "văn phòng", // Chỉ hiện cho BGH, Văn thư hoặc thành viên Tổ Văn phòng
+          options: [
+            { value: "van-thu", text: "Công văn đi / đến (Văn thư)", allowedRoles: ["admin", "clerk"] },
+            { value: "nhan-su", text: "Hồ sơ Nhân sự - Lương" },
+            { value: "ke-toan", text: "Hồ sơ Kế toán - Tài chính" },
+            { value: "thu-vien-thiet-bi", text: "Hồ sơ Thư viện - Thiết bị" }
+          ]
+        },
+        {
+          label: "04 & 05. Chủ nhiệm & Đoàn thể",
+          roles: ["admin", "hod", "clerk", "teacher"],
+          options: [
+            { value: "chu-nhiem", text: "Kế hoạch & Sổ Chủ nhiệm lớp" },
+            { value: "hop-phu-huynh", text: "Biên bản họp Phụ huynh" },
+            { value: "cong-doan", text: "Hồ sơ Công đoàn" },
+            { value: "doan-thanh-nien", text: "Hồ sơ Đoàn Thanh niên" }
+          ]
+        }
+      ];
+
+      categorySelect.innerHTML = ""; // Xóa danh sách tĩnh cũ
+
+      categoryGroups.forEach(group => {
+        // 1. Kiểm tra quyền chung của nhóm
+        if (!group.roles.includes(role)) return;
+
+        // 2. Kiểm tra điều kiện tổ bộ môn (nếu không phải Admin)
+        if (role !== "admin") {
+          if (group.excludeDept && isVanPhong) return;
+          if (group.onlyDept && !isVanPhong && role !== "clerk") return;
+        }
+
+        // 3. Lọc các mục con bên trong nhóm
+        const validOptions = group.options.filter(opt => !opt.allowedRoles || opt.allowedRoles.includes(role));
+        if (validOptions.length === 0) return;
+
+        const optgroup = document.createElement("optgroup");
+        optgroup.label = group.label;
+
+        validOptions.forEach(opt => {
+          const optionEl = document.createElement("option");
+          optionEl.value = opt.value;
+          optionEl.innerText = opt.text;
+          optgroup.appendChild(optionEl);
+        });
+
+        categorySelect.appendChild(optgroup);
+      });
+    }
     // 3. Đăng Xuất
     async function handleLogout() {
       await client.auth.signOut();
