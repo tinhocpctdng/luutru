@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -81,26 +81,41 @@
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Mục lưu trữ</label>
-<select id="category" class="w-full border p-2 rounded-lg text-sm bg-white" required>
-  <optgroup label="02. Tổ chuyên môn">
-    <option value="giao-an">Kế hoạch bài dạy (Giáo án)</option>
-    <option value="de-thi">Ngân hàng đề thi / Ma trận</option>
-    <option value="bien-ban">Biên bản sinh hoạt tổ</option>
-  </optgroup>
-  <optgroup label="00. Kho chung toàn trường">
-    <option value="quy-che">Quy chế / Văn bản chỉ đạo</option>
-    <option value="bieu-mau">Biểu mẫu hành chính</option>
-  </optgroup>
-  <optgroup label="01. Ban Giám Hiệu & Hành chính">
-    <option value="tai-chinh">Tài chính - Cơ sở vật chất</option>
-    <option value="nhan-su">Nhân sự</option>
-    <option value="kiem-tra-noi-bo">Kiểm tra nội bộ</option>
-  </optgroup>
-  <optgroup label="03. Công tác Chủ nhiệm & Đoàn thể">
-    <option value="chu-nhiem">Hồ sơ chủ nhiệm</option>
-    <option value="doan-thanh-nien">Đoàn Thanh niên / Công đoàn</option>
-  </optgroup>
-</select>
+      <select id="category" class="w-full border p-2 rounded-lg text-sm bg-white" required>
+        <optgroup label="Kho chung toàn trường">
+          <option value="van-ban-chi-dao">Văn bản chỉ đạo cấp trên</option>
+          <option value="quy-che">Nội quy / Quy chế hoạt động</option>
+          <option value="bieu-mau">Biểu mẫu hành chính / Kế hoạch chung</option>
+        </optgroup>
+  
+        <optgroup label="01. Ban Giám Hiệu">
+          <option value="nghi-quyet">Nghị quyết / Kế hoạch chiến lược</option>
+          <option value="kiem-tra-noi-bo">Hồ sơ Kiểm tra nội bộ</option>
+          <option value="thi-dua">Hồ sơ Thi đua - Khen thưởng</option>
+        </optgroup>
+            <optgroup label="02. Tổ chuyên môn">
+          <option value="ke-hoach-giao-duc">Kế hoạch giáo dục tổ/nhóm</option>
+          <option value="giao-an">Kế hoạch bài dạy (Giáo án)</option>
+          <option value="de-thi">Ngân hàng đề thi / Ma trận</option>
+          <option value="bien-ban">Biên bản sinh hoạt tổ chuyên môn</option>
+          <option value="hsg-khkt">Bồi dưỡng HSG / Chuyên đề KHKT</option>
+          <option value="so-diem">Sổ theo dõi và đánh giá</option>
+        </optgroup>
+
+        <optgroup label="03. Tổ Văn phòng (Hành chính)">
+          <option value="van-thu">Công văn đi / đến (Văn thư)</option>
+          <option value="nhan-su">Hồ sơ Nhân sự - Lương</option>
+          <option value="ke-toan">Hồ sơ Kế toán - Tài chính</option>
+          <option value="thu-vien-thiet-bi">Hồ sơ Thư viện - Thiết bị</option>
+        </optgroup>
+      
+        <optgroup label="04 & 05. Chủ nhiệm & Đoàn thể">
+          <option value="chu-nhiem">Kế hoạch & Sổ Chủ nhiệm lớp</option>
+          <option value="hop-phu-huynh">Biên bản họp Phụ huynh</option>
+          <option value="cong-doan">Hồ sơ Công đoàn</option>
+          <option value="doan-thanh-nien">Hồ sơ Đoàn Thanh niên</option>
+        </optgroup>
+      </select>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Khối lớp</label>
