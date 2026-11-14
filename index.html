@@ -974,7 +974,7 @@
       XLSX.writeFile(workbook, "DanhSachGiaoVien.xlsx");
     }
 
-    // 2. Nhập file Excel/CSV để cập nhật thông tin hàng loạt
+    // 2. Nhập file Excel/CSV để TẠO MỚI hoặc CẬP NHẬT tài khoản hàng loạt
     async function importUsersFromExcel(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -989,47 +989,112 @@
 
           if (jsonData.length === 0) return alert("File Excel trống!");
 
-          let successCount = 0;
+          let createdCount = 0;
+          let updatedCount = 0;
           let failCount = 0;
+          let errorLogs = [];
 
-          // Hiển thị trạng thái đang xử lý
-          document.getElementById("users-body").innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ ${jsonData.length} dòng dữ liệu... Vui lòng đợi.</td></tr>`;
+          // Khởi tạo kết nối phụ không lưu phiên để giữ nguyên quyền Admin
+          const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false
+            }
+          });
 
-          for (const row of jsonData) {
-            const email = row["Email"];
-            const fullName = row["Họ và tên"];
-            const dept = row["Tổ bộ môn"];
-            const roleStr = row["Quyền hạn"];
+          const tbody = document.getElementById("users-body");
 
-            if (!email) continue; // Bỏ qua nếu không có email
+          for (let i = 0; i < jsonData.length; i++) {
+            const row = jsonData[i];
+            const email = row["Email"] ? String(row["Email"]).trim() : "";
+            const password = row["Mật khẩu"] ? String(row["Mật khẩu"]).trim() : "123456";
+            const fullName = row["Họ và tên"] ? String(row["Họ và tên"]).trim() : "";
+            let dept = row["Tổ bộ môn"] ? String(row["Tổ bộ môn"]).trim() : "Chưa phân tổ";
+            const roleStr = row["Quyền hạn"] ? String(row["Quyền hạn"]).trim() : "Giáo viên";
 
-            // Chuẩn hóa quyền
+            if (!email || !fullName) continue;
+
+            // Hiển thị tiến độ trực tiếp trên bảng
+            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang xử lý dòng ${i + 1}/${jsonData.length}: ${fullName} (${email})...</td></tr>`;
+
+            // Chuẩn hóa quyền hạn
             let role = 'teacher';
-            if (roleStr === 'Quản trị viên' || roleStr === 'Admin') role = 'admin';
+            if (roleStr === 'Quản trị viên' || roleStr === 'Admin' || roleStr === 'Ban Giám Hiệu') role = 'admin';
             else if (roleStr === 'Tổ trưởng') role = 'hod';
             else if (roleStr === 'Nhân viên Văn thư' || roleStr === 'Văn thư') role = 'clerk';
 
-            // Gọi API Update của Supabase dựa theo Email
-            const { error } = await client.from("profiles").update({
-              full_name: fullName,
-              department: dept,
-              role: role
-            }).eq("email", email.trim());
+            if (role === 'admin') dept = 'Không áp dụng';
 
-            if (!error) successCount++;
-            else failCount++;
+            // Bước A: Thử cập nhật nếu Email đã tồn tại trong bảng profiles
+            const { data: existingUser } = await client
+              .from("profiles")
+              .select("id")
+              .eq("email", email)
+              .maybeSingle();
+
+            if (existingUser) {
+              const { error: updateErr } = await client
+                .from("profiles")
+                .update({ full_name: fullName, department: dept, role: role })
+                .eq("email", email);
+
+              if (!updateErr) updatedCount++;
+              else {
+                failCount++;
+                errorLogs.push(`${email}: ${updateErr.message}`);
+              }
+            } else {
+              // Bước B: Nếu chưa tồn tại -> Tạo tài khoản mới qua kết nối phụ
+              if (password.length < 6) {
+                failCount++;
+                errorLogs.push(`${email}: Mật khẩu phải từ 6 ký tự trở lên`);
+                continue;
+              }
+
+              const { error: signUpErr } = await adminAuthClient.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                  data: {
+                    full_name: fullName,
+                    department: dept,
+                    role: role
+                  }
+                }
+              });
+
+              if (!signUpErr) {
+                createdCount++;
+              } else {
+                failCount++;
+                errorLogs.push(`${email}: ${signUpErr.message}`);
+              }
+
+              // Nghỉ 300ms giữa mỗi lần tạo để tránh giới hạn tốc độ (Rate Limit) của Supabase
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
           }
 
-          alert(`Đã cập nhật thành công ${successCount} tài khoản! \nThất bại/Bỏ qua: ${failCount} tài khoản.`);
-          loadAllUsers(); // Tải lại bảng
+          let summary = `Hoàn tất đồng bộ dữ liệu!\n- Tạo mới: ${createdCount} tài khoản\n- Cập nhật: ${updatedCount} tài khoản\n- Lỗi/Bỏ qua: ${failCount} dòng`;
+          if (errorLogs.length > 0) {
+            summary += `\n\nChi tiết lỗi:\n` + errorLogs.slice(0, 5).join("\n");
+          }
+          alert(summary);
+
+          // Đợi 1 giây để Trigger đồng bộ xong hoàn toàn rồi tải lại bảng
+          setTimeout(() => {
+            loadAllUsers();
+          }, 1000);
 
         } catch (error) {
           alert("Lỗi đọc file Excel: " + error.message);
+          loadAllUsers();
         }
       };
       
       reader.readAsArrayBuffer(file);
-      e.target.value = ""; // Reset input file để có thể chọn lại file cũ nếu muốn
+      e.target.value = "";
     }
     // ==========================================
     // CHỨC NĂNG THÊM TÀI KHOẢN MỚI
