@@ -549,30 +549,47 @@
       const tabs = ['upload', 'my-docs', 'shared', 'review', 'users'];
       
       tabs.forEach(t => {
-        // Ẩn tất cả nội dung (Section)
-        document.getElementById(`tab-${t}`).classList.add("hidden");
+        // 1. Ẩn tất cả các vùng nội dung
+        const section = document.getElementById(`tab-${t}`);
+        if (section) section.classList.add("hidden");
         
-        // Reset giao diện các nút bấm (nhưng không được làm xáo trộn thuộc tính hidden của các nút đặc quyền)
+        // 2. Xử lý hiển thị các nút trên thanh Breadcrumb
         const btn = document.getElementById(`tab-btn-${t}`);
         if (btn) {
-          // Bắt buộc giữ nguyên class 'hidden' nếu tài khoản không đủ quyền (Giáo viên không thấy Review/Users)
-          if ((t === 'review' && userProfile.role === 'teacher') || 
-              (t === 'users' && userProfile.role !== 'admin')) {
-            btn.className = "hidden"; // Ép ẩn
+          let shouldHide = false;
+          
+          // Điều kiện ẩn nút Quản lý & Duyệt hồ sơ: CHỈ Admin và Tổ trưởng (hod) được thấy (Văn thư & Giáo viên bị ẩn)
+          if (t === 'review' && userProfile.role !== 'admin' && userProfile.role !== 'hod') {
+            shouldHide = true;
+          }
+          
+          // Điều kiện ẩn nút Quản trị Hệ thống: CHỈ email Quản trị viên gốc được thấy
+          if (t === 'users' && currentUser.email !== 'vulongdng@gmail.com') {
+            shouldHide = true;
+          }
+
+          if (shouldHide) {
+            btn.className = "hidden"; // Ép ẩn hoàn toàn
           } else {
-            // Đưa nút về trạng thái xám (chưa được chọn)
-            btn.className = "px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium";
+            btn.className = "px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition shadow-sm";
           }
         }
       });
 
-      // Hiển thị nội dung Tab được chọn
-      document.getElementById(`tab-${tab}`).classList.remove("hidden");
+      // 3. Hiển thị vùng nội dung của Tab vừa được click
+      const activeSection = document.getElementById(`tab-${tab}`);
+      if (activeSection) activeSection.classList.remove("hidden");
       
-      // Đổi màu xanh lam (chọn) cho nút hiện tại
+      // 4. Tô màu nổi bật cho nút vừa được click
       const activeBtn = document.getElementById(`tab-btn-${tab}`);
       if (activeBtn) {
-        activeBtn.className = "px-3 py-1.5 rounded-lg bg-blue-600 text-white font-medium";
+        if (tab === 'users') {
+          activeBtn.className = "px-3 py-1.5 rounded-lg bg-purple-600 text-white font-medium shadow-sm transition";
+        } else if (tab === 'review') {
+          activeBtn.className = "px-3 py-1.5 rounded-lg bg-amber-500 text-white font-medium shadow-sm transition";
+        } else {
+          activeBtn.className = "px-3 py-1.5 rounded-lg bg-blue-600 text-white font-medium shadow-sm transition";
+        }
       }
     }
 
