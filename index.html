@@ -520,17 +520,21 @@
         if (uploadBox) uploadBox.classList.remove("hidden");
       }
 
-      // 1. Hiển thị Tab duyệt bài chung cho HOD và Admin
+      // 1. Hiển thị Tab duyệt bài chung cho HOD và Admin (BGH)
       if (userProfile.role === 'admin' || userProfile.role === 'hod') {
         document.getElementById("tab-btn-review").classList.remove("hidden");
         loadReviewSubmissions();
+        
+        // Nạp danh sách các tổ vào bộ lọc nếu là Ban Giám Hiệu (admin)
+        if (userProfile.role === 'admin') {
+          loadDepartmentOptions();
+        }
       }
 
-      // 2. HIỂN THỊ NÚT QUẢN LÝ TÀI KHOẢN VÀ NẠP DỮ LIỆU TỔ CHỈ DÀNH CHO QUẢN TRỊ VIÊN GỐC
+      // 2. HIỂN THỊ NÚT QUẢN TRỊ HỆ THỐNG CHỈ DÀNH CHO QUẢN TRỊ VIÊN GỐC
       if (currentUser.email === 'vulongdng@gmail.com') {
         document.getElementById("tab-btn-users").classList.remove("hidden");
         loadAllUsers(); 
-        loadDepartmentOptions(); 
       }
       // Lọc danh sách Mục lưu trữ theo đúng quyền hạn tài khoản
       renderAllowedCategories();
@@ -1386,21 +1390,20 @@
       const dateStr = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(workbook, `${reportTitle}_${dateStr}.xlsx`);
     }
-    // Hàm tự động quét và nạp danh sách các tổ bộ môn từ cơ sở dữ liệu vào ô chọn bộ lọc
-    async function loadDepartmentOptions() {
-      const { data, error } = await client.from("profiles").select("department");
-      if (error) return;
-
-      // Lọc ra danh sách tên tổ độc lập (không bị trùng lặp)
-      const departments = [...new Set(data.map(item => item.department))].filter(Boolean).sort();
-
+    // Nạp danh sách 14 tổ chuẩn vào bộ lọc dành cho Ban Giám Hiệu
+    function loadDepartmentOptions() {
       const filterSelect = document.getElementById("filter_department");
       if (!filterSelect) return;
 
-      // Giữ lại tùy chọn "Tất cả", sau đó thêm danh sách các tổ thực tế từ cơ sở dữ liệu
-      filterSelect.innerHTML = `<option value="all">Tất cả các tổ bộ môn (${departments.length} tổ)</option>`;
+      const standardDepartments = [
+        "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tin học",
+        "Ngữ văn", "Lịch sử", "Địa lý", "Tiếng Anh", "Tiếng Pháp - Nhật",
+        "Giáo dục KT&PL", "Giáo dục thể chất", "Giáo dục Quốc phòng và An ninh", "Văn phòng"
+      ];
 
-      departments.forEach(dept => {
+      filterSelect.innerHTML = `<option value="all">Tất cả các tổ bộ môn (14 tổ)</option>`;
+
+      standardDepartments.forEach(dept => {
         const option = document.createElement("option");
         option.value = dept;
         option.innerText = dept;
