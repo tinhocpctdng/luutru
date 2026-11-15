@@ -1057,6 +1057,7 @@
           formData.append('teacherName', userProfile.full_name);
           formData.append('week', week_no);
           formData.append('department', userProfile.department);
+          formData.append('category', category); // <-- THÊM DÒNG NÀY VÀO ĐÂY
           if (isSharedDoc) formData.append('isTemplate', 'true');
 
           const res = await fetch(APPS_SCRIPT_URL, {
@@ -1214,6 +1215,8 @@
           formData.append('fileName', file.name);
           formData.append('mimeType', file.type);
           formData.append('fileData', base64Data);
+          formData.append('teacherName', userProfile.full_name); // Thêm tên người đăng
+          formData.append('category', subCat); // <-- THÊM DÒNG NÀY ĐỂ PHÂN NHÁNH KHO CHUNG
           formData.append('isTemplate', 'true');
 
           const res = await fetch(APPS_SCRIPT_URL, {
