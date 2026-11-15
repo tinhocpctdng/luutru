@@ -21,22 +21,22 @@
         <p class="text-sm text-slate-500 mt-1">Cổng nộp và quản lý dữ liệu giáo viên</p>
       </div>
       
-      <div class="space-y-4">
+      <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Email giáo viên</label>
-          <input type="email" id="email" placeholder="example@tentruong.edu.vn" 
+          <input type="email" id="email" placeholder="example@tentruong.edu.vn" required
                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Mật khẩu</label>
-          <input type="password" id="password" placeholder="••••••••" 
+          <input type="password" id="password" placeholder="••••••••" required
                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
         </div>
-        <button onclick="handleLogin()" id="btn-login"
+        <button type="submit" id="btn-login"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg shadow-md transition">
           Đăng Nhập
         </button>
-      </div>
+      </form>
     </div>
   </div>
 
@@ -47,14 +47,17 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <span class="text-xl font-bold text-blue-600">SCHOOL DATA</span>
-          <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full" id="dept-badge">Tổ bộ môn</span>
+          <span class="text-xs bg-blue-100 text-blue-700 font-semibold px-2.5 py-0.5 rounded-full" id="dept-badge">Tổ bộ môn</span>
         </div>
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-3">
           <div class="text-right">
             <div id="user-name" class="text-sm font-semibold text-slate-900">Giáo viên</div>
             <div id="user-role" class="text-xs text-slate-500">Quyền hạn</div>
           </div>
-          <button onclick="handleLogout()" class="text-sm bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 transition">
+          <button onclick="openPasswordModal()" class="text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 transition">
+            Đổi mật khẩu
+          </button>
+          <button onclick="handleLogout()" class="text-xs sm:text-sm bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200 transition">
             Đăng xuất
           </button>
         </div>
@@ -111,251 +114,237 @@
         <!-- CỘT PHẢI: VÙNG HIỂN THỊ NỘI DUNG CHÍNH -->
         <div class="flex-1 w-full min-w-0 space-y-6">
 
-      <!-- TAB 1: FORM NỘP BÀI GIẢNG / TÀI LIỆU -->
-      <section id="tab-upload" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900 mb-4 border-b pb-2">Tải lên hồ sơ chuyên môn</h2>
-        <form onsubmit="handleUpload(event)" class="space-y-4 max-w-2xl">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Mục lưu trữ</label>
-      <select id="category" class="w-full border p-2 rounded-lg text-sm bg-white" required>
-        <optgroup label="Kho chung toàn trường">
-          <option value="van-ban-chi-dao">Văn bản chỉ đạo cấp trên</option>
-          <option value="quy-che">Nội quy / Quy chế hoạt động</option>
-          <option value="bieu-mau">Biểu mẫu hành chính / Kế hoạch chung</option>
-        </optgroup>
-  
-        <optgroup label="01. Ban Giám Hiệu">
-          <option value="nghi-quyet">Nghị quyết / Kế hoạch chiến lược</option>
-          <option value="kiem-tra-noi-bo">Hồ sơ Kiểm tra nội bộ</option>
-          <option value="thi-dua">Hồ sơ Thi đua - Khen thưởng</option>
-        </optgroup>
-            <optgroup label="02. Tổ chuyên môn">
-          <option value="ke-hoach-giao-duc">Kế hoạch giáo dục tổ/nhóm</option>
-          <option value="giao-an">Kế hoạch bài dạy (Giáo án)</option>
-          <option value="de-thi">Ngân hàng đề thi / Ma trận</option>
-          <option value="bien-ban">Biên bản sinh hoạt tổ chuyên môn</option>
-          <option value="hsg-khkt">Bồi dưỡng HSG / Chuyên đề KHKT</option>
-          <option value="so-diem">Sổ theo dõi và đánh giá</option>
-        </optgroup>
+          <!-- TAB 1: FORM NỘP BÀI GIẢNG / TÀI LIỆU -->
+          <section id="tab-upload" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 border-b pb-2">Tải lên hồ sơ chuyên môn</h2>
+            <form onsubmit="handleUpload(event)" class="space-y-4 max-w-2xl">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Mục lưu trữ</label>
+                  <select id="category" class="w-full border p-2 rounded-lg text-sm bg-white" required>
+                    <!-- Tự động lọc bằng hàm renderAllowedCategories() -->
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Khối lớp</label>
+                  <select id="grade" class="w-full border p-2 rounded-lg text-sm bg-white">
+                    <option value="all">Toàn trường</option>
+                    <option value="10">Khối 10</option>
+                    <option value="11">Khối 11</option>
+                    <option value="12">Khối 12</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-600 mb-1">Tuần</label>
+                  <input type="number" id="week_no" min="1" max="52" value="1" class="w-full border p-2 rounded-lg text-sm" required>
+                </div>
+              </div>
 
-        <optgroup label="03. Tổ Văn phòng (Hành chính)">
-          <option value="van-thu">Công văn đi / đến (Văn thư)</option>
-          <option value="nhan-su">Hồ sơ Nhân sự - Lương</option>
-          <option value="ke-toan">Hồ sơ Kế toán - Tài chính</option>
-          <option value="thu-vien-thiet-bi">Hồ sơ Thư viện - Thiết bị</option>
-        </optgroup>
-      
-        <optgroup label="04 & 05. Chủ nhiệm & Đoàn thể">
-          <option value="chu-nhiem">Kế hoạch & Sổ Chủ nhiệm lớp</option>
-          <option value="hop-phu-huynh">Biên bản họp Phụ huynh</option>
-          <option value="cong-doan">Hồ sơ Công đoàn</option>
-          <option value="doan-thanh-nien">Hồ sơ Đoàn Thanh niên</option>
-        </optgroup>
-      </select>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Tên bài học / Tiêu đề hồ sơ</label>
+                <input type="text" id="doc_title" placeholder="VD: Bài 5 - Cấu trúc rẽ nhánh trong Python" class="w-full border p-2 rounded-lg text-sm" required>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Tệp tài liệu (PDF, Word, Excel - Tối đa 25MB)</label>
+                <input type="file" id="file_input" class="w-full border p-2 rounded-lg text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" required>
+              </div>
+
+              <button type="submit" id="btn-submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg shadow-sm transition">
+                Nộp hồ sơ lên hệ thống
+              </button>
+            </form>
+          </section>
+
+          <!-- TAB 2: HỒ SƠ ĐÃ NỘP CỦA GIÁO VIÊN -->
+          <section id="tab-my-docs" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 mb-4 border-b pb-2">Danh sách tài liệu cá nhân đã tải lên</h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b text-slate-600">
+                    <th class="p-3">Tuần</th>
+                    <th class="p-3">Khối</th>
+                    <th class="p-3">Tiêu đề bài</th>
+                    <th class="p-3">Thời gian nộp</th>
+                    <th class="p-3">Trạng thái</th>
+                    <th class="p-3 text-right">Tác vụ</th>
+                  </tr>
+                </thead>
+                <tbody id="my-docs-body" class="divide-y divide-slate-100">
+                  <!-- Render động bằng JS -->
+                </tbody>
+              </table>
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Khối lớp</label>
-              <select id="grade" class="w-full border p-2 rounded-lg text-sm bg-white">
-                <option value="all">Toàn trường</option>
-                <option value="10">Khối 10</option>
-                <option value="11">Khối 11</option>
-                <option value="12">Khối 12</option>
-              </select>
+          </section>
+
+          <!-- TAB 3: KHO CHUNG TOÀN TRƯỜNG -->
+          <section id="tab-shared" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-slate-900 mb-2 border-b pb-2" id="shared-folder-title">Kho chung toàn trường</h2>
+            <p class="text-sm text-slate-500 mb-4">Mọi giáo viên trong trường có thể xem và tải về các văn bản chỉ đạo, quy chế và biểu mẫu hành chính chung.</p>
+            
+            <!-- KHUNG TẢI BIỂU MẪU (Chỉ hiện với Ban Giám Hiệu và Nhân viên Văn thư) -->
+            <div id="upload-template-box" class="hidden bg-blue-50/70 p-4 rounded-xl border border-blue-200 mb-6">
+              <h3 class="text-sm font-bold text-blue-900 mb-3 flex items-center">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Đăng tải tài liệu mới lên Kho chung toàn trường
+              </h3>
+              <form onsubmit="handleUploadTemplate(event)" class="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <select id="template_category" class="border border-slate-300 p-2 rounded-lg text-sm bg-white">
+                  <option value="van-ban-chi-dao">Văn bản chỉ đạo cấp trên</option>
+                  <option value="quy-che">Nội quy / Quy chế</option>
+                  <option value="bieu-mau" selected>Biểu mẫu hành chính</option>
+                </select>
+                <input type="text" id="template_title" placeholder="Tên văn bản / biểu mẫu..." required class="border border-slate-300 p-2 rounded-lg text-sm md:col-span-2 bg-white">
+                <div class="flex gap-2">
+                  <input type="file" id="template_file" accept=".pdf,.doc,.docx,.xls,.xlsx" required class="border border-slate-300 p-1.5 rounded-lg text-xs bg-white w-full">
+                  <button type="submit" id="btn-upload-template" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap shadow-sm transition">
+                    Đăng tải
+                  </button>
+                </div>
+              </form>
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Tuần</label>
-              <input type="number" id="week_no" min="1" max="52" value="1" class="w-full border p-2 rounded-lg text-sm" required>
+
+            <div id="shared-docs-list" class="space-y-2">
+              <!-- Render động danh sách tài liệu công khai -->
             </div>
-          </div>
+          </section>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Tên bài học / Tiêu đề hồ sơ</label>
-            <input type="text" id="doc_title" placeholder="VD: Bài 5 - Cấu trúc rẽ nhánh trong Python" class="w-full border p-2 rounded-lg text-sm" required>
-          </div>
+          <!-- TAB XEM TÀI LIỆU THEO NHÁNH CÂY THƯ MỤC -->
+          <section id="tab-folder-view" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 mb-4 gap-2">
+              <div>
+                <div class="text-xs text-slate-400 font-medium" id="folder-view-breadcrumb">Kho lưu trữ / ...</div>
+                <h2 class="text-lg font-bold text-slate-900 flex items-center mt-0.5" id="folder-view-title">
+                  📁 Tên thư mục
+                </h2>
+              </div>
+              <button onclick="openUploadForCurrentFolder()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition self-start sm:self-auto">
+                + Nộp hồ sơ vào mục này
+              </button>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Tệp tài liệu (PDF, Word, Excel)</label>
-            <input type="file" id="file_input" class="w-full border p-2 rounded-lg text-sm file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
-          </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b text-slate-600">
+                    <th class="p-3">Người nộp</th>
+                    <th class="p-3">Tổ</th>
+                    <th class="p-3">Khối / Tuần</th>
+                    <th class="p-3">Tiêu đề tài liệu</th>
+                    <th class="p-3">Trạng thái</th>
+                    <th class="p-3 text-right">Tệp tin</th>
+                  </tr>
+                </thead>
+                <tbody id="folder-docs-body" class="divide-y divide-slate-100">
+                  <!-- Dữ liệu tự động đổ vào khi bấm thư mục -->
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-          <button type="submit" id="btn-submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg shadow-sm transition">
-            Nộp hồ sơ lên hệ thống
-          </button>
-        </form>
-      </section>
+          <!-- TAB 4: DUYỆT BÀI (Dành cho BGH và Tổ trưởng) -->
+          <section id="tab-review" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Duyệt và theo dõi hồ sơ chuyên môn</h2>
+                <p class="text-sm text-slate-500">Quản lý, kiểm tra trạng thái và tiến độ nộp bài của giáo viên.</p>
+              </div>
+              
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- BỘ LỌC THEO TỔ BỘ MÔN -->
+                <select id="filter_department" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white">
+                  <option value="all">Tất cả các tổ bộ môn</option>
+                </select>
 
-      <!-- TAB 2: HỒ SƠ ĐÃ NỘP CỦA GIÁO VIÊN -->
-      <section id="tab-my-docs" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900 mb-4 border-b pb-2">Danh sách tài liệu đã tải lên</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="bg-slate-50 border-b text-slate-600">
-                <th class="p-3">Tuần</th>
-                <th class="p-3">Khối</th>
-                <th class="p-3">Tiêu đề bài</th>
-                <th class="p-3">Thời gian nộp</th>
-                <th class="p-3">Trạng thái</th>
-                <th class="p-3 text-right">Tác vụ</th>
-              </tr>
-            </thead>
-            <tbody id="my-docs-body" class="divide-y divide-slate-100">
-              <!-- Render động bằng JS -->
-            </tbody>
-          </table>
+                <!-- BỘ LỌC THEO TUẦN -->
+                <input type="number" id="filter_week" min="1" max="52" placeholder="Lọc Tuần..." onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white w-28">
+
+                <!-- BỘ LỌC THEO TRẠNG THÁI -->
+                <select id="filter_status" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white font-medium text-slate-700">
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="pending">⏳ Chờ duyệt</option>
+                  <option value="approved">✅ Đã duyệt</option>
+                </select>
+
+                <button onclick="exportProgressReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  Xuất báo cáo (.xlsx)
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b text-slate-600">
+                    <th class="p-3">Giáo viên</th>
+                    <th class="p-3">Tổ</th>
+                    <th class="p-3">Khối / Tuần</th>
+                    <th class="p-3">Tiêu đề</th>
+                    <th class="p-3">Trạng thái</th>
+                    <th class="p-3 text-right">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="review-body" class="divide-y divide-slate-100">
+                  <!-- Dữ liệu sẽ tự động đổ vào đây -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- TAB 5: QUẢN LÝ NGƯỜI DÙNG (Chỉ Quản trị viên gốc) -->
+          <section id="tab-users" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Quản lý Tài khoản Hệ thống</h2>
+                <p class="text-sm text-slate-500">Quản lý danh sách giáo viên, phân tổ chuyên môn và chức vụ kiêm nhiệm.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button onclick="openAddModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Thêm tài khoản
+                </button>
+                <button onclick="exportUsersToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  Xuất Excel
+                </button>
+                <input type="file" id="import_excel" accept=".xlsx, .xls, .csv" class="hidden" onchange="importUsersFromExcel(event)">
+                <label for="import_excel" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm cursor-pointer">
+                  <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                  Nhập từ Excel
+                </label>
+              </div>
+            </div>
+
+            <!-- THANH TÌM KIẾM NHANH CHO > 200 GIÁO VIÊN -->
+            <div class="mb-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <input type="text" id="search_user_input" oninput="filterUserTable()" placeholder="🔍 Tìm nhanh theo Họ tên, Email hoặc Tổ bộ môn..." class="w-full sm:max-w-md border border-slate-300 px-3.5 py-2 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
+              <div class="text-xs text-slate-500 font-medium" id="user-count-label">Tổng số: 0 tài khoản</div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="bg-slate-50 border-b text-slate-600">
+                    <th class="p-3">Họ và tên</th>
+                    <th class="p-3">Email</th>
+                    <th class="p-3">Tổ bộ môn</th>
+                    <th class="p-3">Quyền hạn & Kiêm nhiệm</th>
+                    <th class="p-3 text-right">Tác vụ</th>
+                  </tr>
+                </thead>
+                <tbody id="users-body" class="divide-y divide-slate-100">
+                  <!-- Render danh sách user -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+
         </div>
-      </section>
+      </div>
 
-      <!-- TAB 3: KHO BIỂU MẪU CHUNG (00_cong-khai) -->
-      <section id="tab-shared" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h2 class="text-lg font-bold text-slate-900 mb-2 border-b pb-2">Kho văn bản và biểu mẫu hành chính chung</h2>
-        <p class="text-sm text-slate-500 mb-4">Mọi giáo viên trong trường có thể tải về các mẫu quy chế, khung phân phối chương trình và biểu mẫu hành chính.</p>
-        
-        <!-- KHUNG TẢI BIỂU MẪU (Chỉ hiện với Ban Giám Hiệu và Nhân viên Văn thư) -->
-        <div id="upload-template-box" class="hidden bg-blue-50/70 p-4 rounded-xl border border-blue-200 mb-6">
-          <h3 class="text-sm font-bold text-blue-900 mb-3 flex items-center">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-            Đăng tải biểu mẫu / công văn mới lên kho chung
-          </h3>
-          <form onsubmit="handleUploadTemplate(event)" class="flex flex-col md:flex-row gap-3">
-            <input type="text" id="template_title" placeholder="Tên văn bản / biểu mẫu (VD: Mẫu kế hoạch bài dạy 2026)" required class="border border-slate-300 p-2 rounded-lg text-sm flex-1 bg-white">
-            <input type="file" id="template_file" accept=".pdf,.doc,.docx,.xls,.xlsx" required class="border border-slate-300 p-1.5 rounded-lg text-sm bg-white">
-            <button type="submit" id="btn-upload-template" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap shadow-sm transition">
-              Đăng tải ngay
-            </button>
-          </form>
-        </div>
-
-        <div id="shared-docs-list" class="space-y-2">
-          <!-- Render động danh sách tài liệu công khai -->
-        </div>
-      </section>
-      <!-- TAB XEM TÀI LIỆU THEO NHÁNH CÂY THƯ MỤC -->
-      <section id="tab-folder-view" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-3 mb-4 gap-2">
-          <div>
-            <div class="text-xs text-slate-400 font-medium" id="folder-view-breadcrumb">Kho lưu trữ / ...</div>
-            <h2 class="text-lg font-bold text-slate-900 flex items-center mt-0.5" id="folder-view-title">
-              📁 Tên thư mục
-            </h2>
-          </div>
-          <button onclick="openUploadForCurrentFolder()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition self-start sm:self-auto">
-            + Nộp hồ sơ vào mục này
-          </button>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="bg-slate-50 border-b text-slate-600">
-                <th class="p-3">Người nộp</th>
-                <th class="p-3">Tổ</th>
-                <th class="p-3">Khối / Tuần</th>
-                <th class="p-3">Tiêu đề tài liệu</th>
-                <th class="p-3">Trạng thái</th>
-                <th class="p-3 text-right">Tệp tin</th>
-              </tr>
-            </thead>
-            <tbody id="folder-docs-body" class="divide-y divide-slate-100">
-              <!-- Dữ liệu tự động đổ vào khi bấm thư mục -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-      <!-- TAB 4: DUYỆT BÀI (Dành cho Admin và Tổ trưởng) -->
-      <section id="tab-review" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900">Duyệt và theo dõi hồ sơ chuyên môn</h2>
-            <p class="text-sm text-slate-500">Quản lý, kiểm tra trạng thái và tiến độ nộp bài của giáo viên.</p>
-          </div>
-          
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- BỘ LỌC THEO TỔ BÔ MÔN -->
-            <select id="filter_department" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white">
-              <option value="all">Tất cả các tổ bộ môn</option>
-            </select>
-
-            <!-- BỘ LỌC THEO TRẠNG THÁI -->
-            <select id="filter_status" onchange="loadReviewSubmissions()" class="border p-2 rounded-lg text-sm bg-white font-medium text-slate-700">
-              <option value="all">Tất cả trạng thái</option>
-              <option value="pending">⏳ Chờ duyệt</option>
-              <option value="approved">✅ Đã duyệt</option>
-            </select>
-
-            <button onclick="exportProgressReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-              Xuất báo cáo tiến độ (.xlsx)
-            </button>
-          </div>
-        </div>
-
-        <!-- BẢNG HIỂN THỊ DANH SÁCH (Đoạn này đang bị thiếu trên giao diện của bạn) -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="bg-slate-50 border-b text-slate-600">
-                <th class="p-3">Giáo viên</th>
-                <th class="p-3">Tổ</th>
-                <th class="p-3">Khối / Tuần</th>
-                <th class="p-3">Tiêu đề</th>
-                <th class="p-3">Trạng thái</th>
-                <th class="p-3 text-right">Hành động</th>
-              </tr>
-            </thead>
-            <tbody id="review-body" class="divide-y divide-slate-100">
-              <!-- Dữ liệu sẽ tự động đổ vào đây -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-      <!-- TAB 5: QUẢN LÝ NGƯỜI DÙNG (Chỉ Admin) -->
-      <section id="tab-users" class="hidden bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b pb-4 mb-4 gap-4">
-          <div>
-            <h2 class="text-lg font-bold text-slate-900">Quản lý Tài khoản Hệ thống</h2>
-            <p class="text-sm text-slate-500">Mẹo: Cấp tài khoản mới tại bảng điều khiển Supabase, sau đó dùng Excel để cập nhật thông tin tại đây.</p>
-          </div>
-          <div class="flex space-x-2">
-            <!-- Nút Thêm tài khoản mới -->
-            <button onclick="openAddModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-              Thêm tài khoản
-            </button>
-            <!-- Nút Xuất Excel -->
-            <button onclick="exportUsersToExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-              Xuất Excel
-            </button>
-
-            <!-- Nút Nhập Excel (Ẩn input file, giả lập bằng label) -->
-            <input type="file" id="import_excel" accept=".xlsx, .xls, .csv" class="hidden" onchange="importUsersFromExcel(event)">
-            <label for="import_excel" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center shadow-sm cursor-pointer">
-              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-              Nhập cập nhật từ Excel
-            </label>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr class="bg-slate-50 border-b text-slate-600">
-                <th class="p-3">Họ và tên</th>
-                <th class="p-3">Email</th>
-                <th class="p-3">Tổ bộ môn</th>
-                <th class="p-3">Quyền hạn</th>
-                <th class="p-3 text-right">Tác vụ</th>
-              </tr>
-            </thead>
-            <tbody id="users-body" class="divide-y divide-slate-100">
-              <!-- Render danh sách user -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <!-- MODAL SỬA NGƯỜI DÙNG (Ẩn mặc định) -->
+      <!-- MODAL SỬA NGƯỜI DÙNG -->
       <div id="edit-user-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
           <h3 class="text-lg font-bold text-slate-900 mb-4">Cập nhật thông tin giáo viên</h3>
@@ -380,7 +369,7 @@
                 <option value="Địa lý">Địa lý</option>
                 <option value="Tiếng Anh">Tiếng Anh</option>
                 <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                <option value="Giáo dục KT&PL">Giáo dục KT&PL</option>
+                <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
                 <option value="Giáo dục thể chất">Giáo dục thể chất</option>
                 <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
                 <option value="Văn phòng">Văn phòng</option>
@@ -393,10 +382,9 @@
                 <option value="teacher">Giáo viên / Nhân viên (Chỉ xem/nộp bài mình)</option>
                 <option value="hod">Tổ trưởng (Duyệt bài trong tổ)</option>
                 <option value="clerk">Nhân viên Văn thư (Đăng kho biểu mẫu chung)</option>
-                <option value="admin">Quản trị viên / BGH (Toàn quyền)</option>
+                <option value="admin">Ban Giám Hiệu (Quản lý & Duyệt toàn trường)</option>
               </select>
             </div>
-            <!-- THÊM MỚI KHỐI NÀY -->
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Chức vụ kiêm nhiệm (Chủ nhiệm / Đoàn thể)</label>
               <select id="edit_position" class="w-full border p-2 rounded-lg text-sm">
@@ -405,7 +393,6 @@
                 <option value="doan">Cán bộ Đoàn / Công đoàn (Bí thư, Phó bí thư...)</option>
               </select>
             </div>
-            
           </div>
           
           <div class="mt-6 flex justify-end space-x-3">
@@ -414,6 +401,7 @@
           </div>
         </div>
       </div>
+
       <!-- MODAL THÊM TÀI KHOẢN MỚI -->
       <div id="add-user-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
@@ -436,12 +424,20 @@
               <label class="block text-xs font-semibold text-slate-600 mb-1">Tổ chuyên môn</label>
               <select id="add_department" class="w-full border p-2 rounded-lg text-sm">
                 <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
-                <option value="Tin học" selected>Tin học</option>
-                <option value="Toán">Toán</option>
-                <option value="Ngữ văn">Ngữ văn</option>
+                <option value="Toán học">Toán học</option>
                 <option value="Vật lý">Vật lý</option>
                 <option value="Hóa học">Hóa học</option>
-                <option value="Ngoại ngữ">Ngoại ngữ</option>
+                <option value="Sinh học">Sinh học</option>
+                <option value="Tin học" selected>Tin học</option>
+                <option value="Ngữ văn">Ngữ văn</option>
+                <option value="Lịch sử">Lịch sử</option>
+                <option value="Địa lý">Địa lý</option>
+                <option value="Tiếng Anh">Tiếng Anh</option>
+                <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
+                <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+                <option value="Giáo dục thể chất">Giáo dục thể chất</option>
+                <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                <option value="Văn phòng">Văn phòng</option>
                 <option value="Chưa phân tổ">Chưa phân tổ</option>
               </select>
             </div>
@@ -451,10 +447,9 @@
                 <option value="teacher">Giáo viên / Nhân viên (Chỉ xem/nộp bài mình)</option>
                 <option value="hod">Tổ trưởng (Duyệt bài trong tổ)</option>
                 <option value="clerk">Nhân viên Văn thư (Đăng kho biểu mẫu chung)</option>
-                <option value="admin">Quản trị viên / BGH (Toàn quyền)</option>
+                <option value="admin">Ban Giám Hiệu (Quản lý & Duyệt toàn trường)</option>
               </select>
             </div>
-            <!-- THÊM MỚI KHỐI NÀY -->
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Chức vụ kiêm nhiệm (Chủ nhiệm / Đoàn thể)</label>
               <select id="add_position" class="w-full border p-2 rounded-lg text-sm">
@@ -471,14 +466,34 @@
           </div>
         </div>
       </div>
+
+      <!-- MODAL ĐỔI MẬT KHẨU CÁ NHÂN -->
+      <div id="password-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
+          <h3 class="text-lg font-bold text-slate-900 mb-4">Đổi mật khẩu đăng nhập</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Mật khẩu mới (tối thiểu 6 ký tự)</label>
+              <input type="password" id="new_password" class="w-full border p-2 rounded-lg text-sm">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Nhập lại mật khẩu mới</label>
+              <input type="password" id="confirm_password" class="w-full border p-2 rounded-lg text-sm">
+            </div>
+          </div>
+          <div class="mt-6 flex justify-end space-x-3">
+            <button onclick="closePasswordModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium">Hủy</button>
+            <button onclick="saveNewPassword()" id="btn-save-password" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium">Cập nhật</button>
+          </div>
+        </div>
       </div>
-      </div>
+
     </main>
   </div>
 
   <script>
     // ==========================================
-    // CẤU HÌNH SUPABASE
+    // CẤU HÌNH SUPABASE & APPS SCRIPT
     // ==========================================
     const SUPABASE_URL = "https://kprcbeqbwsslbojedmvr.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcmNiZXFid3NzbGJvamVkbXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNjQ5ODUsImV4cCI6MjEwOTg0MDk4NX0.qYqQojqnXJrpfCzrKYKgRezAlqEpq2Us5RRhGyD65b4";
@@ -487,10 +502,23 @@
 
     let currentUser = null;
     let userProfile = null;
+    let currentSelectedCategory = null;
+    let allUsersCache = []; // Lưu đệm danh sách user để tìm kiếm tức thì
+
+    // Helper: Chống XSS khi render dữ liệu ra bảng
+    function escapeHTML(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     // Helper: Chuyển tên có dấu thành slug thư mục
     function toSlug(str) {
-      return str.toLowerCase()
+      return String(str || "").toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .replace(/[đĐ]/g, "d")
@@ -525,23 +553,23 @@
 
     // 2. Khởi tạo phiên làm việc sau khi login
     async function initApplication() {
-      // Thử lấy profile
-      let { data: profile, error } = await client
+      let { data: profile } = await client
         .from("profiles")
         .select("*")
         .eq("id", currentUser.id)
         .maybeSingle();
 
-      // Nếu tài khoản mới chưa có profile, tự động chèn profile mặc định
       if (!profile) {
         const defaultName = currentUser.email.split('@')[0];
         const { data: newProfile, error: insertError } = await client
           .from("profiles")
           .insert({
             id: currentUser.id,
+            email: currentUser.email,
             full_name: defaultName,
             department: "Tin học",
-            role: "teacher"
+            role: "teacher",
+            position: "none"
           })
           .select()
           .single();
@@ -560,7 +588,7 @@
       document.getElementById("app-screen").classList.remove("hidden");
       document.getElementById("user-name").innerText = userProfile.full_name;
       
-      // Ẩn hoàn toàn thẻ "Tổ bộ môn" đối với Admin (Quản trị hệ thống)
+      // Hiển thị/ẩn nhãn Tổ bộ môn chuẩn xác
       const deptBadge = document.getElementById("dept-badge");
       if (userProfile.role === 'admin' || currentUser.email === 'vulongdng@gmail.com') {
         deptBadge.classList.add("hidden");
@@ -569,22 +597,17 @@
         deptBadge.classList.remove("hidden");
       }
       
-      // Ẩn chữ "Tổ:" đối với Ban Giám Hiệu để giao diện chuyên nghiệp hơn
-      if (userProfile.role === 'admin' && userProfile.department === 'Ban Giám Hiệu') {
-        document.getElementById("dept-badge").innerText = userProfile.department;
-      } else {
-        document.getElementById("dept-badge").innerText = "Tổ: " + userProfile.department;
-      }
-      
       const roleNames = { 
         admin: "Ban Giám Hiệu", 
         hod: "Tổ Trưởng", 
         clerk: "Nhân viên Văn thư", 
         teacher: "Giáo Viên" 
       };
-      document.getElementById("user-role").innerText = roleNames[userProfile.role] || "Giáo Viên";
+      document.getElementById("user-role").innerText = currentUser.email === 'vulongdng@gmail.com'
+        ? "Quản trị Hệ thống"
+        : (roleNames[userProfile.role] || "Giáo Viên");
 
-      // Mở khung đăng tải ở "Kho biểu mẫu chung" CHỈ CHO Admin và Nhân viên Văn thư
+      // Mở khung đăng tải ở "Kho chung toàn trường" CHỈ CHO Admin và Văn thư
       if (userProfile.role === 'admin' || userProfile.role === 'clerk') {
         const uploadBox = document.getElementById("upload-template-box");
         if (uploadBox) uploadBox.classList.remove("hidden");
@@ -593,37 +616,34 @@
       // 1. Hiển thị Tab duyệt bài chung cho HOD và Admin (BGH)
       if (userProfile.role === 'admin' || userProfile.role === 'hod') {
         document.getElementById("tab-btn-review").classList.remove("hidden");
-        loadReviewSubmissions();
-        
-        // Nạp danh sách các tổ vào bộ lọc nếu là Ban Giám Hiệu (admin)
         if (userProfile.role === 'admin') {
           loadDepartmentOptions();
         }
+        loadReviewSubmissions();
       }
 
-      // 2. HIỂN THỊ NÚT QUẢN TRỊ HỆ THỐNG CHỈ DÀNH CHO QUẢN TRỊ VIÊN GỐC
+      // 2. Hiển thị nút Quản trị Hệ thống CHỈ DÀNH CHO Quản trị viên gốc
       if (currentUser.email === 'vulongdng@gmail.com') {
         document.getElementById("tab-btn-users").classList.remove("hidden");
         loadAllUsers(); 
       }
-      // Lọc danh sách Mục lưu trữ theo đúng quyền hạn tài khoản
-      renderAllowedCategories();
-      // Dựng cây thư mục bên trái theo quyền hạn
+
+      // 3. Dựng danh mục lưu trữ và cây thư mục bên trái theo quyền
       renderAllowedCategories();
       renderFolderTree();
 
-      // Hiện khối "Điều hành & Quản trị" ở Sidebar nếu là Admin, BGH hoặc Tổ trưởng
       if (userProfile.role === 'admin' || userProfile.role === 'hod' || currentUser.email === 'vulongdng@gmail.com') {
         const mgmtGroup = document.getElementById("sidebar-management-group");
         if (mgmtGroup) mgmtGroup.classList.remove("hidden");
       }
 
-      // 3. Tải các dữ liệu cơ bản
+      // 4. Tải dữ liệu cơ bản
       loadMySubmissions();
       loadSharedDocs();
+      switchTab('upload');
     }
-  // Hàm tự động lọc và hiển thị các Mục lưu trữ đúng theo Quyền hạn & Tổ bộ môn
-    // Hàm tự động lọc và hiển thị các Mục lưu trữ đúng theo Quyền hạn, Tổ & Chức vụ kiêm nhiệm
+
+    // Lọc các Mục lưu trữ trong Form tải lên theo Quyền hạn, Tổ & Chức vụ kiêm nhiệm
     function renderAllowedCategories() {
       const categorySelect = document.getElementById("category");
       if (!categorySelect) return;
@@ -723,7 +743,7 @@
       });
     }
 
-    // Dựng cây thư mục bên trái theo đúng quyền hạn, tổ bộ môn & chức vụ kiêm nhiệm
+    // Dựng cây thư mục bên trái
     function renderFolderTree() {
       const container = document.getElementById("folder-tree-container");
       if (!container) return;
@@ -822,7 +842,7 @@
         headerBtn.innerHTML = `
           <span class="flex items-center truncate">
             <span class="mr-1.5 text-amber-500">📁</span>
-            <span class="truncate">${folder.name}</span>
+            <span class="truncate">${escapeHTML(folder.name)}</span>
           </span>
           <svg class="w-3.5 h-3.5 text-slate-400 transform transition-transform duration-200 rotate-90" id="arrow-${folder.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         `;
@@ -832,7 +852,10 @@
         childrenContainer.className = "pl-4 space-y-0.5 border-l border-slate-200 ml-3";
 
         headerBtn.onclick = () => {
-          if (folder.isShared) switchTab('shared');
+          if (folder.isShared) {
+            loadSharedDocs(null, "Kho chung toàn trường (Tất cả)");
+            switchTab('shared');
+          }
           childrenContainer.classList.toggle("hidden");
           document.getElementById(`arrow-${folder.id}`).classList.toggle("rotate-90");
         };
@@ -842,7 +865,7 @@
           subBtn.type = "button";
           subBtn.id = `tree-node-${sub.value}`;
           subBtn.className = "tree-node-btn w-full text-left px-2.5 py-1.5 rounded-md text-slate-600 hover:bg-blue-50 hover:text-blue-700 text-xs font-medium flex items-center transition";
-          subBtn.innerHTML = `<span class="mr-1.5 text-slate-400">└</span> <span class="truncate">${sub.name}</span>`;
+          subBtn.innerHTML = `<span class="mr-1.5 text-slate-400">└</span> <span class="truncate">${escapeHTML(sub.name)}</span>`;
           subBtn.onclick = () => openFolderNode(folder.name, sub.value, sub.name, folder.isShared);
           childrenContainer.appendChild(subBtn);
         });
@@ -852,9 +875,17 @@
         container.appendChild(parentDiv);
       });
     }
+
     // Xử lý khi bấm vào 1 nhánh con trên cây thư mục
     async function openFolderNode(parentName, categoryValue, categoryName, isShared) {
+      document.querySelectorAll(".tree-node-btn").forEach(el => {
+        el.classList.remove("bg-blue-100", "text-blue-800", "font-bold");
+      });
+      const activeNode = document.getElementById(`tree-node-${categoryValue}`);
+      if (activeNode) activeNode.classList.add("bg-blue-100", "text-blue-800", "font-bold");
+
       if (isShared) {
+        loadSharedDocs(categoryValue, `Kho chung toàn trường / ${categoryName}`);
         switchTab('shared');
         return;
       }
@@ -862,15 +893,8 @@
       currentSelectedCategory = categoryValue;
       switchTab('folder-view');
 
-      // Đánh dấu màu xanh nhánh đang chọn trên cây
-      document.querySelectorAll(".tree-node-btn").forEach(el => {
-        el.classList.remove("bg-blue-100", "text-blue-800", "font-bold");
-      });
-      const activeNode = document.getElementById(`tree-node-${categoryValue}`);
-      if (activeNode) activeNode.classList.add("bg-blue-100", "text-blue-800", "font-bold");
-
       document.getElementById("folder-view-breadcrumb").innerText = `${parentName} / ${categoryName}`;
-      document.getElementById("folder-view-title").innerHTML = `<span class="mr-2">📂</span> ${categoryName}`;
+      document.getElementById("folder-view-title").innerHTML = `<span class="mr-2">📂</span> ${escapeHTML(categoryName)}`;
 
       const tbody = document.getElementById("folder-docs-body");
       tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Đang tải dữ liệu thư mục...</td></tr>`;
@@ -880,7 +904,6 @@
         .eq("category", categoryValue)
         .order("submitted_at", { ascending: false });
 
-      // Phân quyền dữ liệu hiển thị trong thư mục
       if (userProfile.role === 'teacher') {
         query = query.eq("teacher_id", currentUser.id);
       } else if (userProfile.role === 'hod' || userProfile.role === 'clerk') {
@@ -898,24 +921,23 @@
       data.forEach(item => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="p-3 font-medium text-slate-900">${item.teacher_name}</td>
-          <td class="p-3 text-slate-600">${item.department}</td>
+          <td class="p-3 font-medium text-slate-900">${escapeHTML(item.teacher_name)}</td>
+          <td class="p-3 text-slate-600">${escapeHTML(item.department)}</td>
           <td class="p-3 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'} - T${item.week_no || '-'}</td>
-          <td class="p-3 text-slate-800">${item.title}</td>
+          <td class="p-3 text-slate-800">${escapeHTML(item.title)}</td>
           <td class="p-3">
             <span class="px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
               ${item.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
             </span>
           </td>
           <td class="p-3 text-right">
-            <a href="${item.file_url}" target="_blank" class="text-blue-600 hover:underline font-medium">Mở tệp</a>
+            <a href="${encodeURI(item.file_url)}" target="_blank" class="text-blue-600 hover:underline font-medium">Mở tệp</a>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // Nút tắt: Nộp hồ sơ trực tiếp vào thư mục đang mở
     function openUploadForCurrentFolder() {
       switchTab('upload');
       if (currentSelectedCategory) {
@@ -923,11 +945,43 @@
         if (catSelect) catSelect.value = currentSelectedCategory;
       }
     }
-    
-    // 3. Đăng Xuất
+
+    // 3. Đăng Xuất & Đổi mật khẩu
     async function handleLogout() {
       await client.auth.signOut();
       location.reload();
+    }
+
+    function openPasswordModal() {
+      document.getElementById("new_password").value = "";
+      document.getElementById("confirm_password").value = "";
+      document.getElementById("password-modal").classList.remove("hidden");
+    }
+
+    function closePasswordModal() {
+      document.getElementById("password-modal").classList.add("hidden");
+    }
+
+    async function saveNewPassword() {
+      const p1 = document.getElementById("new_password").value;
+      const p2 = document.getElementById("confirm_password").value;
+      const btn = document.getElementById("btn-save-password");
+
+      if (!p1 || p1.length < 6) return alert("Mật khẩu mới phải có ít nhất 6 ký tự!");
+      if (p1 !== p2) return alert("Mật khẩu xác nhận không khớp!");
+
+      btn.disabled = true;
+      btn.innerText = "Đang lưu...";
+
+      const { error } = await client.auth.updateUser({ password: p1 });
+      btn.disabled = false;
+      btn.innerText = "Cập nhật";
+
+      if (error) alert("Lỗi đổi mật khẩu: " + error.message);
+      else {
+        alert("Đổi mật khẩu thành công!");
+        closePasswordModal();
+      }
     }
 
     // 4. Chuyển đổi qua lại giữa các Tab
@@ -939,7 +993,6 @@
         if (section) section.classList.add("hidden");
       });
 
-      // Reset màu các nút chính trên Sidebar
       const btnUpload = document.getElementById("tab-btn-upload");
       const btnDocs = document.getElementById("tab-btn-docs");
       const btnReview = document.getElementById("tab-btn-review");
@@ -955,11 +1008,9 @@
         btnUsers.className = "w-full text-left px-3 py-2 rounded-lg hover:bg-purple-50 text-purple-800 font-medium text-sm flex items-center transition";
       }
 
-      // Hiển thị nội dung Tab được chọn
       const activeSection = document.getElementById(`tab-${tab}`);
       if (activeSection) activeSection.classList.remove("hidden");
 
-      // Tô đậm nút đang chọn
       if (tab === 'upload' && btnUpload) {
         btnUpload.className = "w-full text-left px-3 py-2 rounded-lg bg-blue-600 text-white font-medium text-sm flex items-center shadow-sm transition";
       } else if (tab === 'my-docs' && btnDocs) {
@@ -971,12 +1022,16 @@
       }
     }
 
-    // 5. Tải file lên Google Drive qua Google Apps Script (Khắc phục lỗi Quota)
+    // 5. Tải file lên Google Drive qua Google Apps Script
     async function handleUpload(e) {
       e.preventDefault();
       const fileInput = document.getElementById("file_input");
       const file = fileInput.files[0];
       if (!file) return;
+
+      if (file.size > 25 * 1024 * 1024) {
+        return alert("Tệp vượt quá 25MB! Vui lòng nén hoặc chọn tệp nhỏ hơn để đảm bảo tốc độ tải lên.");
+      }
 
       const category = document.getElementById("category").value;
       const grade = document.getElementById("grade").value;
@@ -984,11 +1039,13 @@
       const title = document.getElementById("doc_title").value.trim();
       const btn = document.getElementById("btn-submit");
 
+      const sharedCats = ["van-ban-chi-dao", "quy-che", "bieu-mau"];
+      const isSharedDoc = sharedCats.includes(category);
+
       btn.disabled = true;
       btn.innerText = "Đang đẩy tệp lên Google Drive...";
 
       try {
-        // Chuyển file sang Base64 để gửi mượt mà qua Apps Script
         const reader = new FileReader();
         reader.onload = async function() {
           const base64Data = reader.result.split(',')[1];
@@ -1000,44 +1057,44 @@
           formData.append('teacherName', userProfile.full_name);
           formData.append('week', week_no);
           formData.append('department', userProfile.department);
+          if (isSharedDoc) formData.append('isTemplate', 'true');
 
-         const res = await fetch(APPS_SCRIPT_URL, {
+          const res = await fetch(APPS_SCRIPT_URL, {
             method: "POST",
             body: formData,
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
           });
 
           const result = await res.json();
-          if (!result.success) {
-            throw new Error(result.error || "Lỗi Google Drive");
-          }
+          if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
 
           const driveFileUrl = result.fileUrl; 
           const deptSlug = toSlug(userProfile.department);
-          const storageLabel = `GoogleDrive/02_to-chuyen-mon/${deptSlug}/${category}`;
+          const storageLabel = isSharedDoc
+            ? `00_cong-khai/${category}/${file.name}`
+            : `GoogleDrive/to-chuyen-mon/${deptSlug}/${category}`;
 
-          // Ghi dữ liệu vào Supabase
           const { error: dbError } = await client.from("submissions").insert({
             teacher_id: currentUser.id,
             teacher_name: userProfile.full_name,
             department: userProfile.department,
             category: category,
-            grade: (grade && grade !== 'all') ? parseInt(grade) : null, // 'all' (Toàn trường) lưu là null
+            grade: (grade && grade !== 'all') ? parseInt(grade) : null,
             week_no: week_no ? parseInt(week_no) : null,
             title: title,
             file_name: file.name,
             file_url: driveFileUrl,
-            storage_path: storageLabel
+            storage_path: storageLabel,
+            status: isSharedDoc ? 'approved' : 'pending'
           });
 
           if (dbError) throw new Error("Lỗi lưu DB: " + dbError.message);
 
-          alert("Đã nộp hồ sơ thành công vào thẳng Google Drive của bạn!");
+          alert("Đã nộp hồ sơ thành công vào Google Drive nhà trường!");
           fileInput.value = "";
           document.getElementById("doc_title").value = "";
           loadMySubmissions();
+          if (isSharedDoc) loadSharedDocs();
           switchTab('my-docs');
 
           btn.disabled = false;
@@ -1045,7 +1102,6 @@
         };
         
         reader.readAsDataURL(file);
-
       } catch (err) {
         alert("Thao tác thất bại: " + err.message);
         btn.disabled = false;
@@ -1053,7 +1109,7 @@
       }
     }
 
-    // 6. Lấy danh sách hồ sơ cá nhân
+    // 6. Lấy danh sách hồ sơ cá nhân (Có nút Xóa nếu đang Chờ duyệt)
     async function loadMySubmissions() {
       const { data } = await client.from("submissions")
         .select("*")
@@ -1072,31 +1128,48 @@
         tr.innerHTML = `
           <td class="p-3 font-semibold text-slate-700">${item.week_no || '-'}</td>
           <td class="p-3 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'}</td>
-          <td class="p-3 font-medium text-slate-900">${item.title}</td>
+          <td class="p-3 font-medium text-slate-900">${escapeHTML(item.title)}</td>
           <td class="p-3 text-slate-500">${new Date(item.submitted_at).toLocaleDateString("vi-VN")}</td>
           <td class="p-3">
             <span class="px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
               ${item.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
             </span>
           </td>
-          <td class="p-3 text-right">
-            <a href="${item.file_url}" target="_blank" class="text-blue-600 hover:underline">Tải về</a>
+          <td class="p-3 text-right space-x-3">
+            <a href="${encodeURI(item.file_url)}" target="_blank" class="text-blue-600 hover:underline font-medium">Tải về</a>
+            ${item.status === 'pending' ? `<button onclick="deleteMySubmission(${item.id})" class="text-red-500 hover:underline text-xs font-semibold">Xóa</button>` : ''}
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // 7. Lấy danh sách biểu mẫu chung (00_cong-khai)
-    async function loadSharedDocs() {
-      const { data } = await client.from("submissions")
-        .select("*")
-        .like("storage_path", "00_cong-khai/%");
+    async function deleteMySubmission(id) {
+      if (!confirm("Bạn muốn xóa hồ sơ đang chờ duyệt này để nộp lại?")) return;
+      const { error } = await client.from("submissions").delete().eq("id", id);
+      if (error) alert("Lỗi khi xóa: " + error.message);
+      else loadMySubmissions();
+    }
 
+    // 7. Lấy danh sách Kho chung toàn trường (Hỗ trợ lọc theo từng mục con)
+    async function loadSharedDocs(subCategory = null, customTitle = null) {
+      const titleEl = document.getElementById("shared-folder-title");
+      if (titleEl && customTitle) titleEl.innerText = customTitle;
+
+      let query = client.from("submissions")
+        .select("*")
+        .like("storage_path", "00_cong-khai/%")
+        .order("submitted_at", { ascending: false });
+
+      if (subCategory) {
+        query = query.eq("category", subCategory);
+      }
+
+      const { data } = await query;
       const container = document.getElementById("shared-docs-list");
       container.innerHTML = "";
       if (!data || data.length === 0) {
-        container.innerHTML = `<div class="text-sm text-slate-400 italic">Hiện chưa có biểu mẫu dùng chung được đăng tải.</div>`;
+        container.innerHTML = `<div class="text-sm text-slate-400 italic py-4">Hiện chưa có văn bản / biểu mẫu nào trong mục này.</div>`;
         return;
       }
       data.forEach(item => {
@@ -1104,30 +1177,33 @@
         div.className = "flex justify-between items-center p-3 bg-slate-50 rounded-lg border border-slate-200";
         div.innerHTML = `
           <div>
-            <div class="font-medium text-slate-800">${item.title}</div>
-            <div class="text-xs text-slate-400">Đăng ngày: ${new Date(item.submitted_at).toLocaleDateString("vi-VN")}</div>
+            <div class="font-medium text-slate-800">${escapeHTML(item.title)}</div>
+            <div class="text-xs text-slate-400">Người đăng: ${escapeHTML(item.teacher_name)} • Ngày: ${new Date(item.submitted_at).toLocaleDateString("vi-VN")}</div>
           </div>
-          <a href="${item.file_url}" target="_blank" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-medium">Tải xuống</a>
+          <a href="${encodeURI(item.file_url)}" target="_blank" class="text-sm bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg text-slate-700 font-medium">Tải xuống</a>
         `;
         container.appendChild(div);
       });
     }
-    // Xử lý đăng tải biểu mẫu chung (Chỉ dành cho Admin và Nhân viên Văn thư)
+
+    // Đăng tải tài liệu lên Kho chung (Dành cho BGH và Văn thư)
     async function handleUploadTemplate(e) {
       e.preventDefault();
       if (userProfile.role !== 'admin' && userProfile.role !== 'clerk') {
         return alert("Bạn không có quyền thực hiện thao tác này!");
       }
 
+      const subCat = document.getElementById("template_category").value;
       const title = document.getElementById("template_title").value.trim();
       const fileInput = document.getElementById("template_file");
       const file = fileInput.files[0];
       const btn = document.getElementById("btn-upload-template");
 
       if (!file || !title) return;
+      if (file.size > 25 * 1024 * 1024) return alert("Tệp vượt quá 25MB!");
 
       btn.disabled = true;
-      btn.innerText = "Đang tải lên kho chung...";
+      btn.innerText = "Đang tải...";
 
       try {
         const reader = new FileReader();
@@ -1138,7 +1214,7 @@
           formData.append('fileName', file.name);
           formData.append('mimeType', file.type);
           formData.append('fileData', base64Data);
-          formData.append('isTemplate', 'true'); // Đánh dấu để Apps Script đưa vào thư mục 00_Kho_Bieu_Mau_Chung
+          formData.append('isTemplate', 'true');
 
           const res = await fetch(APPS_SCRIPT_URL, {
             method: "POST",
@@ -1147,62 +1223,62 @@
           });
 
           const result = await res.json();
-          if (!result.success) throw new Error(result.error || "Lỗi tải file lên Google Drive 5TB");
+          if (!result.success) throw new Error(result.error || "Lỗi tải file lên Google Drive");
 
-          // Lưu vào Supabase với đường dẫn chuẩn 00_cong-khai/ để hàm loadSharedDocs() tự động hiển thị
           const { error: dbError } = await client.from("submissions").insert({
             teacher_id: currentUser.id,
             teacher_name: userProfile.full_name,
             department: userProfile.department,
-            category: 'bieu-mau',
+            category: subCat,
             title: title,
             file_name: file.name,
             file_url: result.fileUrl,
-            storage_path: `00_cong-khai/${file.name}`,
-            status: 'approved' // Biểu mẫu chung mặc định được duyệt ngay
+            storage_path: `00_cong-khai/${subCat}/${file.name}`,
+            status: 'approved'
           });
 
           if (dbError) throw new Error("Lỗi lưu cơ sở dữ liệu: " + dbError.message);
 
-          alert("Đã đăng tải biểu mẫu lên kho chung thành công!");
+          alert("Đã đăng tải lên Kho chung toàn trường thành công!");
           document.getElementById("template_title").value = "";
           fileInput.value = "";
-          loadSharedDocs(); // Tải lại danh sách biểu mẫu ngay lập tức
+          loadSharedDocs(subCat);
 
           btn.disabled = false;
-          btn.innerText = "Đăng tải ngay";
+          btn.innerText = "Đăng tải";
         };
 
         reader.readAsDataURL(file);
       } catch (err) {
         alert("Thao tác thất bại: " + err.message);
         btn.disabled = false;
-        btn.innerText = "Đăng tải ngay";
+        btn.innerText = "Đăng tải";
       }
     }
 
-    // 8. Tải danh sách duyệt dành cho Tổ trưởng và Admin (có tích hợp bộ lọc Tổ và Trạng thái)
+    // 8. Tải danh sách duyệt dành cho Tổ trưởng và BGH
     async function loadReviewSubmissions() {
-      let query = client.from("submissions").select("*").order("submitted_at", { ascending: false });
+      let query = client.from("submissions")
+        .select("*")
+        .order("submitted_at", { ascending: false })
+        .limit(2000);
       
-      // 1. Phân quyền theo tài khoản đăng nhập
       if (userProfile.role === 'hod') {
-        // Tổ trưởng chỉ xem dữ liệu trong tổ của mình
         query = query.eq("department", userProfile.department);
-        
-        // Ẩn ô chọn tổ đi vì không cần thiết cho tổ trưởng
         const filterDeptEl = document.getElementById("filter_department");
         if (filterDeptEl) filterDeptEl.classList.add("hidden");
-      } 
-      else if (userProfile.role === 'admin') {
-        // Admin chọn xem theo tổ cụ thể (nếu có chọn)
+      } else if (userProfile.role === 'admin') {
         const selectedDept = document.getElementById("filter_department").value;
         if (selectedDept && selectedDept !== 'all') {
           query = query.eq("department", selectedDept);
         }
       }
 
-      // 2. Lọc theo Trạng thái (Chờ duyệt / Đã duyệt)
+      const selectedWeek = document.getElementById("filter_week").value;
+      if (selectedWeek) {
+        query = query.eq("week_no", parseInt(selectedWeek));
+      }
+
       const selectedStatus = document.getElementById("filter_status").value;
       if (selectedStatus && selectedStatus !== 'all') {
         query = query.eq("status", selectedStatus);
@@ -1217,28 +1293,27 @@
         return;
       }
 
-      // 3. Hiển thị danh sách ra bảng
       data.forEach(item => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="p-3 font-medium text-slate-900">${item.teacher_name}</td>
-          <td class="p-3 text-slate-600">${item.department}</td>
+          <td class="p-3 font-medium text-slate-900">${escapeHTML(item.teacher_name)}</td>
+          <td class="p-3 text-slate-600">${escapeHTML(item.department)}</td>
           <td class="p-3 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'} - T${item.week_no || '-'}</td>
-          <td class="p-3 text-slate-800">${item.title}</td>
+          <td class="p-3 text-slate-800">${escapeHTML(item.title)}</td>
           <td class="p-3">
             <span class="px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
               ${item.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
             </span>
           </td>
           <td class="p-3 text-right space-x-2">
-            <a href="${item.file_url}" target="_blank" class="text-blue-600 hover:underline">Xem file</a>
+            <a href="${encodeURI(item.file_url)}" target="_blank" class="text-blue-600 hover:underline">Xem file</a>
             ${item.status === 'pending' ? `<button onclick="approveSubmission(${item.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-2.5 py-1 rounded shadow-sm">Duyệt</button>` : '<span class="text-xs text-slate-400 font-medium">Đã hoàn tất</span>'}
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
-    // Duyệt nhanh hồ sơ
+
     async function approveSubmission(id) {
       const { error } = await client.from("submissions").update({ status: 'approved' }).eq("id", id);
       if (error) alert("Lỗi khi duyệt: " + error.message);
@@ -1247,18 +1322,45 @@
         loadMySubmissions();
       }
     }
+
     // ==========================================
-    // CHỨC NĂNG QUẢN LÝ NGƯỜI DÙNG (DÀNH CHO ADMIN)
+    // QUẢN LÝ NGƯỜI DÙNG (DÀNH CHO QUẢN TRỊ VIÊN GỐC)
     // ==========================================
-    
-    // Đọc danh sách User
     async function loadAllUsers() {
       const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
       const tbody = document.getElementById("users-body");
-      tbody.innerHTML = "";
 
       if (error) {
         tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Lỗi tải danh sách: ${error.message}</td></tr>`;
+        return;
+      }
+
+      allUsersCache = data || [];
+      renderUsersTable(allUsersCache);
+    }
+
+    function filterUserTable() {
+      const keyword = document.getElementById("search_user_input").value.trim().toLowerCase();
+      if (!keyword) {
+        renderUsersTable(allUsersCache);
+        return;
+      }
+      const filtered = allUsersCache.filter(u =>
+        (u.full_name && u.full_name.toLowerCase().includes(keyword)) ||
+        (u.email && u.email.toLowerCase().includes(keyword)) ||
+        (u.department && u.department.toLowerCase().includes(keyword))
+      );
+      renderUsersTable(filtered);
+    }
+
+    function renderUsersTable(usersList) {
+      const tbody = document.getElementById("users-body");
+      const countLabel = document.getElementById("user-count-label");
+      if (countLabel) countLabel.innerText = `Hiển thị: ${usersList.length} / ${allUsersCache.length} tài khoản`;
+
+      tbody.innerHTML = "";
+      if (usersList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Không tìm thấy tài khoản nào khớp từ khóa.</td></tr>`;
         return;
       }
 
@@ -1267,8 +1369,8 @@
         doan: '<span class="ml-1.5 px-2 py-0.5 text-[11px] bg-sky-50 text-sky-700 border border-sky-200 rounded-full">Cán bộ Đoàn</span>'
       };
 
-      data.forEach(user => {
-        const roleLabel = user.role === 'admin' ? '<span class="text-purple-600 font-bold">Admin</span>' : 
+      usersList.forEach(user => {
+        const roleLabel = user.role === 'admin' ? '<span class="text-purple-600 font-bold">Ban Giám Hiệu</span>' : 
                           user.role === 'hod' ? '<span class="text-blue-600 font-bold">Tổ trưởng</span>' : 
                           user.role === 'clerk' ? '<span class="text-amber-600 font-bold">Văn thư</span>' : 'Giáo viên';
         
@@ -1276,12 +1378,13 @@
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td class="p-3 font-medium text-slate-900">${user.full_name}</td>
-          <td class="p-3 text-slate-600">${user.email || 'N/A'}</td>
-          <td class="p-3 text-slate-600">${user.role === 'admin' ? '<span class="text-slate-400 italic">- Không yêu cầu -</span>' : user.department}</td>
+          <td class="p-3 font-medium text-slate-900">${escapeHTML(user.full_name)}</td>
+          <td class="p-3 text-slate-600">${escapeHTML(user.email || 'N/A')}</td>
+          <td class="p-3 text-slate-600">${user.role === 'admin' ? '<span class="text-slate-400 italic">- Không yêu cầu -</span>' : escapeHTML(user.department)}</td>
           <td class="p-3">${roleLabel}${extraPos}</td>
           <td class="p-3 text-right space-x-2">
-            <button onclick="openEditModal('${user.id}', '${user.full_name}', '${user.department}', '${user.role}', '${user.position || 'none'}')" 
+            <button data-id="${user.id}" data-name="${escapeHTML(user.full_name)}" data-dept="${escapeHTML(user.department)}" data-role="${user.role}" data-pos="${user.position || 'none'}"
+                    onclick="openEditModalFromBtn(this)" 
                     class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded text-xs font-semibold">Sửa</button>
             <button onclick="deleteUserProfile('${user.id}')" 
                     class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded text-xs font-semibold">Xóa</button>
@@ -1290,7 +1393,17 @@
         tbody.appendChild(tr);
       });
     }
-    // Bật hộp thoại Sửa
+
+    function openEditModalFromBtn(btn) {
+      openEditModal(
+        btn.getAttribute("data-id"),
+        btn.getAttribute("data-name"),
+        btn.getAttribute("data-dept"),
+        btn.getAttribute("data-role"),
+        btn.getAttribute("data-pos")
+      );
+    }
+
     function openEditModal(id, name, dept, role, pos) {
       document.getElementById("edit_user_id").value = id;
       document.getElementById("edit_full_name").value = name;
@@ -1300,12 +1413,11 @@
       document.getElementById("edit-user-modal").classList.remove("hidden");
       document.getElementById("edit_department").disabled = (role === 'admin');
     }
-    // Đóng hộp thoại Sửa
+
     function closeEditModal() {
       document.getElementById("edit-user-modal").classList.add("hidden");
     }
 
-    // Lưu thay đổi Cập nhật (Update)
     async function saveUserUpdate() {
       const id = document.getElementById("edit_user_id").value;
       const full_name = document.getElementById("edit_full_name").value.trim();
@@ -1328,7 +1440,20 @@
         loadAllUsers();
       }
     }
-    // Tạo tài khoản mới
+
+    function openAddModal() {
+      document.getElementById("add_email").value = "";
+      document.getElementById("add_password").value = "";
+      document.getElementById("add_full_name").value = "";
+      document.getElementById("add_position").value = "none";
+      document.getElementById("add-user-modal").classList.remove("hidden");
+      document.getElementById("add_department").disabled = (document.getElementById("add_role").value === 'admin');
+    }
+
+    function closeAddModal() {
+      document.getElementById("add-user-modal").classList.add("hidden");
+    }
+
     async function saveNewUser() {
       const email = document.getElementById("add_email").value.trim();
       const password = document.getElementById("add_password").value;
@@ -1358,9 +1483,8 @@
         }
       });
 
-      // Cập nhật bổ sung cột position phòng trường hợp Trigger mặc định của Supabase chưa map cột này
       if (!error && data && data.user) {
-        await client.from("profiles").update({ position }).eq("id", data.user.id);
+        await client.from("profiles").update({ email, full_name, department, role, position }).eq("id", data.user.id);
       }
 
       btn.disabled = false;
@@ -1374,14 +1498,13 @@
         setTimeout(() => loadAllUsers(), 1000);
       }
     }
-    
-    // Xóa hồ sơ người dùng (Delete)
+
     async function deleteUserProfile(id) {
       if (id === currentUser.id) {
         return alert("Bạn không thể tự xóa tài khoản của chính mình đang đăng nhập!");
       }
 
-      const confirmDelete = confirm("CẢNH BÁO: Hành động này sẽ thu hồi toàn bộ quyền đăng nhập hệ thống của giáo viên này. Bạn có chắc chắn xóa?");
+      const confirmDelete = confirm("CẢNH BÁO: Hành động này sẽ xóa hồ sơ giáo viên khỏi danh sách hệ thống. Bạn có chắc chắn xóa?");
       if (!confirmDelete) return;
 
       const { error } = await client.from("profiles").delete().eq("id", id);
@@ -1393,11 +1516,10 @@
         loadAllUsers();
       }
     }
-    // ==========================================
-    // CHỨC NĂNG XUẤT / NHẬP EXCEL NGƯỜI DÙNG
-    // ==========================================
 
-    // 1. Xuất danh sách hiện tại ra file Excel (.xlsx)
+    // ==========================================
+    // XUẤT / NHẬP EXCEL NGƯỜI DÙNG HÀNG LOẠT
+    // ==========================================
     async function exportUsersToExcel() {
       const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
       if (error) return alert("Lỗi tải dữ liệu: " + error.message);
@@ -1407,7 +1529,7 @@
         "Mật khẩu": "",
         "Họ và tên": user.full_name,
         "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
-        "Quyền hạn": user.role === 'admin' ? 'Quản trị viên' : 
+        "Quyền hạn": user.role === 'admin' ? 'Ban Giám Hiệu' : 
                      (user.role === 'hod' ? 'Tổ trưởng' : 
                      (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên')),
         "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
@@ -1420,7 +1542,6 @@
       XLSX.writeFile(workbook, "DanhSachGiaoVien.xlsx");
     }
 
-    // 2. Nhập file Excel/CSV để TẠO MỚI hoặc CẬP NHẬT tài khoản hàng loạt
     async function importUsersFromExcel(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -1457,9 +1578,8 @@
 
             if (!email || !fullName) continue;
 
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang xử lý dòng ${i + 1}/${jsonData.length}: ${fullName} (${email})...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(email)})...</td></tr>`;
 
-            // Chuẩn hóa quyền hạn
             let role = 'teacher';
             if (roleStr === 'Quản trị viên' || roleStr === 'Admin' || roleStr === 'Ban Giám Hiệu') role = 'admin';
             else if (roleStr === 'Tổ trưởng') role = 'hod';
@@ -1467,7 +1587,6 @@
 
             if (role === 'admin') dept = 'Không áp dụng';
 
-            // Chuẩn hóa chức vụ kiêm nhiệm
             let position = 'none';
             if (posStr.includes('chủ nhiệm') || posStr === 'gvcn') position = 'gvcn';
             else if (posStr.includes('đoàn') || posStr.includes('bí thư') || posStr.includes('công đoàn') || posStr === 'doan') position = 'doan';
@@ -1506,7 +1625,7 @@
 
               if (!signUpErr) {
                 if (signUpData && signUpData.user) {
-                  await client.from("profiles").update({ position }).eq("id", signUpData.user.id);
+                  await client.from("profiles").update({ email, full_name: fullName, department: dept, role, position }).eq("id", signUpData.user.id);
                 }
                 createdCount++;
               } else {
@@ -1514,7 +1633,7 @@
                 errorLogs.push(`${email}: ${signUpErr.message}`);
               }
 
-              await new Promise(resolve => setTimeout(resolve, 300));
+              await new Promise(resolve => setTimeout(resolve, 250));
             }
           }
 
@@ -1532,115 +1651,31 @@
       reader.readAsArrayBuffer(file);
       e.target.value = "";
     }
-    // ==========================================
-    // CHỨC NĂNG THÊM TÀI KHOẢN MỚI
-    // ==========================================
 
-    function openAddModal() {
-      document.getElementById("add_email").value = "";
-      document.getElementById("add_password").value = "";
-      document.getElementById("add_full_name").value = "";
-      document.getElementById("add-user-modal").classList.remove("hidden");
-      
-      // Khóa ô Tổ bộ môn nếu đang chọn mặc định là Admin
-      document.getElementById("add_department").disabled = (document.getElementById("add_role").value === 'admin');
-    }
-
-    function closeAddModal() {
-      document.getElementById("add-user-modal").classList.add("hidden");
-    }
-
-    async function saveNewUser() {
-      const email = document.getElementById("add_email").value.trim();
-      const password = document.getElementById("add_password").value;
-      const full_name = document.getElementById("add_full_name").value.trim();
-      
-      let department = document.getElementById("add_department").value; // Đổi const thành let
-      const role = document.getElementById("add_role").value;
-
-      // Xử lý làm sạch dữ liệu TRƯỚC KHI tạo tài khoản
-      if (role === 'admin') department = 'Không áp dụng';
-
-      const btn = document.getElementById("btn-save-new-user");
-    
-      if (!email || !password || !full_name) {
-        return alert("Vui lòng nhập đầy đủ Email, Mật khẩu và Họ tên!");
-      }
-      if (password.length < 6) {
-        return alert("Mật khẩu phải có ít nhất 6 ký tự!");
-      }
-
-      btn.disabled = true;
-      btn.innerText = "Đang tạo...";
-
-      // THỦ THUẬT: Khởi tạo kết nối phụ không ghi đè session để giữ vững tài khoản Admin
-      const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false
-        }
-      });
-
-      // Gọi API đăng ký qua kết nối phụ thay vì dùng client mặc định
-      const { data, error } = await adminAuthClient.auth.signUp({
-        email: email,
-        password: password,
-        options: {
-          data: {
-            full_name: full_name,
-            department: department,
-            role: role
-          }
-        }
-      });
-
-      btn.disabled = false;
-      btn.innerText = "Tạo tài khoản";
-
-      if (error) {
-        alert("Lỗi tạo tài khoản: " + error.message);
-      } else {
-        alert("Tạo tài khoản thành công! Bạn vẫn đang giữ quyền Admin.");
-        closeAddModal();
-        
-        // Làm mới lại danh sách bảng
-        setTimeout(() => {
-          loadAllUsers();
-        }, 1000);
-      }
-    }
     // ==========================================
     // GIỮ PHIÊN ĐĂNG NHẬP KHI TẢI LẠI TRANG (F5)
     // ==========================================
     document.addEventListener("DOMContentLoaded", async () => {
-      // Tự động Khóa/Mở ô chọn Tổ khi thay đổi Quyền hạn
       document.getElementById("add_role").addEventListener("change", (e) => {
         document.getElementById("add_department").disabled = (e.target.value === 'admin');
       });
       document.getElementById("edit_role").addEventListener("change", (e) => {
         document.getElementById("edit_department").disabled = (e.target.value === 'admin');
       });
-      // Kiểm tra xem trình duyệt có lưu phiên đăng nhập cũ không
-      const { data: { session }, error } = await client.auth.getSession();
-      
+
+      const { data: { session } } = await client.auth.getSession();
       if (session && session.user) {
-        // Nếu có, khôi phục lại thông tin user và chạy thẳng vào trang trong
         currentUser = session.user;
-        
-        // Đổi nút thành trạng thái đang tải để người dùng biết
         const btn = document.getElementById("btn-login");
-        if(btn) {
+        if (btn) {
           btn.disabled = true;
           btn.innerText = "Đang khôi phục phiên...";
         }
-
         await initApplication();
       }
     });
 
-    // Lắng nghe sự kiện hệ thống (ví dụ: bị Admin xóa tài khoản hoặc token hết hạn)
-    client.auth.onAuthStateChange((event, session) => {
+    client.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_OUT') {
         currentUser = null;
         userProfile = null;
@@ -1648,45 +1683,43 @@
         document.getElementById("login-screen").classList.remove("hidden");
       }
     });
+
     // ==========================================
-    // CHỨC NĂNG XUẤT BÁO CÁO TIẾN ĐỘ NỘP BÀI (PHÂN THEO QUYỀN)
+    // XUẤT BÁO CÁO TIẾN ĐỘ NỘP BÀI (.XLSX)
     // ==========================================
     async function exportProgressReport() {
-      // 1. Lấy toàn bộ danh sách giáo viên từ bảng profiles
       const { data: profiles, error: profileErr } = await client.from("profiles").select("*");
       if (profileErr) return alert("Lỗi tải danh sách giáo viên: " + profileErr.message);
 
-      // 2. Lấy toàn bộ danh sách bài đã nộp từ bảng submissions
-      const { data: submissions, error: subErr } = await client.from("submissions").select("*");
+      const { data: submissions, error: subErr } = await client.from("submissions").select("*").range(0, 9999);
       if (subErr) return alert("Lỗi tải danh sách nộp bài: " + subErr.message);
 
-      // 3. Lọc danh sách giáo viên theo quyền hạn
-      let targetProfiles = profiles;
+      let targetProfiles = profiles.filter(p => p.role !== 'admin');
       let reportTitle = "BaoCaoTienDo_ToanTruong";
 
-      // Nếu là Tổ trưởng (hod), chỉ lọc lấy giáo viên cùng tổ
       if (userProfile.role === 'hod') {
-        targetProfiles = profiles.filter(p => p.department === userProfile.department);
+        targetProfiles = targetProfiles.filter(p => p.department === userProfile.department);
         reportTitle = `BaoCaoTienDo_${toSlug(userProfile.department)}`;
+      } else if (userProfile.role === 'admin') {
+        const selectedDept = document.getElementById("filter_department").value;
+        if (selectedDept && selectedDept !== 'all') {
+          targetProfiles = targetProfiles.filter(p => p.department === selectedDept);
+          reportTitle = `BaoCaoTienDo_${toSlug(selectedDept)}`;
+        }
       }
 
-      // 4. Tổng hợp dữ liệu cho danh sách giáo viên đã được phân quyền
       const reportData = targetProfiles.map(teacher => {
-        // Lọc các bài nộp của giáo viên này
         const teacherSubs = submissions.filter(s => s.teacher_id === teacher.id);
         const totalSubmitted = teacherSubs.length;
-        
-        // Kiểm tra xem đã nộp giáo án (giao-an) chưa
         const hasLessonPlan = teacherSubs.some(s => s.category === 'giao-an');
-        
-        // Lấy danh sách các tuần đã nộp
-        const weeksList = teacherSubs.map(s => s.week_no).filter(Boolean).join(", ");
+        const weeksList = [...new Set(teacherSubs.map(s => s.week_no).filter(Boolean))].sort((a,b) => a - b).join(", ");
 
         return {
           "Họ và tên": teacher.full_name,
           "Email": teacher.email || 'N/A',
           "Tổ bộ môn": teacher.department,
-          "Chức vụ": teacher.role === 'admin' ? 'Ban Giám Hiệu' : (teacher.role === 'hod' ? 'Tổ trưởng' : 'Giáo viên'),
+          "Chức vụ": teacher.role === 'hod' ? 'Tổ trưởng' : (teacher.role === 'clerk' ? 'Văn thư' : 'Giáo viên'),
+          "Kiêm nhiệm": teacher.position === 'gvcn' ? 'GVCN' : (teacher.position === 'doan' ? 'Cán bộ Đoàn' : ''),
           "Tổng số bài đã nộp": totalSubmitted,
           "Đã nộp Giáo án": hasLessonPlan ? "Đã nộp" : "Chưa nộp",
           "Các tuần đã nộp": weeksList || "Không có",
@@ -1694,16 +1727,11 @@
         };
       });
 
-      if (reportData.length === 0) {
-        return alert("Không có dữ liệu để xuất báo cáo!");
-      }
+      if (reportData.length === 0) return alert("Không có dữ liệu để xuất báo cáo!");
 
-      // 5. Xuất file Excel bằng thư viện SheetJS
       const worksheet = XLSX.utils.json_to_sheet(reportData);
-      
-      // Tùy chỉnh độ rộng cột
       worksheet['!cols'] = [
-        {wch: 25}, {wch: 30}, {wch: 18}, {wch: 18}, {wch: 20}, {wch: 15}, {wch: 30}, {wch: 22}
+        {wch: 25}, {wch: 28}, {wch: 22}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 15}, {wch: 25}, {wch: 22}
       ];
 
       const workbook = XLSX.utils.book_new();
@@ -1712,7 +1740,7 @@
       const dateStr = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(workbook, `${reportTitle}_${dateStr}.xlsx`);
     }
-    // Nạp danh sách 14 tổ chuẩn vào bộ lọc dành cho Ban Giám Hiệu
+
     function loadDepartmentOptions() {
       const filterSelect = document.getElementById("filter_department");
       if (!filterSelect) return;
@@ -1720,7 +1748,7 @@
       const standardDepartments = [
         "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tin học",
         "Ngữ văn", "Lịch sử", "Địa lý", "Tiếng Anh", "Tiếng Pháp - Nhật",
-        "Giáo dục KT&PL", "Giáo dục thể chất", "Giáo dục Quốc phòng và An ninh", "Văn phòng"
+        "Giáo dục Kinh tế & Pháp luật", "Giáo dục thể chất", "Giáo dục Quốc phòng và An ninh", "Văn phòng"
       ];
 
       filterSelect.innerHTML = `<option value="all">Tất cả các tổ bộ môn (14 tổ)</option>`;
