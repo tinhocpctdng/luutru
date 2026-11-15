@@ -157,14 +157,15 @@
             <div>
               <label class="block text-xs font-semibold text-slate-600 mb-1">Khối lớp</label>
               <select id="grade" class="w-full border p-2 rounded-lg text-sm bg-white">
+                <option value="all">Toàn trường</option>
                 <option value="10">Khối 10</option>
                 <option value="11">Khối 11</option>
                 <option value="12">Khối 12</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Tuần dạy</label>
-              <input type="number" id="week_no" min="1" max="35" value="1" class="w-full border p-2 rounded-lg text-sm" required>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Tuần</label>
+              <input type="number" id="week_no" min="1" max="52" value="1" class="w-full border p-2 rounded-lg text-sm" required>
             </div>
           </div>
 
@@ -395,6 +396,16 @@
                 <option value="admin">Quản trị viên / BGH (Toàn quyền)</option>
               </select>
             </div>
+            <!-- THÊM MỚI KHỐI NÀY -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Chức vụ kiêm nhiệm (Chủ nhiệm / Đoàn thể)</label>
+              <select id="edit_position" class="w-full border p-2 rounded-lg text-sm">
+                <option value="none">Không kiêm nhiệm</option>
+                <option value="gvcn">Giáo viên chủ nhiệm (GVCN)</option>
+                <option value="doan">Cán bộ Đoàn / Công đoàn (Bí thư, Phó bí thư...)</option>
+              </select>
+            </div>
+            
           </div>
           
           <div class="mt-6 flex justify-end space-x-3">
@@ -441,6 +452,15 @@
                 <option value="hod">Tổ trưởng (Duyệt bài trong tổ)</option>
                 <option value="clerk">Nhân viên Văn thư (Đăng kho biểu mẫu chung)</option>
                 <option value="admin">Quản trị viên / BGH (Toàn quyền)</option>
+              </select>
+            </div>
+            <!-- THÊM MỚI KHỐI NÀY -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Chức vụ kiêm nhiệm (Chủ nhiệm / Đoàn thể)</label>
+              <select id="add_position" class="w-full border p-2 rounded-lg text-sm">
+                <option value="none">Không kiêm nhiệm</option>
+                <option value="gvcn">Giáo viên chủ nhiệm (GVCN)</option>
+                <option value="doan">Cán bộ Đoàn / Công đoàn (Bí thư, Phó bí thư...)</option>
               </select>
             </div>
           </div>
@@ -603,17 +623,19 @@
       loadSharedDocs();
     }
   // Hàm tự động lọc và hiển thị các Mục lưu trữ đúng theo Quyền hạn & Tổ bộ môn
+    // Hàm tự động lọc và hiển thị các Mục lưu trữ đúng theo Quyền hạn, Tổ & Chức vụ kiêm nhiệm
     function renderAllowedCategories() {
       const categorySelect = document.getElementById("category");
       if (!categorySelect) return;
 
       const role = userProfile.role;
+      const userPos = userProfile.position || 'none';
       const isVanPhong = userProfile.department && userProfile.department.toLowerCase().includes("văn phòng");
 
       const categoryGroups = [
         {
           label: "Kho chung toàn trường",
-          roles: ["admin", "clerk"], // Chỉ BGH và Văn thư được nộp trực tiếp lên kho chung
+          roles: ["admin", "clerk"],
           options: [
             { value: "van-ban-chi-dao", text: "Văn bản chỉ đạo cấp trên" },
             { value: "quy-che", text: "Nội quy / Quy chế hoạt động" },
@@ -622,7 +644,7 @@
         },
         {
           label: "Ban Giám Hiệu",
-          roles: ["admin"], // Chỉ BGH được nộp
+          roles: ["admin"],
           options: [
             { value: "nghi-quyet", text: "Nghị quyết / Kế hoạch chiến lược" },
             { value: "kiem-tra-noi-bo", text: "Hồ sơ Kiểm tra nội bộ" },
@@ -632,7 +654,7 @@
         {
           label: "Tổ chuyên môn",
           roles: ["admin", "hod", "teacher"],
-          excludeDept: "văn phòng", // Ẩn nhóm này nếu là nhân viên Tổ Văn phòng (trừ BGH)
+          excludeDept: "văn phòng",
           options: [
             { value: "ke-hoach-giao-duc", text: "Kế hoạch giáo dục tổ/nhóm", allowedRoles: ["admin", "hod"] },
             { value: "giao-an", text: "Kế hoạch bài dạy (Giáo án)" },
@@ -645,7 +667,7 @@
         {
           label: "Tổ Văn phòng (Hành chính)",
           roles: ["admin", "clerk", "teacher"],
-          onlyDept: "văn phòng", // Chỉ hiện cho BGH, Văn thư hoặc thành viên Tổ Văn phòng
+          onlyDept: "văn phòng",
           options: [
             { value: "van-thu", text: "Công văn đi / đến (Văn thư)", allowedRoles: ["admin", "clerk"] },
             { value: "nhan-su", text: "Hồ sơ Nhân sự - Lương" },
@@ -656,29 +678,35 @@
         {
           label: "Chủ nhiệm & Đoàn thể",
           roles: ["admin", "hod", "clerk", "teacher"],
+          requirePosition: true,
           options: [
-            { value: "chu-nhiem", text: "Kế hoạch & Sổ Chủ nhiệm lớp" },
-            { value: "hop-phu-huynh", text: "Biên bản họp Phụ huynh" },
-            { value: "cong-doan", text: "Hồ sơ Công đoàn" },
-            { value: "doan-thanh-nien", text: "Hồ sơ Đoàn Thanh niên" }
+            { value: "chu-nhiem", text: "Kế hoạch & Sổ Chủ nhiệm lớp", pos: ["gvcn"] },
+            { value: "hop-phu-huynh", text: "Biên bản họp Phụ huynh", pos: ["gvcn"] },
+            { value: "cong-doan", text: "Hồ sơ Công đoàn", pos: ["doan"] },
+            { value: "doan-thanh-nien", text: "Hồ sơ Đoàn Thanh niên", pos: ["doan"] }
           ]
         }
       ];
 
-      categorySelect.innerHTML = ""; // Xóa danh sách tĩnh cũ
+      categorySelect.innerHTML = "";
 
       categoryGroups.forEach(group => {
-        // 1. Kiểm tra quyền chung của nhóm
         if (!group.roles.includes(role)) return;
 
-        // 2. Kiểm tra điều kiện tổ bộ môn (nếu không phải Admin)
         if (role !== "admin") {
           if (group.excludeDept && isVanPhong) return;
           if (group.onlyDept && !isVanPhong && role !== "clerk") return;
+          if (group.requirePosition && role !== "clerk" && userPos === "none") return;
         }
 
-        // 3. Lọc các mục con bên trong nhóm
-        const validOptions = group.options.filter(opt => !opt.allowedRoles || opt.allowedRoles.includes(role));
+        const validOptions = group.options.filter(opt => {
+          if (opt.allowedRoles && !opt.allowedRoles.includes(role)) return false;
+          if (opt.pos && role !== "admin" && role !== "clerk") {
+            return opt.pos.includes(userPos);
+          }
+          return true;
+        });
+
         if (validOptions.length === 0) return;
 
         const optgroup = document.createElement("optgroup");
@@ -695,14 +723,13 @@
       });
     }
 
-    let currentSelectedCategory = null;
-
-    // Dựng cây thư mục bên trái theo đúng quyền hạn và tổ bộ môn
+    // Dựng cây thư mục bên trái theo đúng quyền hạn, tổ bộ môn & chức vụ kiêm nhiệm
     function renderFolderTree() {
       const container = document.getElementById("folder-tree-container");
       if (!container) return;
 
       const role = userProfile.role;
+      const userPos = userProfile.position || 'none';
       const isVanPhong = userProfile.department && userProfile.department.toLowerCase().includes("văn phòng");
 
       const treeData = [
@@ -757,11 +784,12 @@
           id: "union",
           name: "Chủ nhiệm & Đoàn thể",
           roles: ["admin", "hod", "clerk", "teacher"],
+          requirePosition: true,
           children: [
-            { value: "chu-nhiem", name: "Kế hoạch & Sổ Chủ nhiệm" },
-            { value: "hop-phu-huynh", name: "Biên bản họp Phụ huynh" },
-            { value: "cong-doan", name: "Hồ sơ Công đoàn" },
-            { value: "doan-thanh-nien", name: "Hồ sơ Đoàn Thanh niên" }
+            { value: "chu-nhiem", name: "Kế hoạch & Sổ Chủ nhiệm", pos: ["gvcn"] },
+            { value: "hop-phu-huynh", name: "Biên bản họp Phụ huynh", pos: ["gvcn"] },
+            { value: "cong-doan", name: "Hồ sơ Công đoàn", pos: ["doan"] },
+            { value: "doan-thanh-nien", name: "Hồ sơ Đoàn Thanh niên", pos: ["doan"] }
           ]
         }
       ];
@@ -773,9 +801,18 @@
         if (role !== "admin") {
           if (folder.excludeDept && isVanPhong) return;
           if (folder.onlyDept && !isVanPhong && role !== "clerk") return;
+          if (folder.requirePosition && role !== "clerk" && userPos === "none") return;
         }
 
-        // Tạo thư mục cha
+        const validChildren = folder.children.filter(sub => {
+          if (sub.pos && role !== "admin" && role !== "clerk") {
+            return sub.pos.includes(userPos);
+          }
+          return true;
+        });
+
+        if (validChildren.length === 0) return;
+
         const parentDiv = document.createElement("div");
         parentDiv.className = "space-y-0.5";
 
@@ -790,20 +827,17 @@
           <svg class="w-3.5 h-3.5 text-slate-400 transform transition-transform duration-200 rotate-90" id="arrow-${folder.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         `;
 
-        // Danh sách thư mục con
         const childrenContainer = document.createElement("div");
         childrenContainer.id = `tree-children-${folder.id}`;
         childrenContainer.className = "pl-4 space-y-0.5 border-l border-slate-200 ml-3";
 
         headerBtn.onclick = () => {
-          if (folder.isShared) {
-            switchTab('shared');
-          }
+          if (folder.isShared) switchTab('shared');
           childrenContainer.classList.toggle("hidden");
           document.getElementById(`arrow-${folder.id}`).classList.toggle("rotate-90");
         };
 
-        folder.children.forEach(sub => {
+        validChildren.forEach(sub => {
           const subBtn = document.createElement("button");
           subBtn.type = "button";
           subBtn.id = `tree-node-${sub.value}`;
@@ -818,7 +852,6 @@
         container.appendChild(parentDiv);
       });
     }
-
     // Xử lý khi bấm vào 1 nhánh con trên cây thư mục
     async function openFolderNode(parentName, categoryValue, categoryName, isShared) {
       if (isShared) {
@@ -867,7 +900,7 @@
         tr.innerHTML = `
           <td class="p-3 font-medium text-slate-900">${item.teacher_name}</td>
           <td class="p-3 text-slate-600">${item.department}</td>
-          <td class="p-3 text-slate-600">Khối ${item.grade || '-'} - T${item.week_no || '-'}</td>
+          <td class="p-3 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'} - T${item.week_no || '-'}</td>
           <td class="p-3 text-slate-800">${item.title}</td>
           <td class="p-3">
             <span class="px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
@@ -991,7 +1024,7 @@
             teacher_name: userProfile.full_name,
             department: userProfile.department,
             category: category,
-            grade: grade ? parseInt(grade) : null,
+            grade: (grade && grade !== 'all') ? parseInt(grade) : null, // 'all' (Toàn trường) lưu là null
             week_no: week_no ? parseInt(week_no) : null,
             title: title,
             file_name: file.name,
@@ -1038,7 +1071,7 @@
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="p-3 font-semibold text-slate-700">${item.week_no || '-'}</td>
-          <td class="p-3 text-slate-600">${item.grade ? 'Khối ' + item.grade : '-'}</td>
+          <td class="p-3 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'}</td>
           <td class="p-3 font-medium text-slate-900">${item.title}</td>
           <td class="p-3 text-slate-500">${new Date(item.submitted_at).toLocaleDateString("vi-VN")}</td>
           <td class="p-3">
@@ -1190,7 +1223,7 @@
         tr.innerHTML = `
           <td class="p-3 font-medium text-slate-900">${item.teacher_name}</td>
           <td class="p-3 text-slate-600">${item.department}</td>
-          <td class="p-3 text-slate-600">Khối ${item.grade || '-'} - T${item.week_no || '-'}</td>
+          <td class="p-3 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'} - T${item.week_no || '-'}</td>
           <td class="p-3 text-slate-800">${item.title}</td>
           <td class="p-3">
             <span class="px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
@@ -1229,19 +1262,26 @@
         return;
       }
 
+      const posBadge = {
+        gvcn: '<span class="ml-1.5 px-2 py-0.5 text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">GVCN</span>',
+        doan: '<span class="ml-1.5 px-2 py-0.5 text-[11px] bg-sky-50 text-sky-700 border border-sky-200 rounded-full">Cán bộ Đoàn</span>'
+      };
+
       data.forEach(user => {
         const roleLabel = user.role === 'admin' ? '<span class="text-purple-600 font-bold">Admin</span>' : 
                           user.role === 'hod' ? '<span class="text-blue-600 font-bold">Tổ trưởng</span>' : 
                           user.role === 'clerk' ? '<span class="text-amber-600 font-bold">Văn thư</span>' : 'Giáo viên';
         
+        const extraPos = posBadge[user.position] || '';
+
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td class="p-3 font-medium text-slate-900">${user.full_name}</td>
           <td class="p-3 text-slate-600">${user.email || 'N/A'}</td>
           <td class="p-3 text-slate-600">${user.role === 'admin' ? '<span class="text-slate-400 italic">- Không yêu cầu -</span>' : user.department}</td>
-          <td class="p-3">${roleLabel}</td>
+          <td class="p-3">${roleLabel}${extraPos}</td>
           <td class="p-3 text-right space-x-2">
-            <button onclick="openEditModal('${user.id}', '${user.full_name}', '${user.department}', '${user.role}')" 
+            <button onclick="openEditModal('${user.id}', '${user.full_name}', '${user.department}', '${user.role}', '${user.position || 'none'}')" 
                     class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded text-xs font-semibold">Sửa</button>
             <button onclick="deleteUserProfile('${user.id}')" 
                     class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded text-xs font-semibold">Xóa</button>
@@ -1250,17 +1290,16 @@
         tbody.appendChild(tr);
       });
     }
-
     // Bật hộp thoại Sửa
-    function openEditModal(id, name, dept, role) {
+    function openEditModal(id, name, dept, role, pos) {
       document.getElementById("edit_user_id").value = id;
       document.getElementById("edit_full_name").value = name;
       document.getElementById("edit_department").value = dept;
       document.getElementById("edit_role").value = role;
+      document.getElementById("edit_position").value = pos || 'none';
       document.getElementById("edit-user-modal").classList.remove("hidden");
       document.getElementById("edit_department").disabled = (role === 'admin');
     }
-
     // Đóng hộp thoại Sửa
     function closeEditModal() {
       document.getElementById("edit-user-modal").classList.add("hidden");
@@ -1270,17 +1309,15 @@
     async function saveUserUpdate() {
       const id = document.getElementById("edit_user_id").value;
       const full_name = document.getElementById("edit_full_name").value.trim();
-      
-      let department = document.getElementById("edit_department").value; // Đổi const thành let
+      let department = document.getElementById("edit_department").value;
       const role = document.getElementById("edit_role").value;
+      const position = document.getElementById("edit_position").value;
 
-      // Xử lý làm sạch dữ liệu TRƯỚC KHI cập nhật
       if (role === 'admin') department = 'Không áp dụng';
-
       if (!full_name) return alert("Vui lòng nhập tên");
 
       const { error } = await client.from("profiles")
-        .update({ full_name, department, role })
+        .update({ full_name, department, role, position })
         .eq("id", id);
 
       if (error) {
@@ -1291,7 +1328,53 @@
         loadAllUsers();
       }
     }
+    // Tạo tài khoản mới
+    async function saveNewUser() {
+      const email = document.getElementById("add_email").value.trim();
+      const password = document.getElementById("add_password").value;
+      const full_name = document.getElementById("add_full_name").value.trim();
+      let department = document.getElementById("add_department").value;
+      const role = document.getElementById("add_role").value;
+      const position = document.getElementById("add_position").value;
 
+      if (role === 'admin') department = 'Không áp dụng';
+      const btn = document.getElementById("btn-save-new-user");
+
+      if (!email || !password || !full_name) return alert("Vui lòng nhập đầy đủ Email, Mật khẩu và Họ tên!");
+      if (password.length < 6) return alert("Mật khẩu phải có ít nhất 6 ký tự!");
+
+      btn.disabled = true;
+      btn.innerText = "Đang tạo...";
+
+      const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+      });
+
+      const { data, error } = await adminAuthClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: { full_name, department, role, position }
+        }
+      });
+
+      // Cập nhật bổ sung cột position phòng trường hợp Trigger mặc định của Supabase chưa map cột này
+      if (!error && data && data.user) {
+        await client.from("profiles").update({ position }).eq("id", data.user.id);
+      }
+
+      btn.disabled = false;
+      btn.innerText = "Tạo tài khoản";
+
+      if (error) {
+        alert("Lỗi tạo tài khoản: " + error.message);
+      } else {
+        alert("Tạo tài khoản thành công! Bạn vẫn đang giữ quyền Admin.");
+        closeAddModal();
+        setTimeout(() => loadAllUsers(), 1000);
+      }
+    }
+    
     // Xóa hồ sơ người dùng (Delete)
     async function deleteUserProfile(id) {
       if (id === currentUser.id) {
@@ -1319,17 +1402,18 @@
       const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
       if (error) return alert("Lỗi tải dữ liệu: " + error.message);
 
-      // Chuẩn hóa dữ liệu mảng trước khi đưa vào Excel
       const excelData = data.map(user => ({
         "Email": user.email,
+        "Mật khẩu": "",
         "Họ và tên": user.full_name,
         "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
         "Quyền hạn": user.role === 'admin' ? 'Quản trị viên' : 
                      (user.role === 'hod' ? 'Tổ trưởng' : 
-                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))
+                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên')),
+        "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
+                               (user.position === 'doan' ? 'Cán bộ Đoàn' : '')
       }));
 
-      // Tạo workbook và xuất file
       const worksheet = XLSX.utils.json_to_sheet(excelData);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachGiaoVien");
@@ -1356,13 +1440,8 @@
           let failCount = 0;
           let errorLogs = [];
 
-          // Khởi tạo kết nối phụ không lưu phiên để giữ nguyên quyền Admin
           const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: {
-              persistSession: false,
-              autoRefreshToken: false,
-              detectSessionInUrl: false
-            }
+            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
           });
 
           const tbody = document.getElementById("users-body");
@@ -1374,10 +1453,10 @@
             const fullName = row["Họ và tên"] ? String(row["Họ và tên"]).trim() : "";
             let dept = row["Tổ bộ môn"] ? String(row["Tổ bộ môn"]).trim() : "Chưa phân tổ";
             const roleStr = row["Quyền hạn"] ? String(row["Quyền hạn"]).trim() : "Giáo viên";
+            const posStr = row["Chức vụ kiêm nhiệm"] ? String(row["Chức vụ kiêm nhiệm"]).trim().toLowerCase() : "";
 
             if (!email || !fullName) continue;
 
-            // Hiển thị tiến độ trực tiếp trên bảng
             tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang xử lý dòng ${i + 1}/${jsonData.length}: ${fullName} (${email})...</td></tr>`;
 
             // Chuẩn hóa quyền hạn
@@ -1388,7 +1467,11 @@
 
             if (role === 'admin') dept = 'Không áp dụng';
 
-            // Bước A: Thử cập nhật nếu Email đã tồn tại trong bảng profiles
+            // Chuẩn hóa chức vụ kiêm nhiệm
+            let position = 'none';
+            if (posStr.includes('chủ nhiệm') || posStr === 'gvcn') position = 'gvcn';
+            else if (posStr.includes('đoàn') || posStr.includes('bí thư') || posStr.includes('công đoàn') || posStr === 'doan') position = 'doan';
+
             const { data: existingUser } = await client
               .from("profiles")
               .select("id")
@@ -1398,7 +1481,7 @@
             if (existingUser) {
               const { error: updateErr } = await client
                 .from("profiles")
-                .update({ full_name: fullName, department: dept, role: role })
+                .update({ full_name: fullName, department: dept, role: role, position: position })
                 .eq("email", email);
 
               if (!updateErr) updatedCount++;
@@ -1407,48 +1490,39 @@
                 errorLogs.push(`${email}: ${updateErr.message}`);
               }
             } else {
-              // Bước B: Nếu chưa tồn tại -> Tạo tài khoản mới qua kết nối phụ
               if (password.length < 6) {
                 failCount++;
                 errorLogs.push(`${email}: Mật khẩu phải từ 6 ký tự trở lên`);
                 continue;
               }
 
-              const { error: signUpErr } = await adminAuthClient.auth.signUp({
+              const { data: signUpData, error: signUpErr } = await adminAuthClient.auth.signUp({
                 email: email,
                 password: password,
                 options: {
-                  data: {
-                    full_name: fullName,
-                    department: dept,
-                    role: role
-                  }
+                  data: { full_name: fullName, department: dept, role: role, position: position }
                 }
               });
 
               if (!signUpErr) {
+                if (signUpData && signUpData.user) {
+                  await client.from("profiles").update({ position }).eq("id", signUpData.user.id);
+                }
                 createdCount++;
               } else {
                 failCount++;
                 errorLogs.push(`${email}: ${signUpErr.message}`);
               }
 
-              // Nghỉ 300ms giữa mỗi lần tạo để tránh giới hạn tốc độ (Rate Limit) của Supabase
               await new Promise(resolve => setTimeout(resolve, 300));
             }
           }
 
           let summary = `Hoàn tất đồng bộ dữ liệu!\n- Tạo mới: ${createdCount} tài khoản\n- Cập nhật: ${updatedCount} tài khoản\n- Lỗi/Bỏ qua: ${failCount} dòng`;
-          if (errorLogs.length > 0) {
-            summary += `\n\nChi tiết lỗi:\n` + errorLogs.slice(0, 5).join("\n");
-          }
+          if (errorLogs.length > 0) summary += `\n\nChi tiết lỗi:\n` + errorLogs.slice(0, 5).join("\n");
           alert(summary);
 
-          // Đợi 1 giây để Trigger đồng bộ xong hoàn toàn rồi tải lại bảng
-          setTimeout(() => {
-            loadAllUsers();
-          }, 1000);
-
+          setTimeout(() => loadAllUsers(), 1000);
         } catch (error) {
           alert("Lỗi đọc file Excel: " + error.message);
           loadAllUsers();
