@@ -13,7 +13,7 @@
 </head>
 <body class="bg-slate-100 min-h-screen text-slate-800">
 
-  <!-- MÀN HÌNH ĐĂNG NHẬP -->
+ <!-- MÀN HÌNH ĐĂNG NHẬP -->
   <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
     <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
       <div class="text-center mb-6">
@@ -23,13 +23,13 @@
       
       <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Email giáo viên</label>
-          <input type="email" id="email" placeholder="example@tentruong.edu.vn" required
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Mã giáo viên</label>
+          <input type="text" id="email" placeholder="VD: TH08" autocomplete="username" required
                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
         </div>
         <div>
           <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Mật khẩu</label>
-          <input type="password" id="password" placeholder="••••••••" required
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required
                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
         </div>
         <button type="submit" id="btn-login"
@@ -504,7 +504,12 @@
     let userProfile = null;
     let currentSelectedCategory = null;
     let allUsersCache = []; // Lưu đệm danh sách user để tìm kiếm tức thì
-
+    // Hàm ghép đuôi nội bộ ngầm để Supabase Auth chấp nhận đăng nhập bằng Mã GV
+    function toAuthEmail(code) {
+      const clean = String(code || "").trim().toLowerCase();
+      if (!clean) return "";
+      return clean.includes("@") ? clean : `${clean}@noibo.edu.vn`;
+    }
     // Helper: Chống XSS khi render dữ liệu ra bảng
     function escapeHTML(str) {
       if (!str) return "";
@@ -529,19 +534,22 @@
 
     // 1. Xử lý Đăng Nhập
     async function handleLogin() {
-      const email = document.getElementById("email").value.trim();
+      const code = document.getElementById("email").value.trim().toUpperCase();
       const password = document.getElementById("password").value;
       const btn = document.getElementById("btn-login");
 
-      if (!email || !password) return alert("Vui lòng điền đủ email và mật khẩu");
+      if (!code || !password) return alert("Vui lòng điền đủ Mã giáo viên và mật khẩu");
 
       btn.disabled = true;
       btn.innerText = "Đang kiểm tra...";
 
-      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      const { data, error } = await client.auth.signInWithPassword({
+        email: toAuthEmail(code),
+        password: password
+      });
 
       if (error) {
-        alert("Đăng nhập thất bại: " + error.message);
+        alert("Đăng nhập thất bại: Sai mã giáo viên hoặc mật khẩu!");
         btn.disabled = false;
         btn.innerText = "Đăng Nhập";
         return;
@@ -550,7 +558,6 @@
       currentUser = data.user;
       await initApplication();
     }
-
     // 2. Khởi tạo phiên làm việc sau khi login
     async function initApplication() {
       let { data: profile } = await client
@@ -1490,8 +1497,9 @@
       document.getElementById("add-user-modal").classList.add("hidden");
     }
 
+    // Tạo tài khoản mới bằng Mã giáo viên (không cần email)
     async function saveNewUser() {
-      const email = document.getElementById("add_email").value.trim();
+      const teacherCode = document.getElementById("add_email").value.trim().toUpperCase().replace(/\s+/g, "");
       const password = document.getElementById("add_password").value;
       const full_name = document.getElementById("add_full_name").value.trim();
       let department = document.getElementById("add_department").value;
@@ -1501,26 +1509,43 @@
       if (role === 'admin') department = 'Không áp dụng';
       const btn = document.getElementById("btn-save-new-user");
 
-      if (!email || !password || !full_name) return alert("Vui lòng nhập đầy đủ Email, Mật khẩu và Họ tên!");
-      if (password.length < 6) return alert("Mật khẩu phải có ít nhất 6 ký tự!");
+      if (!teacherCode || !password || !full_name) {
+        return alert("Vui lòng nhập đầy đủ Mã giáo viên, Mật khẩu và Họ tên!");
+      }
+      if (password.length < 6) {
+        return alert("Mật khẩu phải có ít nhất 6 ký tự!");
+      }
 
       btn.disabled = true;
       btn.innerText = "Đang tạo...";
+
+      // Tự động ghép đuôi nội bộ ngầm cho tầng xác thực Supabase Auth
+      const authEmail = teacherCode.includes("@")
+        ? teacherCode.toLowerCase()
+        : `${teacherCode.toLowerCase()}@noibo.edu.vn`;
 
       const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
       });
 
       const { data, error } = await adminAuthClient.auth.signUp({
-        email: email,
+        email: authEmail,
         password: password,
         options: {
           data: { full_name, department, role, position }
         }
       });
 
+      // Ghi đè lại đúng Mã GV (VD: TH08) vào bảng profiles để hiển thị và xuất Excel
       if (!error && data && data.user) {
-        await client.from("profiles").update({ email, full_name, department, role, position }).eq("id", data.user.id);
+        await client.from("profiles").upsert({
+          id: data.user.id,
+          email: teacherCode,
+          full_name: full_name,
+          department: department,
+          role: role,
+          position: position
+        });
       }
 
       btn.disabled = false;
@@ -1529,9 +1554,9 @@
       if (error) {
         alert("Lỗi tạo tài khoản: " + error.message);
       } else {
-        alert("Tạo tài khoản thành công! Bạn vẫn đang giữ quyền Admin.");
+        alert(`Đã tạo tài khoản "${teacherCode}" thành công!`);
         closeAddModal();
-        setTimeout(() => loadAllUsers(), 1000);
+        setTimeout(() => loadAllUsers(), 800);
       }
     }
 
@@ -1578,6 +1603,7 @@
       XLSX.writeFile(workbook, "DanhSachGiaoVien.xlsx");
     }
 
+    // Nhập file Excel/CSV để TẠO MỚI hoặc CẬP NHẬT tài khoản hàng loạt bằng Mã GV
     async function importUsersFromExcel(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -1605,17 +1631,21 @@
 
           for (let i = 0; i < jsonData.length; i++) {
             const row = jsonData[i];
-            const email = row["Email"] ? String(row["Email"]).trim() : "";
+            // Đọc cột "Mã GV" (hỗ trợ đọc cả cột "Email" nếu dùng file cũ) và chuẩn hóa viết hoa, bỏ khoảng trắng
+            const rawCode = row["Mã GV"] !== undefined ? row["Mã GV"] : row["Email"];
+            const teacherCode = rawCode ? String(rawCode).trim().toUpperCase().replace(/\s+/g, "") : "";
+            
             const password = row["Mật khẩu"] ? String(row["Mật khẩu"]).trim() : "123456";
             const fullName = row["Họ và tên"] ? String(row["Họ và tên"]).trim() : "";
             let dept = row["Tổ bộ môn"] ? String(row["Tổ bộ môn"]).trim() : "Chưa phân tổ";
             const roleStr = row["Quyền hạn"] ? String(row["Quyền hạn"]).trim() : "Giáo viên";
             const posStr = row["Chức vụ kiêm nhiệm"] ? String(row["Chức vụ kiêm nhiệm"]).trim().toLowerCase() : "";
 
-            if (!email || !fullName) continue;
+            if (!teacherCode || !fullName) continue;
 
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(email)})...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(teacherCode)})...</td></tr>`;
 
+            // Chuẩn hóa quyền hạn
             let role = 'teacher';
             if (roleStr === 'Quản trị viên' || roleStr === 'Admin' || roleStr === 'Ban Giám Hiệu') role = 'admin';
             else if (roleStr === 'Tổ trưởng') role = 'hod';
@@ -1623,36 +1653,45 @@
 
             if (role === 'admin') dept = 'Không áp dụng';
 
+            // Chuẩn hóa chức vụ kiêm nhiệm
             let position = 'none';
             if (posStr.includes('chủ nhiệm') || posStr === 'gvcn') position = 'gvcn';
             else if (posStr.includes('đoàn') || posStr.includes('bí thư') || posStr.includes('công đoàn') || posStr === 'doan') position = 'doan';
 
+            // Kiểm tra tài khoản đã tồn tại trong bảng profiles theo Mã GV chưa
             const { data: existingUser } = await client
               .from("profiles")
               .select("id")
-              .eq("email", email)
+              .eq("email", teacherCode)
               .maybeSingle();
 
             if (existingUser) {
+              // Cập nhật thông tin nếu đã tồn tại
               const { error: updateErr } = await client
                 .from("profiles")
                 .update({ full_name: fullName, department: dept, role: role, position: position })
-                .eq("email", email);
+                .eq("email", teacherCode);
 
               if (!updateErr) updatedCount++;
               else {
                 failCount++;
-                errorLogs.push(`${email}: ${updateErr.message}`);
+                errorLogs.push(`${teacherCode}: ${updateErr.message}`);
               }
             } else {
+              // Tạo tài khoản mới nếu chưa tồn tại
               if (password.length < 6) {
                 failCount++;
-                errorLogs.push(`${email}: Mật khẩu phải từ 6 ký tự trở lên`);
+                errorLogs.push(`${teacherCode}: Mật khẩu phải từ 6 ký tự trở lên`);
                 continue;
               }
 
+              // Ghép đuôi nội bộ ngầm cho tầng xác thực Supabase Auth
+              const authEmail = teacherCode.includes("@")
+                ? teacherCode.toLowerCase()
+                : `${teacherCode.toLowerCase()}@noibo.edu.vn`;
+
               const { data: signUpData, error: signUpErr } = await adminAuthClient.auth.signUp({
-                email: email,
+                email: authEmail,
                 password: password,
                 options: {
                   data: { full_name: fullName, department: dept, role: role, position: position }
@@ -1660,15 +1699,24 @@
               });
 
               if (!signUpErr) {
+                // Ghi đè lại đúng Mã GV (VD: TH08) vào bảng profiles
                 if (signUpData && signUpData.user) {
-                  await client.from("profiles").update({ email, full_name: fullName, department: dept, role, position }).eq("id", signUpData.user.id);
+                  await client.from("profiles").upsert({
+                    id: signUpData.user.id,
+                    email: teacherCode,
+                    full_name: fullName,
+                    department: dept,
+                    role: role,
+                    position: position
+                  });
                 }
                 createdCount++;
               } else {
                 failCount++;
-                errorLogs.push(`${email}: ${signUpErr.message}`);
+                errorLogs.push(`${teacherCode}: ${signUpErr.message}`);
               }
 
+              // Nghỉ 250ms giữa mỗi lượt để tránh giới hạn tốc độ của Supabase
               await new Promise(resolve => setTimeout(resolve, 250));
             }
           }
