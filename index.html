@@ -1807,12 +1807,42 @@
     // ==========================================
     // XUẤT / NHẬP EXCEL NGƯỜI DÙNG HÀNG LOẠT
     // ==========================================
+
+    // Helper: Hiển thị sạch Mã GV (loại bỏ đuôi @noibo.edu.vn nếu có, giữ nguyên email Admin)
+    function cleanTeacherCode(raw) {
+      if (!raw) return "";
+      const str = String(raw).trim();
+      if (str.toLowerCase().endsWith("@noibo.edu.vn")) {
+        return str.slice(0, -13).toUpperCase();
+      }
+      return str;
+    }
+
+    // Helper: Chuẩn hóa tên tổ viết tắt trong Excel về đúng tên chuẩn trên hệ thống
+    function normalizeDepartmentName(rawDept) {
+      const d = String(rawDept || "").trim();
+      if (!d) return "Chưa phân tổ";
+      const lower = d.toLowerCase();
+      if (lower.includes("kt&pl") || lower.includes("kinh tế")) return "Giáo dục Kinh tế & Pháp luật";
+      if (lower.includes("qp&an") || lower.includes("quốc phòng")) return "Giáo dục Quốc phòng và An ninh";
+      if (lower === "toán") return "Toán học";
+      if (lower === "văn") return "Ngữ văn";
+      if (lower === "lý") return "Vật lý";
+      if (lower === "hóa") return "Hóa học";
+      if (lower === "sinh") return "Sinh học";
+      if (lower === "sử") return "Lịch sử";
+      if (lower === "địa") return "Địa lý";
+      if (lower === "tin") return "Tin học";
+      return d;
+    }
+
+    // 1. Xuất toàn bộ danh sách ra file Excel (.xlsx) theo cột "Mã GV"
     async function exportUsersToExcel() {
       const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
       if (error) return alert("Lỗi tải dữ liệu: " + error.message);
 
       const excelData = data.map(user => ({
-        "Email": user.email,
+        "Mã GV": cleanTeacherCode(user.email),
         "Mật khẩu": "",
         "Họ và tên": user.full_name,
         "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
@@ -1824,12 +1854,13 @@
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
+      worksheet['!cols'] = [{ wch: 15 }, { wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 22 }];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachGiaoVien");
       XLSX.writeFile(workbook, "DanhSachGiaoVien.xlsx");
     }
 
-    // Nhập file Excel/CSV để TẠO MỚI hoặc CẬP NHẬT tài khoản hàng loạt bằng Mã GV
+    // 2. Nhập file Excel/CSV để TẠO MỚI hoặc CẬP NHẬT tài khoản hàng loạt bằng Mã GV
     async function importUsersFromExcel(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -1857,19 +1888,18 @@
 
           for (let i = 0; i < jsonData.length; i++) {
             const row = jsonData[i];
-            // Đọc cột "Mã GV" (hỗ trợ đọc cả cột "Email" nếu dùng file cũ) và chuẩn hóa viết hoa, bỏ khoảng trắng
             const rawCode = row["Mã GV"] !== undefined ? row["Mã GV"] : row["Email"];
             const teacherCode = rawCode ? String(rawCode).trim().toUpperCase().replace(/\s+/g, "") : "";
             
             const password = row["Mật khẩu"] ? String(row["Mật khẩu"]).trim() : "123456";
             const fullName = row["Họ và tên"] ? String(row["Họ và tên"]).trim() : "";
-            let dept = row["Tổ bộ môn"] ? String(row["Tổ bộ môn"]).trim() : "Chưa phân tổ";
+            let dept = normalizeDepartmentName(row["Tổ bộ môn"]);
             const roleStr = row["Quyền hạn"] ? String(row["Quyền hạn"]).trim() : "Giáo viên";
             const posStr = row["Chức vụ kiêm nhiệm"] ? String(row["Chức vụ kiêm nhiệm"]).trim().toLowerCase() : "";
 
             if (!teacherCode || !fullName) continue;
 
-            tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(teacherCode)})...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(teacherCode)})...</td></tr>`;
 
             // Chuẩn hóa quyền hạn
             let role = 'teacher';
@@ -1884,19 +1914,28 @@
             if (posStr.includes('chủ nhiệm') || posStr === 'gvcn') position = 'gvcn';
             else if (posStr.includes('đoàn') || posStr.includes('bí thư') || posStr.includes('công đoàn') || posStr === 'doan') position = 'doan';
 
-            // Kiểm tra tài khoản đã tồn tại trong bảng profiles theo Mã GV chưa
+            const authEmail = teacherCode.includes("@")
+              ? teacherCode.toLowerCase()
+              : `${teacherCode.toLowerCase()}@noibo.edu.vn`;
+
+            // Kiểm tra tài khoản đã tồn tại trong bảng profiles (tìm theo cả Mã GV lẫn email nội bộ)
             const { data: existingUser } = await client
               .from("profiles")
               .select("id")
-              .eq("email", teacherCode)
+              .or(`email.eq.${teacherCode},email.eq.${authEmail}`)
               .maybeSingle();
 
             if (existingUser) {
-              // Cập nhật thông tin nếu đã tồn tại
               const { error: updateErr } = await client
                 .from("profiles")
-                .update({ full_name: fullName, department: dept, role: role, position: position })
-                .eq("email", teacherCode);
+                .update({
+                  email: teacherCode,
+                  full_name: fullName,
+                  department: dept,
+                  role: role,
+                  position: position
+                })
+                .eq("id", existingUser.id);
 
               if (!updateErr) updatedCount++;
               else {
@@ -1904,17 +1943,11 @@
                 errorLogs.push(`${teacherCode}: ${updateErr.message}`);
               }
             } else {
-              // Tạo tài khoản mới nếu chưa tồn tại
               if (password.length < 6) {
                 failCount++;
                 errorLogs.push(`${teacherCode}: Mật khẩu phải từ 6 ký tự trở lên`);
                 continue;
               }
-
-              // Ghép đuôi nội bộ ngầm cho tầng xác thực Supabase Auth
-              const authEmail = teacherCode.includes("@")
-                ? teacherCode.toLowerCase()
-                : `${teacherCode.toLowerCase()}@noibo.edu.vn`;
 
               const { data: signUpData, error: signUpErr } = await adminAuthClient.auth.signUp({
                 email: authEmail,
@@ -1925,8 +1958,9 @@
               });
 
               if (!signUpErr) {
-                // Ghi đè lại đúng Mã GV (VD: TH08) vào bảng profiles
                 if (signUpData && signUpData.user) {
+                  // Chờ 200ms để Trigger của Supabase chạy xong rồi mới ghi đè Mã GV chuẩn
+                  await new Promise(resolve => setTimeout(resolve, 200));
                   await client.from("profiles").upsert({
                     id: signUpData.user.id,
                     email: teacherCode,
@@ -1942,7 +1976,6 @@
                 errorLogs.push(`${teacherCode}: ${signUpErr.message}`);
               }
 
-              // Nghỉ 250ms giữa mỗi lượt để tránh giới hạn tốc độ của Supabase
               await new Promise(resolve => setTimeout(resolve, 250));
             }
           }
