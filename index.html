@@ -1043,7 +1043,7 @@
       const isSharedDoc = sharedCats.includes(category);
 
       btn.disabled = true;
-      btn.innerText = "Đang đẩy tệp lên Google Drive...";
+      btn.innerText = "Đang đẩy tệp lên hệ thống...";
 
       const reader = new FileReader();
       reader.onload = async function() {
@@ -1100,7 +1100,7 @@
 
           if (dbError) throw new Error("Lỗi lưu DB Supabase: " + dbError.message);
 
-          alert("Đã nộp hồ sơ thành công vào Google Drive nhà trường!");
+          alert("Đã nộp hồ sơ thành công vào Kho lưu trữ của nhà trường!");
           fileInput.value = "";
           document.getElementById("doc_title").value = "";
           loadMySubmissions();
