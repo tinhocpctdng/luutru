@@ -317,18 +317,92 @@
               </div>
             </div>
 
-            <!-- THANH TÌM KIẾM NHANH CHO > 200 GIÁO VIÊN -->
-            <div class="mb-4 flex flex-col sm:flex-row gap-3 items-center justify-between">
-              <input type="text" id="search_user_input" oninput="filterUserTable()" placeholder="🔍 Tìm nhanh theo Họ tên, Email hoặc Tổ bộ môn..." class="w-full sm:max-w-md border border-slate-300 px-3.5 py-2 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
-              <div class="text-xs text-slate-500 font-medium" id="user-count-label">Tổng số: 0 tài khoản</div>
+            <!-- THANH LỌC THEO TỔ & TÌM KIẾM NHANH -->
+            <div class="mb-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+              <div class="flex flex-col sm:flex-row gap-2 flex-1">
+                <!-- Bộ lọc theo Tổ bộ môn -->
+                <select id="filter_user_department" onchange="filterUserTable()" class="border border-slate-300 px-3 py-2 rounded-lg text-sm bg-white font-medium text-slate-700 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                  <option value="all">Tất cả các tổ (Toàn trường)</option>
+                  <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
+                  <option value="Toán học">Toán học</option>
+                  <option value="Vật lý">Vật lý</option>
+                  <option value="Hóa học">Hóa học</option>
+                  <option value="Sinh học">Sinh học</option>
+                  <option value="Tin học">Tin học</option>
+                  <option value="Ngữ văn">Ngữ văn</option>
+                  <option value="Lịch sử">Lịch sử</option>
+                  <option value="Địa lý">Địa lý</option>
+                  <option value="Tiếng Anh">Tiếng Anh</option>
+                  <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
+                  <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+                  <option value="Giáo dục thể chất">Giáo dục thể chất</option>
+                  <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                  <option value="Văn phòng">Văn phòng</option>
+                  <option value="Chưa phân tổ">Chưa phân tổ</option>
+                </select>
+
+                <!-- Ô tìm kiếm theo Tên hoặc Mã GV -->
+                <input type="text" id="search_user_input" oninput="filterUserTable()" placeholder="🔍 Tìm theo Họ tên hoặc Mã GV..." class="w-full sm:max-w-xs border border-slate-300 px-3.5 py-2 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
+              </div>
+
+              <div class="text-xs text-slate-500 font-medium self-end md:self-center" id="user-count-label">Hiển thị: 0 tài khoản</div>
+            </div>
+
+            <!-- THANH TÁC VỤ KHI CHỌN TÀI KHOẢN RIÊNG LẺ (Tự hiện khi tick chọn >= 1 tài khoản) -->
+            <div id="bulk-user-actions" class="hidden mb-4 p-3 bg-purple-50 border border-purple-200 rounded-xl flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center space-x-3">
+                <span class="text-sm font-bold text-purple-900">
+                  Đã chọn <span id="selected-users-count" class="px-2 py-0.5 bg-purple-600 text-white rounded-full text-xs">0</span> tài khoản
+                </span>
+                <button type="button" onclick="clearSelectedUsers()" class="text-xs text-purple-700 hover:underline font-medium">
+                  Bỏ chọn tất cả
+                </button>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Chuyển tổ nhanh cho các tài khoản đang chọn -->
+                <select id="bulk_target_dept" class="border border-purple-300 bg-white px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-700">
+                  <option value="">-- Chuyển sang tổ... --</option>
+                  <option value="Toán học">Toán học</option>
+                  <option value="Vật lý">Vật lý</option>
+                  <option value="Hóa học">Hóa học</option>
+                  <option value="Sinh học">Sinh học</option>
+                  <option value="Tin học">Tin học</option>
+                  <option value="Ngữ văn">Ngữ văn</option>
+                  <option value="Lịch sử">Lịch sử</option>
+                  <option value="Địa lý">Địa lý</option>
+                  <option value="Tiếng Anh">Tiếng Anh</option>
+                  <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
+                  <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+                  <option value="Giáo dục thể chất">Giáo dục thể chất</option>
+                  <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                  <option value="Văn phòng">Văn phòng</option>
+                </select>
+                <button type="button" onclick="bulkChangeDepartment()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">
+                  Áp dụng tổ
+                </button>
+
+                <!-- Xuất Excel riêng các tài khoản đã chọn -->
+                <button type="button" onclick="exportSelectedUsersToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">
+                  Xuất Excel đã chọn
+                </button>
+
+                <!-- Xóa các tài khoản đã chọn -->
+                <button type="button" onclick="bulkDeleteSelectedUsers()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">
+                  Xóa đã chọn
+                </button>
+              </div>
             </div>
 
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr class="bg-slate-50 border-b text-slate-600">
+                    <th class="p-3 w-10 text-center">
+                      <input type="checkbox" id="select_all_users" onchange="toggleSelectAllUsers(this)" title="Chọn tất cả trong danh sách đang lọc" class="rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
+                    </th>
                     <th class="p-3">Họ và tên</th>
-                    <th class="p-3">Email</th>
+                    <th class="p-3">Mã GV</th>
                     <th class="p-3">Tổ bộ môn</th>
                     <th class="p-3">Quyền hạn & Kiêm nhiệm</th>
                     <th class="p-3 text-right">Tác vụ</th>
@@ -338,6 +412,7 @@
                   <!-- Render danh sách user -->
                 </tbody>
               </table>
+            </div>
             </div>
           </section>
 
@@ -504,6 +579,8 @@
     let userProfile = null;
     let currentSelectedCategory = null;
     let allUsersCache = []; // Lưu đệm danh sách user để tìm kiếm tức thì
+    let selectedUserIds = new Set(); // Lưu danh sách ID tài khoản được chọn riêng lẻ
+    let currentFilteredUsers = [];   // Lưu danh sách đang hiển thị sau khi lọc
     // Hàm ghép đuôi nội bộ ngầm để Supabase Auth chấp nhận đăng nhập bằng Mã GV
     function toAuthEmail(code) {
       const clean = String(code || "").trim().toLowerCase();
@@ -1369,33 +1446,54 @@
     // ==========================================
     // QUẢN LÝ NGƯỜI DÙNG (DÀNH CHO QUẢN TRỊ VIÊN GỐC)
     // ==========================================
+    // Đọc danh sách User từ Supabase
     async function loadAllUsers() {
       const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
       const tbody = document.getElementById("users-body");
 
       if (error) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Lỗi tải danh sách: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Lỗi tải danh sách: ${error.message}</td></tr>`;
         return;
       }
 
       allUsersCache = data || [];
-      renderUsersTable(allUsersCache);
+
+      // Loại bỏ các ID đã bị xóa khỏi danh sách đang chọn
+      const validIds = new Set(allUsersCache.map(u => u.id));
+      selectedUserIds.forEach(id => {
+        if (!validIds.has(id)) selectedUserIds.delete(id);
+      });
+
+      filterUserTable();
     }
 
+    // Lọc kết hợp theo Tổ bộ môn và Từ khóa tìm kiếm
     function filterUserTable() {
-      const keyword = document.getElementById("search_user_input").value.trim().toLowerCase();
-      if (!keyword) {
-        renderUsersTable(allUsersCache);
-        return;
-      }
-      const filtered = allUsersCache.filter(u =>
-        (u.full_name && u.full_name.toLowerCase().includes(keyword)) ||
-        (u.email && u.email.toLowerCase().includes(keyword)) ||
-        (u.department && u.department.toLowerCase().includes(keyword))
-      );
+      const selectedDept = document.getElementById("filter_user_department")?.value || "all";
+      const keyword = (document.getElementById("search_user_input")?.value || "").trim().toLowerCase();
+
+      const filtered = allUsersCache.filter(u => {
+        // 1. Điều kiện lọc theo Tổ bộ môn
+        if (selectedDept !== "all") {
+          const userDept = u.role === 'admin' ? 'Ban Giám Hiệu' : (u.department || 'Chưa phân tổ');
+          if (userDept !== selectedDept) return false;
+        }
+
+        // 2. Điều kiện tìm kiếm theo Họ tên hoặc Mã GV
+        if (keyword) {
+          const matchName = u.full_name && u.full_name.toLowerCase().includes(keyword);
+          const matchCode = u.email && u.email.toLowerCase().includes(keyword);
+          if (!matchName && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      currentFilteredUsers = filtered;
       renderUsersTable(filtered);
     }
 
+    // Hiển thị bảng danh sách tài khoản kèm ô checkbox chọn riêng lẻ
     function renderUsersTable(usersList) {
       const tbody = document.getElementById("users-body");
       const countLabel = document.getElementById("user-count-label");
@@ -1403,7 +1501,8 @@
 
       tbody.innerHTML = "";
       if (usersList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Không tìm thấy tài khoản nào khớp từ khóa.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400">Không tìm thấy tài khoản nào phù hợp với điều kiện lọc.</td></tr>`;
+        updateBulkActionUI();
         return;
       }
 
@@ -1413,6 +1512,7 @@
       };
 
       usersList.forEach(user => {
+        const isChecked = selectedUserIds.has(user.id);
         const roleLabel = user.role === 'admin' ? '<span class="text-purple-600 font-bold">Ban Giám Hiệu</span>' : 
                           user.role === 'hod' ? '<span class="text-blue-600 font-bold">Tổ trưởng</span>' : 
                           user.role === 'clerk' ? '<span class="text-amber-600 font-bold">Văn thư</span>' : 'Giáo viên';
@@ -1420,10 +1520,15 @@
         const extraPos = posBadge[user.position] || '';
 
         const tr = document.createElement("tr");
+        tr.className = isChecked ? "bg-purple-50/60 transition" : "hover:bg-slate-50 transition";
         tr.innerHTML = `
+          <td class="p-3 text-center">
+            <input type="checkbox" ${isChecked ? "checked" : ""} onchange="toggleSingleUser('${user.id}', this.checked)"
+                   class="rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
+          </td>
           <td class="p-3 font-medium text-slate-900">${escapeHTML(user.full_name)}</td>
-          <td class="p-3 text-slate-600">${escapeHTML(user.email || 'N/A')}</td>
-          <td class="p-3 text-slate-600">${user.role === 'admin' ? '<span class="text-slate-400 italic">- Không yêu cầu -</span>' : escapeHTML(user.department)}</td>
+          <td class="p-3 font-semibold text-blue-700">${escapeHTML(user.email || 'N/A')}</td>
+          <td class="p-3 text-slate-600">${user.role === 'admin' ? '<span class="text-slate-400 italic">- Ban Giám Hiệu -</span>' : escapeHTML(user.department)}</td>
           <td class="p-3">${roleLabel}${extraPos}</td>
           <td class="p-3 text-right space-x-2">
             <button data-id="${user.id}" data-name="${escapeHTML(user.full_name)}" data-dept="${escapeHTML(user.department)}" data-role="${user.role}" data-pos="${user.position || 'none'}"
@@ -1435,6 +1540,127 @@
         `;
         tbody.appendChild(tr);
       });
+
+      updateBulkActionUI();
+    }
+
+    // Chọn / Bỏ chọn 1 tài khoản riêng lẻ
+    function toggleSingleUser(userId, isChecked) {
+      if (isChecked) selectedUserIds.add(userId);
+      else selectedUserIds.delete(userId);
+      renderUsersTable(currentFilteredUsers);
+    }
+
+    // Chọn / Bỏ chọn tất cả các tài khoản đang hiển thị trong bộ lọc hiện tại
+    function toggleSelectAllUsers(checkbox) {
+      if (checkbox.checked) {
+        currentFilteredUsers.forEach(u => selectedUserIds.add(u.id));
+      } else {
+        currentFilteredUsers.forEach(u => selectedUserIds.delete(u.id));
+      }
+      renderUsersTable(currentFilteredUsers);
+    }
+
+    // Bỏ chọn toàn bộ
+    function clearSelectedUsers() {
+      selectedUserIds.clear();
+      renderUsersTable(currentFilteredUsers);
+    }
+
+    // Cập nhật trạng thái thanh công cụ hàng loạt & checkbox tổng
+    function updateBulkActionUI() {
+      const bulkBar = document.getElementById("bulk-user-actions");
+      const countEl = document.getElementById("selected-users-count");
+      const selectAllEl = document.getElementById("select_all_users");
+
+      if (countEl) countEl.innerText = selectedUserIds.size;
+      if (bulkBar) {
+        if (selectedUserIds.size > 0) bulkBar.classList.remove("hidden");
+        else bulkBar.classList.add("hidden");
+      }
+
+      if (selectAllEl) {
+        if (currentFilteredUsers.length === 0) {
+          selectAllEl.checked = false;
+          selectAllEl.indeterminate = false;
+        } else {
+          const selectedInView = currentFilteredUsers.filter(u => selectedUserIds.has(u.id)).length;
+          selectAllEl.checked = (selectedInView === currentFilteredUsers.length);
+          selectAllEl.indeterminate = (selectedInView > 0 && selectedInView < currentFilteredUsers.length);
+        }
+      }
+    }
+
+    // Tác vụ 1: Xuất Excel CHỈ các tài khoản đã chọn
+    function exportSelectedUsersToExcel() {
+      if (selectedUserIds.size === 0) return alert("Vui lòng chọn ít nhất 1 tài khoản!");
+      const selectedList = allUsersCache.filter(u => selectedUserIds.has(u.id));
+
+      const excelData = selectedList.map(user => ({
+        "Mã GV": user.email,
+        "Mật khẩu": "",
+        "Họ và tên": user.full_name,
+        "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
+        "Quyền hạn": user.role === 'admin' ? 'Ban Giám Hiệu' : 
+                     (user.role === 'hod' ? 'Tổ trưởng' : 
+                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên')),
+        "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
+                               (user.position === 'doan' ? 'Cán bộ Đoàn' : '')
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "TaiKhoanDaChon");
+      XLSX.writeFile(workbook, `DanhSach_DaChon_${selectedList.length}GV.xlsx`);
+    }
+
+    // Tác vụ 2: Chuyển tổ hàng loạt cho các tài khoản đang chọn
+    async function bulkChangeDepartment() {
+      const targetDept = document.getElementById("bulk_target_dept").value;
+      if (!targetDept) return alert("Vui lòng chọn tổ bộ môn muốn chuyển đến!");
+      if (selectedUserIds.size === 0) return;
+
+      const ids = Array.from(selectedUserIds).filter(id => id !== currentUser.id);
+      if (ids.length === 0) return alert("Không thể thay đổi tổ của tài khoản Admin đang đăng nhập!");
+
+      if (!confirm(`Chuyển ${ids.length} tài khoản đã chọn sang tổ "${targetDept}"?`)) return;
+
+      const { error } = await client.from("profiles")
+        .update({ department: targetDept })
+        .in("id", ids);
+
+      if (error) {
+        alert("Lỗi cập nhật tổ: " + error.message);
+      } else {
+        alert(`Đã chuyển ${ids.length} tài khoản sang tổ ${targetDept} thành công!`);
+        document.getElementById("bulk_target_dept").value = "";
+        loadAllUsers();
+      }
+    }
+
+    // Tác vụ 3: Xóa hàng loạt các tài khoản đang chọn
+    async function bulkDeleteSelectedUsers() {
+      if (selectedUserIds.size === 0) return;
+
+      // Bảo vệ tài khoản Admin đang đăng nhập không bị xóa nhầm
+      const idsToDelete = Array.from(selectedUserIds).filter(id => id !== currentUser.id);
+      if (idsToDelete.length === 0) {
+        return alert("Bạn không thể tự xóa tài khoản của chính mình đang đăng nhập!");
+      }
+
+      if (!confirm(`CẢNH BÁO: Bạn có chắc chắn muốn xóa ${idsToDelete.length} tài khoản đã chọn khỏi hệ thống?`)) return;
+
+      const { error } = await client.from("profiles")
+        .delete()
+        .in("id", idsToDelete);
+
+      if (error) {
+        alert("Lỗi khi xóa hàng loạt: " + error.message);
+      } else {
+        alert(`Đã xóa thành công ${idsToDelete.length} tài khoản!`);
+        selectedUserIds.clear();
+        loadAllUsers();
+      }
     }
 
     function openEditModalFromBtn(btn) {
