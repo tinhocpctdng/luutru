@@ -76,7 +76,7 @@
         <!-- CỤM TRÁI: LOGO THPT PHAN CHÂU TRÌNH + KHO LƯU TRỮ HỒ SƠ -->
         <div class="flex items-center space-x-3">
           <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-xs">
-            <img src=logopct.png"
+            <img src="logopct.png"
                  alt="Logo THPT Phan Châu Trinh"
                  class="w-full h-full object-contain"
                  onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
@@ -141,8 +141,8 @@
     <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
       <div class="flex flex-col lg:flex-row gap-6 items-start">
         
-        <!-- CỘT TRÁI: CÂY THƯ MỤC LƯU TRỮ (SIDEBAR) -->
-        <aside class="w-full lg:w-72 bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4 shrink-0 lg:sticky lg:top-24">
+        <!-- CỘT TRÁI: CÂY THƯ MỤC LƯU TRỮ (Tự cuộn độc lập, không làm trôi trang) -->
+        <aside class="w-full lg:w-72 bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4 shrink-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center">
               <svg class="w-4 h-4 mr-1.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
@@ -172,7 +172,7 @@
         </aside>
 
         <!-- CỘT PHẢI: VÙNG HIỂN THỊ NỘI DUNG CHÍNH -->
-        <div class="flex-1 w-full min-w-0 space-y-6">
+        <div id="right-content-area" class="flex-1 w-full min-w-0 space-y-6 scroll-mt-24">
 
           <!-- TAB 1: FORM NỘP BÀI GIẢNG / TÀI LIỆU -->
           <section id="tab-upload" class="bg-white p-6 sm:p-7 rounded-2xl shadow-sm border border-slate-200/90">
@@ -277,16 +277,23 @@
 
           <!-- TAB XEM TÀI LIỆU THEO NHÁNH CÂY THƯ MỤC -->
           <section id="tab-folder-view" class="hidden bg-white p-6 sm:p-7 rounded-2xl shadow-sm border border-slate-200/90">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-4 mb-5 gap-3">
+            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-slate-100 pb-4 mb-5 gap-3">
               <div>
                 <div class="text-xs text-slate-400 font-medium" id="folder-view-breadcrumb">Kho lưu trữ / ...</div>
-                <h2 class="text-lg font-bold text-slate-900 flex items-center mt-1" id="folder-view-title">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center flex-wrap gap-2 mt-1" id="folder-view-title">
                   📁 Tên thư mục
                 </h2>
               </div>
-              <button onclick="openUploadForCurrentFolder()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition self-start sm:self-auto">
-                + Nộp hồ sơ vào mục này
-              </button>
+              <div class="flex flex-wrap items-center gap-2 self-start md:self-auto">
+                <!-- CÔNG CỤ LỌC HỒ SƠ THEO TỔ (Tự hiện khi chọn các mục con của Tổ chuyên môn) -->
+                <select id="folder_filter_department" onchange="reloadCurrentFolderNode()" class="hidden border border-slate-300 px-3 py-2 rounded-xl text-xs sm:text-sm bg-white font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                  <option value="all">Tất cả các tổ (14 tổ)</option>
+                </select>
+
+                <button onclick="openUploadForCurrentFolder()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition">
+                  + Nộp hồ sơ vào mục này
+                </button>
+              </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -637,6 +644,19 @@
     let currentUser = null;
     let userProfile = null;
     let currentSelectedCategory = null;
+    let currentFolderContext = null;
+    // Tự động cuộn mượt tới vùng nội dung bên phải khi chọn mục ở cây thư mục bên trái
+    function scrollToRightContent() {
+      const rightPanel = document.getElementById("right-content-area");
+      if (!rightPanel) return;
+      const headerOffset = 88;
+      const elementPosition = rightPanel.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: Math.max(0, offsetPosition),
+        behavior: "smooth"
+      });
+    }
     let allUsersCache = [];
     let selectedUserIds = new Set();
     let currentFilteredUsers = [];
@@ -1043,7 +1063,7 @@
           subBtn.id = `tree-node-${sub.value}`;
           subBtn.className = "tree-node-btn w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-700 text-xs font-medium flex items-center transition";
           subBtn.innerHTML = `<span class="mr-1.5 text-slate-400">└</span> <span class="truncate">${escapeHTML(sub.name)}</span>`;
-          subBtn.onclick = () => openFolderNode(folder.name, sub.value, sub.name, folder.isShared);
+          subBtn.onclick = () => openFolderNode(folder.id, folder.name, sub.value, sub.name, folder.isShared);
           childrenContainer.appendChild(subBtn);
         });
 
@@ -1054,7 +1074,7 @@
     }
 
     // Xử lý khi bấm vào 1 nhánh con trên cây thư mục
-    async function openFolderNode(parentName, categoryValue, categoryName, isShared) {
+    async function openFolderNode(folderId, parentName, categoryValue, categoryName, isShared) {
       document.querySelectorAll(".tree-node-btn").forEach(el => {
         el.classList.remove("bg-blue-100", "text-blue-800", "font-bold");
       });
@@ -1064,14 +1084,58 @@
       if (isShared) {
         loadSharedDocs(categoryValue, `Kho chung toàn trường / ${categoryName}`);
         switchTab('shared');
+        scrollToRightContent();
         return;
       }
 
       currentSelectedCategory = categoryValue;
-      switchTab('folder-view');
+      currentFolderContext = { folderId, parentName, categoryValue, categoryName, isShared };
 
-      document.getElementById("folder-view-breadcrumb").innerText = `${parentName} / ${categoryName}`;
-      document.getElementById("folder-view-title").innerHTML = `<span class="mr-2">📂</span> ${escapeHTML(categoryName)}`;
+      // Ẩn/hiện công cụ lọc theo Tổ đối với các mục con của "Tổ chuyên môn"
+      const folderDeptFilter = document.getElementById("folder_filter_department");
+      if (folderDeptFilter) {
+        if (folderId === "dept" && userProfile.role === "admin") {
+          folderDeptFilter.classList.remove("hidden");
+          folderDeptFilter.disabled = false;
+        } else if (folderId === "dept" && userProfile.role === "hod") {
+          const normDept = normalizeDepartmentName(userProfile.department);
+          if (![...folderDeptFilter.options].some(o => o.value === normDept)) {
+            const opt = document.createElement("option");
+            opt.value = normDept;
+            opt.innerText = normDept;
+            folderDeptFilter.appendChild(opt);
+          }
+          folderDeptFilter.value = normDept;
+          folderDeptFilter.disabled = true;
+          folderDeptFilter.classList.remove("hidden");
+        } else {
+          folderDeptFilter.classList.add("hidden");
+          folderDeptFilter.value = "all";
+        }
+      }
+
+      switchTab('folder-view');
+      scrollToRightContent();
+      await reloadCurrentFolderNode();
+    }
+
+    // Tải và lọc danh sách hồ sơ của thư mục đang mở
+    async function reloadCurrentFolderNode() {
+      if (!currentFolderContext) return;
+      const { folderId, parentName, categoryValue, categoryName } = currentFolderContext;
+
+      const folderDeptFilter = document.getElementById("folder_filter_department");
+      const selectedDept = (folderId === "dept" && folderDeptFilter && !folderDeptFilter.classList.contains("hidden"))
+        ? folderDeptFilter.value
+        : "all";
+
+      const deptBadgeHtml = (folderId === "dept" && selectedDept !== "all")
+        ? `<span class="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full">${escapeHTML(selectedDept)}</span>`
+        : "";
+
+      document.getElementById("folder-view-breadcrumb").innerText =
+        (folderId === "dept" && selectedDept !== "all") ? `${parentName} / ${categoryName} / ${selectedDept}` : `${parentName} / ${categoryName}`;
+      document.getElementById("folder-view-title").innerHTML = `<span>📂 ${escapeHTML(categoryName)}</span> ${deptBadgeHtml}`;
 
       const tbody = document.getElementById("folder-docs-body");
       tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Đang tải dữ liệu thư mục...</td></tr>`;
@@ -1079,12 +1143,15 @@
       let query = client.from("submissions")
         .select("*")
         .eq("category", categoryValue)
-        .order("submitted_at", { ascending: false });
+        .order("submitted_at", { ascending: false })
+        .limit(2000);
 
       if (userProfile.role === 'teacher') {
         query = query.eq("teacher_id", currentUser.id);
       } else if (userProfile.role === 'hod' || userProfile.role === 'clerk') {
         query = query.eq("department", userProfile.department);
+      } else if (userProfile.role === 'admin' && folderId === 'dept' && selectedDept !== 'all') {
+        query = query.eq("department", selectedDept);
       }
 
       const { data, error } = await query;
@@ -1116,7 +1183,6 @@
         tbody.appendChild(tr);
       });
     }
-
     function openUploadForCurrentFolder() {
       switchTab('upload');
       if (currentSelectedCategory) {
@@ -2142,22 +2208,22 @@
     }
 
     function loadDepartmentOptions() {
-      const filterSelect = document.getElementById("filter_department");
-      if (!filterSelect) return;
-
       const standardDepartments = [
         "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tin học",
         "Ngữ văn", "Lịch sử", "Địa lý", "Tiếng Anh", "Tiếng Pháp - Nhật",
         "Giáo dục Kinh tế & Pháp luật", "Giáo dục thể chất", "Giáo dục Quốc phòng và An ninh", "Văn phòng"
       ];
 
-      filterSelect.innerHTML = `<option value="all">Tất cả các tổ bộ môn (14 tổ)</option>`;
-
-      standardDepartments.forEach(dept => {
-        const option = document.createElement("option");
-        option.value = dept;
-        option.innerText = dept;
-        filterSelect.appendChild(option);
+      ["filter_department", "folder_filter_department"].forEach(selectId => {
+        const selectEl = document.getElementById(selectId);
+        if (!selectEl) return;
+        selectEl.innerHTML = `<option value="all">Tất cả các tổ bộ môn (14 tổ)</option>`;
+        standardDepartments.forEach(dept => {
+          const option = document.createElement("option");
+          option.value = dept;
+          option.innerText = dept;
+          selectEl.appendChild(option);
+        });
       });
     }
   </script>
