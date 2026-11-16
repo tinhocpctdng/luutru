@@ -551,7 +551,7 @@
           <div class="space-y-4">
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Mã giáo viên (Tên đăng nhập)</label>
-              <input type="text" id="add_email" placeholder="VD: TH08" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm uppercase">
+              <input type="text" id="add_email" placeholder="VD: TH08" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Mật khẩu khởi tạo (Ít nhất 6 ký tự)</label>
@@ -673,7 +673,7 @@
       if (!raw) return "";
       const str = String(raw).trim();
       if (str.toLowerCase().endsWith("@noibo.edu.vn")) {
-        return str.slice(0, -13).toUpperCase();
+      return str.slice(0, -13);
       }
       return str;
     }
@@ -1888,7 +1888,7 @@
 
     // Tạo tài khoản mới bằng Mã giáo viên
     async function saveNewUser() {
-      const teacherCode = document.getElementById("add_email").value.trim().toUpperCase().replace(/\s+/g, "");
+      const teacherCode = document.getElementById("add_email").value.trim().replace(/\s+/g, "");
       const password = document.getElementById("add_password").value;
       const full_name = document.getElementById("add_full_name").value.trim();
       let department = document.getElementById("add_department").value;
@@ -2018,7 +2018,7 @@
           for (let i = 0; i < jsonData.length; i++) {
             const row = jsonData[i];
             const rawCode = row["Mã GV"] !== undefined ? row["Mã GV"] : row["Email"];
-            const teacherCode = rawCode ? String(rawCode).trim().toUpperCase().replace(/\s+/g, "") : "";
+            const teacherCode = rawCode ? String(rawCode).trim().replace(/\s+/g, "") : "";
             
             const password = row["Mật khẩu"] ? String(row["Mật khẩu"]).trim() : "123456";
             const fullName = row["Họ và tên"] ? String(row["Họ và tên"]).trim() : "";
@@ -2046,7 +2046,7 @@
             const { data: existingUser } = await client
               .from("profiles")
               .select("id")
-              .or(`email.eq.${teacherCode},email.eq.${authEmail}`)
+              .or(`email.ilike.${teacherCode},email.eq.${authEmail}`)
               .maybeSingle();
 
             if (existingUser) {
