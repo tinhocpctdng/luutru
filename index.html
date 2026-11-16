@@ -1030,7 +1030,7 @@
       if (!file) return;
 
       if (file.size > 25 * 1024 * 1024) {
-        return alert("Tệp vượt quá 25MB! Vui lòng nén hoặc chọn tệp nhỏ hơn để đảm bảo tốc độ tải lên.");
+        return alert("Tệp vượt quá 25MB! Vui lòng chọn tệp nhỏ hơn.");
       }
 
       const category = document.getElementById("category").value;
@@ -1045,9 +1045,9 @@
       btn.disabled = true;
       btn.innerText = "Đang đẩy tệp lên Google Drive...";
 
-      try {
-        const reader = new FileReader();
-        reader.onload = async function() {
+      const reader = new FileReader();
+      reader.onload = async function() {
+        try {
           const base64Data = reader.result.split(',')[1];
 
           const formData = new URLSearchParams();
@@ -1057,7 +1057,7 @@
           formData.append('teacherName', userProfile.full_name);
           formData.append('week', week_no);
           formData.append('department', userProfile.department);
-          formData.append('category', category); // <-- THÊM DÒNG NÀY VÀO ĐÂY
+          formData.append('category', category);
           if (isSharedDoc) formData.append('isTemplate', 'true');
 
           const res = await fetch(APPS_SCRIPT_URL, {
@@ -1066,14 +1066,23 @@
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
           });
 
-          const result = await res.json();
-          if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
+          const textResult = await res.text();
+          let result;
+          try {
+            result = JSON.parse(textResult);
+          } catch (parseErr) {
+            throw new Error("Google Drive đã nhận file nhưng phản hồi không đúng JSON.");
+          }
+
+          if (!result.success) {
+            throw new Error(result.error || "Lỗi Google Drive");
+          }
 
           const driveFileUrl = result.fileUrl; 
           const deptSlug = toSlug(userProfile.department);
           const storageLabel = isSharedDoc
             ? `00_cong-khai/${category}/${file.name}`
-            : `GoogleDrive/to-chuyen-mon/${deptSlug}/${category}`;
+            : `GoogleDrive/02_to-chuyen-mon/${deptSlug}/${category}`;
 
           const { error: dbError } = await client.from("submissions").insert({
             teacher_id: currentUser.id,
@@ -1089,7 +1098,7 @@
             status: isSharedDoc ? 'approved' : 'pending'
           });
 
-          if (dbError) throw new Error("Lỗi lưu DB: " + dbError.message);
+          if (dbError) throw new Error("Lỗi lưu DB Supabase: " + dbError.message);
 
           alert("Đã nộp hồ sơ thành công vào Google Drive nhà trường!");
           fileInput.value = "";
@@ -1098,18 +1107,23 @@
           if (isSharedDoc) loadSharedDocs();
           switchTab('my-docs');
 
+        } catch (err) {
+          alert("Thao tác thất bại: " + err.message);
+          console.error(err);
+        } finally {
           btn.disabled = false;
           btn.innerText = "Nộp hồ sơ lên hệ thống";
-        };
-        
-        reader.readAsDataURL(file);
-      } catch (err) {
-        alert("Thao tác thất bại: " + err.message);
+        }
+      };
+
+      reader.onerror = function() {
+        alert("Lỗi khi đọc tệp từ thiết bị!");
         btn.disabled = false;
         btn.innerText = "Nộp hồ sơ lên hệ thống";
-      }
-    }
+      };
 
+      reader.readAsDataURL(file);
+    }
     // 6. Lấy danh sách hồ sơ cá nhân (Có nút Xóa nếu đang Chờ duyệt)
     async function loadMySubmissions() {
       const { data } = await client.from("submissions")
@@ -1187,14 +1201,15 @@
       });
     }
 
-    // Đăng tải tài liệu lên Kho chung (Dành cho BGH và Văn thư)
+    // Xử lý đăng tải biểu mẫu chung (Dành cho Admin/BGH và Nhân viên Văn thư)
     async function handleUploadTemplate(e) {
       e.preventDefault();
       if (userProfile.role !== 'admin' && userProfile.role !== 'clerk') {
         return alert("Bạn không có quyền thực hiện thao tác này!");
       }
 
-      const subCat = document.getElementById("template_category").value;
+      const subCatEl = document.getElementById("template_category");
+      const subCat = subCatEl ? subCatEl.value : "bieu-mau";
       const title = document.getElementById("template_title").value.trim();
       const fileInput = document.getElementById("template_file");
       const file = fileInput.files[0];
@@ -1204,19 +1219,19 @@
       if (file.size > 25 * 1024 * 1024) return alert("Tệp vượt quá 25MB!");
 
       btn.disabled = true;
-      btn.innerText = "Đang tải...";
+      btn.innerText = "Đang tải lên kho chung...";
 
-      try {
-        const reader = new FileReader();
-        reader.onload = async function() {
+      const reader = new FileReader();
+      reader.onload = async function() {
+        try {
           const base64Data = reader.result.split(',')[1];
 
           const formData = new URLSearchParams();
           formData.append('fileName', file.name);
           formData.append('mimeType', file.type);
           formData.append('fileData', base64Data);
-          formData.append('teacherName', userProfile.full_name); // Thêm tên người đăng
-          formData.append('category', subCat); // <-- THÊM DÒNG NÀY ĐỂ PHÂN NHÁNH KHO CHUNG
+          formData.append('teacherName', userProfile.full_name || "Ban Giám Hiệu");
+          formData.append('category', subCat);
           formData.append('isTemplate', 'true');
 
           const res = await fetch(APPS_SCRIPT_URL, {
@@ -1225,13 +1240,23 @@
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
           });
 
-          const result = await res.json();
-          if (!result.success) throw new Error(result.error || "Lỗi tải file lên Google Drive");
+          const textResult = await res.text();
+          let result;
+          try {
+            result = JSON.parse(textResult);
+          } catch (parseErr) {
+            throw new Error("Google Drive đã nhận file nhưng phản hồi không đúng định dạng JSON. Hãy kiểm tra lại quyền Deploy (Anyone/Bất kỳ ai) trên Apps Script.");
+          }
 
+          if (!result.success) {
+            throw new Error(result.error || "Lỗi tải file lên Google Drive 5TB");
+          }
+
+          // Ghi thông tin tệp vào bảng submissions trên Supabase
           const { error: dbError } = await client.from("submissions").insert({
             teacher_id: currentUser.id,
-            teacher_name: userProfile.full_name,
-            department: userProfile.department,
+            teacher_name: userProfile.full_name || "Ban Giám Hiệu",
+            department: userProfile.department || "Ban Giám Hiệu",
             category: subCat,
             title: title,
             file_name: file.name,
@@ -1240,25 +1265,33 @@
             status: 'approved'
           });
 
-          if (dbError) throw new Error("Lỗi lưu cơ sở dữ liệu: " + dbError.message);
+          if (dbError) {
+            throw new Error("Tệp đã lên Drive nhưng lỗi lưu Database Supabase: " + dbError.message);
+          }
 
-          alert("Đã đăng tải lên Kho chung toàn trường thành công!");
+          alert("Đã đăng tải biểu mẫu lên kho chung thành công!");
           document.getElementById("template_title").value = "";
           fileInput.value = "";
-          loadSharedDocs(subCat);
+          loadSharedDocs();
 
+        } catch (err) {
+          alert("Thông báo lỗi: " + err.message);
+          console.error(err);
+        } finally {
+          // Luôn mở khóa lại nút bấm dù thành công hay thất bại
           btn.disabled = false;
-          btn.innerText = "Đăng tải";
-        };
+          btn.innerText = "Đăng tải ngay";
+        }
+      };
 
-        reader.readAsDataURL(file);
-      } catch (err) {
-        alert("Thao tác thất bại: " + err.message);
+      reader.onerror = function() {
+        alert("Lỗi khi đọc tệp từ thiết bị!");
         btn.disabled = false;
-        btn.innerText = "Đăng tải";
-      }
-    }
+        btn.innerText = "Đăng tải ngay";
+      };
 
+      reader.readAsDataURL(file);
+    }
     // 8. Tải danh sách duyệt dành cho Tổ trưởng và BGH
     async function loadReviewSubmissions() {
       let query = client.from("submissions")
