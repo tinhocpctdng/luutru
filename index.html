@@ -1298,6 +1298,32 @@
       }
     }
 
+    // Hàm gửi tệp có cơ chế tự động giãn luồng & thử lại khi > 30 người nộp cùng 1 giây
+    async function postToAppsScriptWithRetry(formData, btnElement, maxRetries = 3) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          const res = await fetch(APPS_SCRIPT_URL, {
+            method: "POST",
+            body: formData,
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+          });
+
+          const textResult = await res.text();
+          // Khi quá 30 luồng đồng thời, Google trả về trang HTML báo bận thay vì JSON -> sẽ nhảy sang catch để thử lại
+          return JSON.parse(textResult);
+        } catch (err) {
+          if (attempt === maxRetries) {
+            throw new Error("Hệ thống đang quá tải do có quá nhiều người nộp cùng một giây. Vui lòng bấm Nộp lại sau vài giây!");
+          }
+          // Chờ ngẫu nhiên 1.5s - 4s để tránh các máy thử lại cùng một thời điểm
+          const waitMs = 1500 + Math.floor(Math.random() * 2500);
+          if (btnElement) {
+            btnElement.innerText = `Đang xếp hàng nộp (${attempt}/${maxRetries - 1})...`;
+          }
+          await new Promise(resolve => setTimeout(resolve, waitMs));
+        }
+      }
+    }
     // 5. Tải file lên Google Drive qua Google Apps Script
     async function handleUpload(e) {
       e.preventDefault();
@@ -1337,11 +1363,9 @@
           if (isSharedDoc) formData.append('isTemplate', 'true');
           const { data: { session } } = await client.auth.getSession();
           formData.append('accessToken', session ? session.access_token : '');
-          const res = await fetch(APPS_SCRIPT_URL, {
-            method: "POST",
-            body: formData,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-          });
+          
+          const result = await postToAppsScriptWithRetry(formData, btn);
+          if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
 
           const textResult = await res.text();
           let result;
@@ -1515,11 +1539,8 @@
           formData.append('isTemplate', 'true');
           const { data: { session } } = await client.auth.getSession();
           formData.append('accessToken', session ? session.access_token : '');
-          const res = await fetch(APPS_SCRIPT_URL, {
-            method: "POST",
-            body: formData,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-          });
+          const result = await postToAppsScriptWithRetry(formData, btn);
+          if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
 
           const textResult = await res.text();
           let result;
