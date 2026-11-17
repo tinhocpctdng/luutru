@@ -753,28 +753,35 @@
         .eq("id", currentUser.id)
         .maybeSingle();
 
+      // CHẶN LỖ HỔNG: Nếu không có trong danh sách profiles (và không phải Admin gốc), lập tức đăng xuất!
       if (!profile) {
-        const defaultCode = cleanTeacherCode(currentUser.email);
-        const { data: newProfile, error: insertError } = await client
-          .from("profiles")
-          .insert({
+        if (currentUser.email === 'vulongdng@gmail.com') {
+          const { data: adminProf } = await client.from("profiles").insert({
             id: currentUser.id,
-            email: defaultCode,
-            full_name: defaultCode,
-            department: "Tin học",
-            role: "teacher",
-            position: "none"
-          })
-          .select()
-          .single();
-
-        if (insertError) {
-          alert("Lỗi tạo thông tin người dùng: " + insertError.message);
+            email: currentUser.email,
+            full_name: "Quản trị Hệ thống",
+            department: "Ban Giám Hiệu",
+            role: "admin",
+            position: "none",
+            must_change_pw: false
+          }).select().single();
+          profile = adminProf;
+        } else {
+          await client.auth.signOut();
+          alert("Tài khoản của bạn chưa được cấp quyền hoặc đã bị thu hồi khỏi hệ thống!");
+          location.reload();
           return;
         }
-        profile = newProfile;
       }
 
+      userProfile = profile;
+
+      // BẮT BUỘC ĐỔI MẬT KHẨU KHI ĐĂNG NHẬP LẦN ĐẦU (Chống lộ mật khẩu mặc định 123456)
+      if (userProfile.must_change_pw === true && currentUser.email !== 'vulongdng@gmail.com') {
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("app-screen").classList.remove("hidden");
+        openPasswordModal(true); // Mở khóa bắt buộc đổi mật khẩu
+      }
       userProfile = profile;
 
       // Cập nhật giao diện Header
@@ -1197,12 +1204,22 @@
       location.reload();
     }
 
-    function openPasswordModal() {
+    function openPasswordModal(isForced = false) {
       document.getElementById("new_password").value = "";
       document.getElementById("confirm_password").value = "";
-      document.getElementById("password-modal").classList.remove("hidden");
-    }
+      const modal = document.getElementById("password-modal");
+      const titleEl = modal.querySelector("h3");
+      const cancelBtn = modal.querySelector("button[onclick='closePasswordModal()']");
 
+      if (isForced) {
+        titleEl.innerText = "⚠️ Yêu cầu đổi mật khẩu lần đầu";
+        if (cancelBtn) cancelBtn.classList.add("hidden");
+      } else {
+        titleEl.innerText = "Đổi mật khẩu đăng nhập";
+        if (cancelBtn) cancelBtn.classList.remove("hidden");
+      }
+      modal.classList.remove("hidden");
+    }
     function closePasswordModal() {
       document.getElementById("password-modal").classList.add("hidden");
     }
@@ -1213,22 +1230,27 @@
       const btn = document.getElementById("btn-save-password");
 
       if (!p1 || p1.length < 6) return alert("Mật khẩu mới phải có ít nhất 6 ký tự!");
+      if (p1 === "123456" || p1 === "12345678") return alert("Vì lý do bảo mật đề thi, vui lòng không đặt mật khẩu mặc định dễ đoán!");
       if (p1 !== p2) return alert("Mật khẩu xác nhận không khớp!");
 
       btn.disabled = true;
       btn.innerText = "Đang lưu...";
 
       const { error } = await client.auth.updateUser({ password: p1 });
+      if (!error && userProfile) {
+        await client.from("profiles").update({ must_change_pw: false }).eq("id", currentUser.id);
+        userProfile.must_change_pw = false;
+      }
+
       btn.disabled = false;
       btn.innerText = "Cập nhật";
 
       if (error) alert("Lỗi đổi mật khẩu: " + error.message);
       else {
-        alert("Đổi mật khẩu thành công!");
+        alert("Đã cập nhật mật khẩu bảo mật thành công!");
         closePasswordModal();
       }
     }
-
     // 4. Chuyển đổi qua lại giữa các Tab (Hỗ trợ nút Sidebar trái + nút trên Header)
     function switchTab(tab) {
       const tabs = ['upload', 'my-docs', 'shared', 'folder-view', 'review', 'users'];
@@ -1313,7 +1335,8 @@
           formData.append('department', userProfile.department);
           formData.append('category', category);
           if (isSharedDoc) formData.append('isTemplate', 'true');
-
+          const { data: { session } } = await client.auth.getSession();
+          formData.append('accessToken', session ? session.access_token : '');
           const res = await fetch(APPS_SCRIPT_URL, {
             method: "POST",
             body: formData,
@@ -1490,7 +1513,8 @@
           formData.append('teacherName', userProfile.full_name || "Ban Giám Hiệu");
           formData.append('category', subCat);
           formData.append('isTemplate', 'true');
-
+          const { data: { session } } = await client.auth.getSession();
+          formData.append('accessToken', session ? session.access_token : '');
           const res = await fetch(APPS_SCRIPT_URL, {
             method: "POST",
             body: formData,
@@ -2226,6 +2250,26 @@
         });
       });
     }
+    // ==========================================
+    // BẢO MẬT PHÒNG MÁY: TỰ ĐĂNG XUẤT SAU 15 PHÚT KHÔNG THAO TÁC
+    // ==========================================
+    let idleTimer;
+    const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 phút
+
+    function resetIdleTimer() {
+      clearTimeout(idleTimer);
+      if (currentUser) {
+        idleTimer = setTimeout(async () => {
+          await client.auth.signOut();
+          alert("Phiên làm việc đã tự động đăng xuất do không có thao tác trong 15 phút để bảo vệ dữ liệu!");
+          location.reload();
+        }, IDLE_TIMEOUT_MS);
+      }
+    }
+
+    ["mousemove", "mousedown", "keydown", "touchstart", "scroll"].forEach(evt => {
+      document.addEventListener(evt, resetIdleTimer, true);
+    });
   </script>
 </body>
 </html>
