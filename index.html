@@ -1367,18 +1367,6 @@
           const result = await postToAppsScriptWithRetry(formData, btn);
           if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
 
-          const textResult = await res.text();
-          let result;
-          try {
-            result = JSON.parse(textResult);
-          } catch (parseErr) {
-            throw new Error("Google Drive đã nhận file nhưng phản hồi không đúng JSON.");
-          }
-
-          if (!result.success) {
-            throw new Error(result.error || "Lỗi Google Drive");
-          }
-
           const driveFileUrl = result.fileUrl; 
           const deptSlug = toSlug(userProfile.department);
           const storageLabel = isSharedDoc
@@ -1541,18 +1529,6 @@
           formData.append('accessToken', session ? session.access_token : '');
           const result = await postToAppsScriptWithRetry(formData, btn);
           if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
-
-          const textResult = await res.text();
-          let result;
-          try {
-            result = JSON.parse(textResult);
-          } catch (parseErr) {
-            throw new Error("Google Drive đã nhận file nhưng phản hồi không đúng định dạng JSON. Hãy kiểm tra lại quyền Deploy (Anyone/Bất kỳ ai) trên Apps Script.");
-          }
-
-          if (!result.success) {
-            throw new Error(result.error || "Lỗi tải file lên Google Drive 5TB");
-          }
 
           const { error: dbError } = await client.from("submissions").insert({
             teacher_id: currentUser.id,
