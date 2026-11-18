@@ -588,6 +588,7 @@
               <select id="add_role" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
                 <option value="teacher">Giáo viên / Nhân viên (Chỉ xem/nộp bài mình)</option>
                 <option value="hod">Tổ trưởng (Duyệt bài trong tổ)</option>
+                <option value="vice_hod">Tổ phó (Duyệt bài & quản lý hồ sơ tổ)</option>
                 <option value="clerk">Nhân viên Văn thư (Đăng kho biểu mẫu chung)</option>
                 <option value="admin">Ban Giám Hiệu (Quản lý & Duyệt toàn trường)</option>
               </select>
@@ -879,7 +880,7 @@
         },
         {
           label: "Tổ chuyên môn",
-          roles: ["admin", "hod","vice_hod" "teacher"],
+          roles: ["admin", "hod","vice_hod", "teacher"],
           excludeDept: "văn phòng",
           options: [
             { value: "ke-hoach-giao-duc", text: "Kế hoạch giáo dục tổ/nhóm", allowedRoles: ["admin", "hod", "vice_hod"] },
