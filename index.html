@@ -58,6 +58,11 @@
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Mật khẩu</label>
           <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required
                  class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-none transition text-sm">
+          <label class="inline-flex items-center gap-2 mt-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
+            <input type="checkbox" id="show_login_password" onchange="togglePasswordVisibility(['password'], 'show_login_password')"
+                   class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+            <span>Hiện mật khẩu</span>
+          </label>
         </div>
         <button type="submit" id="btn-login"
                 class="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-600/25 transition duration-200 mt-2">
@@ -613,16 +618,24 @@
       <!-- MODAL ĐỔI MẬT KHẨU CÁ NHÂN -->
       <div id="password-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
-          <h3 class="text-lg font-bold text-slate-900 mb-4">Đổi mật khẩu đăng nhập</h3>
-          <div class="space-y-4">
+          <h3 class="text-lg font-bold text-slate-900 mb-2">Đổi mật khẩu đăng nhập</h3>
+          <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+            Yêu cầu tối thiểu <strong class="text-slate-700">6 ký tự</strong>, bao gồm đủ <strong class="text-slate-700">chữ cái</strong>, <strong class="text-slate-700">chữ số</strong> và <strong class="text-slate-700">ký tự đặc biệt</strong> (VD: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-700">Pct@2026</code>).
+          </p>
+          <div class="space-y-3.5">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Mật khẩu mới (tối thiểu 6 ký tự)</label>
-              <input type="password" id="new_password" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
+              <label class="block text-xs font-bold text-slate-600 mb-1">Mật khẩu mới</label>
+              <input type="password" id="new_password" placeholder="Nhập mật khẩu mới..." class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Nhập lại mật khẩu mới</label>
-              <input type="password" id="confirm_password" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
+              <input type="password" id="confirm_password" placeholder="Xác nhận lại mật khẩu..." class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
+            <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
+              <input type="checkbox" id="show_new_password" onchange="togglePasswordVisibility(['new_password', 'confirm_password'], 'show_new_password')"
+                     class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+              <span>Hiện mật khẩu</span>
+            </label>
           </div>
           <div class="mt-6 flex justify-end space-x-2.5">
             <button onclick="closePasswordModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Hủy</button>
@@ -630,7 +643,6 @@
           </div>
         </div>
       </div>
-
     </main>
   </div>
 
@@ -1207,9 +1219,26 @@
       location.reload();
     }
 
+    // Bật/tắt hiển thị mật khẩu khi tích vào checkbox
+    function togglePasswordVisibility(inputIds, checkboxId) {
+      const isChecked = document.getElementById(checkboxId)?.checked;
+      inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.type = isChecked ? "text" : "password";
+      });
+    }
+
     function openPasswordModal(isForced = false) {
-      document.getElementById("new_password").value = "";
-      document.getElementById("confirm_password").value = "";
+      const p1El = document.getElementById("new_password");
+      const p2El = document.getElementById("confirm_password");
+      const chkEl = document.getElementById("show_new_password");
+
+      p1El.value = "";
+      p2El.value = "";
+      p1El.type = "password";
+      p2El.type = "password";
+      if (chkEl) chkEl.checked = false;
+
       const modal = document.getElementById("password-modal");
       const titleEl = modal.querySelector("h3");
       const cancelBtn = modal.querySelector("button[onclick='closePasswordModal()']");
@@ -1232,8 +1261,14 @@
       const p2 = document.getElementById("confirm_password").value;
       const btn = document.getElementById("btn-save-password");
 
-      if (!p1 || p1.length < 6) return alert("Mật khẩu mới phải có ít nhất 6 ký tự!");
-      if (p1 === "123456" || p1 === "12345678") return alert("Vì lý do bảo mật đề thi, vui lòng không đặt mật khẩu mặc định dễ đoán!");
+      const hasLetter = /[a-zA-Z]/.test(p1);
+      const hasNumber = /[0-9]/.test(p1);
+      const hasSpecial = /[^a-zA-Z0-9\s]/.test(p1);
+      const hasSpace = /\s/.test(p1);
+
+      if (!p1 || p1.length < 6 || !hasLetter || !hasNumber || !hasSpecial || hasSpace) {
+        return alert("Mật khẩu mới phải có tối thiểu 6 ký tự (không chứa dấu cách), bao gồm đầy đủ:\n- Chữ cái (a-z, A-Z)\n- Chữ số (0-9)\n- Ký tự đặc biệt (VD: @, #, $, !, _...)");
+      }
       if (p1 !== p2) return alert("Mật khẩu xác nhận không khớp!");
 
       btn.disabled = true;
