@@ -405,9 +405,9 @@
                   <option value="Địa lý">Địa lý</option>
                   <option value="Tiếng Anh">Tiếng Anh</option>
                   <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                  <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+                  <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
                   <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                  <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                  <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
                   <option value="Văn phòng">Văn phòng</option>
                   <option value="Chưa phân tổ">Chưa phân tổ</option>
                 </select>
@@ -442,9 +442,9 @@
                   <option value="Địa lý">Địa lý</option>
                   <option value="Tiếng Anh">Tiếng Anh</option>
                   <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                  <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+                  <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
                   <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                  <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                  <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
                   <option value="Văn phòng">Văn phòng</option>
                 </select>
                 <button type="button" onclick="bulkChangeDepartment()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition">
@@ -510,9 +510,9 @@
                 <option value="Địa lý">Địa lý</option>
                 <option value="Tiếng Anh">Tiếng Anh</option>
                 <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+                <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
                 <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
                 <option value="Văn phòng">Văn phòng</option>
                 <option value="Chưa phân tổ">Chưa phân tổ</option>
               </select>
@@ -575,9 +575,9 @@
                 <option value="Địa lý">Địa lý</option>
                 <option value="Tiếng Anh">Tiếng Anh</option>
                 <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                <option value="Giáo dục Kinh tế & Pháp luật">Giáo dục Kinh tế & Pháp luật</option>
+                <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
                 <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                <option value="Giáo dục Quốc phòng và An ninh">Giáo dục Quốc phòng và An ninh</option>
+                <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
                 <option value="Văn phòng">Văn phòng</option>
                 <option value="Chưa phân tổ">Chưa phân tổ</option>
               </select>
@@ -683,8 +683,8 @@
       const d = String(rawDept || "").trim();
       if (!d) return "Chưa phân tổ";
       const lower = d.toLowerCase();
-      if (lower.includes("kt&pl") || lower.includes("kinh tế")) return "Giáo dục Kinh tế & Pháp luật";
-      if (lower.includes("qp&an") || lower.includes("quốc phòng")) return "Giáo dục Quốc phòng và An ninh";
+      if (lower.includes("kt&pl") || lower.includes("kinh tế")) return "Giáo dục kinh tế và pháp luật";
+      if (lower.includes("qp&an") || lower.includes("quốc phòng")) return "Giáo dục quốc phòng và an ninh";
       if (lower === "toán") return "Toán học";
       if (lower === "văn") return "Ngữ văn";
       if (lower === "lý") return "Vật lý";
@@ -2232,7 +2232,7 @@
       const standardDepartments = [
         "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tin học",
         "Ngữ văn", "Lịch sử", "Địa lý", "Tiếng Anh", "Tiếng Pháp - Nhật",
-        "Giáo dục Kinh tế & Pháp luật", "Giáo dục thể chất", "Giáo dục Quốc phòng và An ninh", "Văn phòng"
+        "Giáo dục kinh tế và pháp luật", "Giáo dục thể chất", "Giáo dục quốc phòng và an ninh", "Văn phòng"
       ];
 
       ["filter_department", "folder_filter_department"].forEach(selectId => {
