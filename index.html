@@ -1244,8 +1244,8 @@
       const cancelBtn = modal.querySelector("button[onclick='closePasswordModal()']");
 
       if (isForced) {
-        titleEl.innerText = "⚠️ Yêu cầu đổi mật khẩu lần đầu";
-        if (cancelBtn) cancelBtn.classList.add("hidden");
+        titleEl.innerText = isForced ? "⚠️ Khuyến nghị đổi mật khẩu lần đầu" : "Đổi mật khẩu đăng nhập";
+        if (cancelBtn) cancelBtn.classList.remove("hidden");
       } else {
         titleEl.innerText = "Đổi mật khẩu đăng nhập";
         if (cancelBtn) cancelBtn.classList.remove("hidden");
