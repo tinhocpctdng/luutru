@@ -522,6 +522,7 @@
               <select id="edit_role" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
                 <option value="teacher">Giáo viên / Nhân viên (Chỉ xem/nộp bài mình)</option>
                 <option value="hod">Tổ trưởng (Duyệt bài trong tổ)</option>
+                <option value="vice_hod">Tổ phó (Duyệt bài & quản lý hồ sơ tổ)</option>
                 <option value="clerk">Nhân viên Văn thư (Đăng kho biểu mẫu chung)</option>
                 <option value="admin">Ban Giám Hiệu (Quản lý & Duyệt toàn trường)</option>
               </select>
@@ -809,6 +810,7 @@
       const roleNames = { 
         admin: "Ban Giám Hiệu", 
         hod: "Tổ Trưởng", 
+        vice_hod: "Tổ Phó",
         clerk: "Nhân viên Văn thư", 
         teacher: "Giáo Viên" 
       };
@@ -823,7 +825,7 @@
       }
 
       // 1. Hiển thị Tab duyệt bài trên Header cho HOD và Admin (BGH)
-      if (userProfile.role === 'admin' || userProfile.role === 'hod') {
+      if (userProfile.role === 'admin' || userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
         document.getElementById("tab-btn-review").classList.remove("hidden");
         if (userProfile.role === 'admin') {
           loadDepartmentOptions();
@@ -877,13 +879,13 @@
         },
         {
           label: "Tổ chuyên môn",
-          roles: ["admin", "hod", "teacher"],
+          roles: ["admin", "hod","vice_hod" "teacher"],
           excludeDept: "văn phòng",
           options: [
-            { value: "ke-hoach-giao-duc", text: "Kế hoạch giáo dục tổ/nhóm", allowedRoles: ["admin", "hod"] },
+            { value: "ke-hoach-giao-duc", text: "Kế hoạch giáo dục tổ/nhóm", allowedRoles: ["admin", "hod", "vice_hod"] },
             { value: "giao-an", text: "Kế hoạch bài dạy (Giáo án)" },
             { value: "de-thi", text: "Ngân hàng đề thi / Ma trận" },
-            { value: "bien-ban", text: "Biên bản sinh hoạt tổ chuyên môn", allowedRoles: ["admin", "hod"] },
+            { value: "bien-ban", text: "Biên bản sinh hoạt tổ chuyên môn", allowedRoles: ["admin", "hod", "vice_hod"] },
             { value: "hsg-khkt", text: "Bồi dưỡng HSG / Chuyên đề KHKT" },
             { value: "so-diem", text: "Sổ theo dõi và đánh giá" }
           ]
@@ -901,7 +903,7 @@
         },
         {
           label: "Chủ nhiệm & Đoàn thể",
-          roles: ["admin", "hod", "clerk", "teacher"],
+          roles: ["admin", "hod","vice_hod", "clerk", "teacher"],
           requirePosition: true,
           options: [
             { value: "chu-nhiem", text: "Kế hoạch & Sổ Chủ nhiệm lớp", pos: ["gvcn"] },
@@ -960,7 +962,7 @@
         {
           id: "shared",
           name: "Kho chung toàn trường",
-          roles: ["admin", "hod", "clerk", "teacher"],
+          roles: ["admin", "hod", "vice_hod", "clerk", "teacher"],
           isShared: true,
           children: [
             { value: "van-ban-chi-dao", name: "Văn bản chỉ đạo cấp trên" },
@@ -981,7 +983,7 @@
         {
           id: "dept",
           name: role === "admin" ? "Tổ chuyên môn (14 Tổ)" : `Tổ ${userProfile.department}`,
-          roles: ["admin", "hod", "teacher"],
+          roles: ["admin", "hod", "vice_hod", "teacher"],
           excludeDept: "văn phòng",
           children: [
             { value: "ke-hoach-giao-duc", name: "Kế hoạch giáo dục tổ" },
@@ -1007,7 +1009,7 @@
         {
           id: "union",
           name: "Chủ nhiệm & Đoàn thể",
-          roles: ["admin", "hod", "clerk", "teacher"],
+          roles: ["admin", "hod", "vice_hod", "clerk", "teacher"],
           requirePosition: true,
           children: [
             { value: "chu-nhiem", name: "Kế hoạch & Sổ Chủ nhiệm", pos: ["gvcn"] },
@@ -1104,7 +1106,7 @@
         if (folderId === "dept" && userProfile.role === "admin") {
           folderDeptFilter.classList.remove("hidden");
           folderDeptFilter.disabled = false;
-        } else if (folderId === "dept" && userProfile.role === "hod") {
+        } else if (folderId === "dept" && (userProfile.role === "hod" || userProfile.role === "vice_hod")) {
           const normDept = normalizeDepartmentName(userProfile.department);
           if (![...folderDeptFilter.options].some(o => o.value === normDept)) {
             const opt = document.createElement("option");
@@ -1155,7 +1157,7 @@
 
       if (userProfile.role === 'teacher') {
         query = query.eq("teacher_id", currentUser.id);
-      } else if (userProfile.role === 'hod' || userProfile.role === 'clerk') {
+      } else if (userProfile.role === 'hod' || userProfile.role === 'vice_hod' || userProfile.role === 'clerk') {
         query = query.eq("department", userProfile.department);
       } else if (userProfile.role === 'admin' && folderId === 'dept' && selectedDept !== 'all') {
         query = query.eq("department", selectedDept);
@@ -1269,7 +1271,7 @@
       if (btnDocs) btnDocs.className = "w-full text-left px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium text-sm flex items-center transition";
       
       if (btnReview) {
-        if (userProfile.role === 'admin' || userProfile.role === 'hod') {
+        if (userProfile.role === 'admin' || userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
           btnReview.className = "px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs sm:text-sm inline-flex items-center transition shadow-xs";
         } else {
           btnReview.className = "hidden";
@@ -1576,7 +1578,7 @@
         .order("submitted_at", { ascending: false })
         .limit(2000);
       
-      if (userProfile.role === 'hod') {
+      if (userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
         query = query.eq("department", userProfile.department);
         const filterDeptEl = document.getElementById("filter_department");
         if (filterDeptEl) filterDeptEl.classList.add("hidden");
@@ -1703,6 +1705,7 @@
         const displayCode = cleanTeacherCode(user.email);
         const roleLabel = user.role === 'admin' ? '<span class="text-purple-600 font-bold">Ban Giám Hiệu</span>' : 
                           user.role === 'hod' ? '<span class="text-blue-600 font-bold">Tổ trưởng</span>' : 
+                          user.role === 'vice_hod' ? '<span class="text-indigo-600 font-bold">Tổ phó</span>' : 
                           user.role === 'clerk' ? '<span class="text-amber-600 font-bold">Văn thư</span>' : 'Giáo viên';
         
         const extraPos = posBadge[user.position] || '';
@@ -1787,7 +1790,8 @@
         "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
         "Quyền hạn": user.role === 'admin' ? 'Ban Giám Hiệu' : 
                      (user.role === 'hod' ? 'Tổ trưởng' : 
-                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên')),
+                     (user.role === 'vice_hod' ? 'Tổ phó' : 
+                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))),
         "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
                                (user.position === 'doan' ? 'Cán bộ Đoàn' : '')
       }));
@@ -1999,7 +2003,8 @@
         "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
         "Quyền hạn": user.role === 'admin' ? 'Ban Giám Hiệu' : 
                      (user.role === 'hod' ? 'Tổ trưởng' : 
-                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên')),
+                     (user.role === 'vice_hod' ? 'Tổ phó' : 
+                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))),
         "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
                                (user.position === 'doan' ? 'Cán bộ Đoàn' : '')
       }));
@@ -2054,6 +2059,7 @@
             let role = 'teacher';
             if (roleStr === 'Quản trị viên' || roleStr === 'Admin' || roleStr === 'Ban Giám Hiệu') role = 'admin';
             else if (roleStr === 'Tổ trưởng') role = 'hod';
+            else if (roleStr === 'Tổ phó') role = 'vice_hod';
             else if (roleStr === 'Nhân viên Văn thư' || roleStr === 'Văn thư') role = 'clerk';
 
             if (role === 'admin') dept = 'Không áp dụng';
@@ -2184,7 +2190,7 @@
       let targetProfiles = profiles.filter(p => p.role !== 'admin');
       let reportTitle = "BaoCaoTienDo_ToanTruong";
 
-      if (userProfile.role === 'hod') {
+      if (userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
         targetProfiles = targetProfiles.filter(p => p.department === userProfile.department);
         reportTitle = `BaoCaoTienDo_${toSlug(userProfile.department)}`;
       } else if (userProfile.role === 'admin') {
@@ -2205,7 +2211,7 @@
           "Họ và tên": teacher.full_name,
           "Mã GV": cleanTeacherCode(teacher.email) || 'N/A',
           "Tổ bộ môn": teacher.department,
-          "Chức vụ": teacher.role === 'hod' ? 'Tổ trưởng' : (teacher.role === 'clerk' ? 'Văn thư' : 'Giáo viên'),
+          "Chức vụ": teacher.role === 'hod' ? 'Tổ trưởng' : (teacher.role === 'vice_hod' ? 'Tổ phó' : (teacher.role === 'clerk' ? 'Văn thư' : 'Giáo viên')),
           "Kiêm nhiệm": teacher.position === 'gvcn' ? 'GVCN' : (teacher.position === 'doan' ? 'Cán bộ Đoàn' : ''),
           "Tổng số bài đã nộp": totalSubmitted,
           "Đã nộp Giáo án": hasLessonPlan ? "Đã nộp" : "Chưa nộp",
