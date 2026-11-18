@@ -2057,6 +2057,7 @@
 
             tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(teacherCode)})...</td></tr>`;
 
+            const roleLower = roleStr.toLowerCase();
             let role = 'teacher';
             if (roleStr === 'Quản trị viên' || roleStr === 'Admin' || roleStr === 'Ban Giám Hiệu') role = 'admin';
             else if (roleStr === 'Tổ trưởng') role = 'hod';
