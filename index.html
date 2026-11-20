@@ -71,7 +71,89 @@
       </form>
     </div>
   </div>
+  <!-- MODAL BẢO MẬT 2 LỚP (2FA - THIẾT BỊ LẠ) -->
+  <div id="twofa-modal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200">
+      <div class="text-center mb-4">
+        <div class="mx-auto w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        </div>
+        <h3 id="twofa-title" class="text-lg font-bold text-slate-900">Xác thực bảo mật 2 lớp</h3>
+        <p id="twofa-desc" class="text-xs text-slate-500 mt-1 leading-relaxed"></p>
+      </div>
 
+      <!-- Khung QR chỉ hiện ở lần thiết lập đầu tiên -->
+      <div id="twofa-qr-box" class="hidden flex flex-col items-center bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+        <img id="twofa-qr-img" src="" alt="QR 2FA" class="w-40 h-40 bg-white p-2 rounded-lg border border-slate-200 mb-2">
+        <p class="text-[11px] text-slate-500 text-center">Mở app <strong>Google Authenticator</strong> hoặc <strong>Microsoft Authenticator</strong> để quét mã QR trên.</p>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1">Mã OTP (6 chữ số)</label>
+          <input type="text" id="twofa-code" maxlength="6" inputmode="numeric" placeholder="Nhập 6 số..."
+                 class="w-full text-center tracking-[0.4em] text-lg font-bold border border-slate-300 p-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <label id="twofa-trust-wrap" class="hidden inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+          <input type="checkbox" id="twofa-trust-device" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+          <span>Tin cậy máy tính này (không hỏi OTP ở lần sau)</span>
+        </label>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2.5">
+        <button type="button" id="twofa-cancel-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Đăng xuất</button>
+        <button type="button" id="twofa-verify-btn" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL BẢO MẬT 2 LỚP QUA EMAIL OTP -->
+  <div id="twofa-modal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200">
+      <div class="text-center mb-4">
+        <div class="mx-auto w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        </div>
+        <h3 id="twofa-title" class="text-lg font-bold text-slate-900">Xác thực bảo mật 2 lớp</h3>
+        <p id="twofa-desc" class="text-xs text-slate-500 mt-1 leading-relaxed"></p>
+      </div>
+
+      <!-- Nhập email thật ở lần đăng nhập đầu tiên -->
+      <div id="twofa-email-box" class="hidden mb-4">
+        <label class="block text-xs font-bold text-slate-600 mb-1">Email thật nhận mã OTP (Gmail)</label>
+        <div class="flex gap-2">
+          <input type="email" id="twofa-email-input" placeholder="VD: giaovien@gmail.com"
+                 class="flex-1 border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+          <button type="button" id="twofa-send-email-btn"
+                  class="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold whitespace-nowrap">
+            Lưu & Tiếp tục
+          </button>
+        </div>
+      </div>
+
+      <!-- Nhập mã OTP 6 số -->
+      <div id="twofa-otp-box" class="hidden space-y-3">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-600">Mã OTP (6 chữ số)</label>
+            <button type="button" id="twofa-resend-btn" class="text-xs font-semibold text-blue-600 hover:underline">Gửi lại mã</button>
+          </div>
+          <input type="text" id="twofa-code" maxlength="6" inputmode="numeric" placeholder="Nhập 6 số..."
+                 class="w-full text-center tracking-[0.4em] text-lg font-bold border border-slate-300 p-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+        </div>
+
+        <label id="twofa-trust-wrap" class="hidden inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
+          <input type="checkbox" id="twofa-trust-device" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+          <span>Tin cậy máy tính này (không hỏi OTP ở lần sau)</span>
+        </label>
+      </div>
+
+      <div class="mt-5 flex justify-end gap-2.5">
+        <button type="button" id="twofa-cancel-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Đăng xuất</button>
+        <button type="button" id="twofa-verify-btn" class="hidden px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm">Xác nhận OTP</button>
+      </div>
+    </div>
+  </div>
   <!-- MÀN HÌNH CHÍNH (SAU KHI ĐĂNG NHẬP) -->
   <div id="app-screen" class="hidden min-h-screen flex flex-col">
     <!-- Header: Logo + Tên hệ thống + Nút Điều hành/Quản trị + Thông tin tài khoản -->
@@ -759,6 +841,309 @@
       await initApplication();
     }
 
+    // Tạo / lấy mã định danh trình duyệt và băm SHA-256 trước khi lưu DB
+    async function getDeviceHash() {
+      let rawToken = localStorage.getItem("pct_device_token");
+      if (!rawToken) {
+        rawToken = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now());
+        localStorage.setItem("pct_device_token", rawToken);
+      }
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawToken));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    // Kiểm tra thiết bị quen hay máy lạ; bắt buộc OTP khi cần
+    async function verifyDeviceAnd2FA(profile) {
+      const deviceHash = await getDeviceHash();
+      const trustedList = Array.isArray(profile.trusted_devices) ? profile.trusted_devices : [];
+
+      // Trường hợp 1: Đã có email và máy hiện tại đã nằm trong danh sách tin cậy -> Vào thẳng
+      if (profile.otp_email && trustedList.includes(deviceHash)) {
+        return true;
+      }
+
+      // Trường hợp 2: Admin đã nhập sẵn email trước đó, đây là lần đăng nhập đầu tiên (chưa có máy nào được lưu) -> Tự tin cậy máy đầu tiên, không hỏi OTP
+      if (profile.otp_email && trustedList.length === 0) {
+        const initDevices = [deviceHash];
+        await client.from("profiles").update({ trusted_devices: initDevices }).eq("id", profile.id);
+        profile.trusted_devices = initDevices;
+        return true;
+      }
+
+      const modal = document.getElementById("twofa-modal");
+      const titleEl = document.getElementById("twofa-title");
+      const descEl = document.getElementById("twofa-desc");
+      const emailBox = document.getElementById("twofa-email-box");
+      const emailInput = document.getElementById("twofa-email-input");
+      const sendEmailBtn = document.getElementById("twofa-send-email-btn");
+      const otpBox = document.getElementById("twofa-otp-box");
+      const resendBtn = document.getElementById("twofa-resend-btn");
+      const codeInput = document.getElementById("twofa-code");
+      const trustWrap = document.getElementById("twofa-trust-wrap");
+      const trustChk = document.getElementById("twofa-trust-device");
+      const verifyBtn = document.getElementById("twofa-verify-btn");
+      const cancelBtn = document.getElementById("twofa-cancel-btn");
+
+      codeInput.value = "";
+      let activeEmail = profile.otp_email || "";
+      const isFirstSetup = !activeEmail;
+
+      if (isFirstSetup) {
+        // Lần đầu tiên đăng nhập: chỉ nhập Email thật để lưu lại và tự tin cậy máy này (KHÔNG hỏi OTP)
+        titleEl.innerText = "Đăng ký Email nhận OTP (Lần đầu)";
+        descEl.innerText = "Nhập Email thật của bạn để hệ thống gửi mã OTP khi phát hiện đăng nhập ở máy tính khác. Máy hiện tại sẽ được tự động ghi nhận.";
+        emailBox.classList.remove("hidden");
+        otpBox.classList.add("hidden");
+        verifyBtn.classList.add("hidden");
+        trustWrap.classList.add("hidden");
+        emailInput.value = "";
+      } else {
+        // Đã có máy tin cậy trước đó, nhưng nay đăng nhập trên máy lạ -> Bắt buộc nhập OTP
+        titleEl.innerText = "Phát hiện đăng nhập ở máy khác";
+        descEl.innerText = `Đang gửi mã OTP 6 số đến ${maskEmail(activeEmail)}...`;
+        emailBox.classList.add("hidden");
+        otpBox.classList.remove("hidden");
+        verifyBtn.classList.remove("hidden");
+        trustWrap.classList.remove("hidden");
+        trustChk.checked = false;
+
+        callOtpApi("sendOtp", { targetEmail: activeEmail }).then(res => {
+          if (res.success) {
+            descEl.innerText = `Mã OTP gồm 6 số đã được gửi tới ${maskEmail(activeEmail)} (hiệu lực 5 phút).`;
+          } else {
+            descEl.innerText = "Không gửi được email OTP: " + (res.error || "Lỗi máy chủ");
+          }
+        });
+      }
+
+      modal.classList.remove("hidden");
+
+      return new Promise((resolve) => {
+        // Lần đầu: lưu thẳng Email + máy hiện tại rồi cho vào hệ thống
+        sendEmailBtn.onclick = async () => {
+          const val = emailInput.value.trim().toLowerCase();
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return alert("Vui lòng nhập đúng định dạng Email!");
+
+          sendEmailBtn.disabled = true;
+          sendEmailBtn.innerText = "Đang lưu...";
+
+          const initDevices = [deviceHash];
+          const { error } = await client.from("profiles")
+            .update({ otp_email: val, trusted_devices: initDevices })
+            .eq("id", profile.id);
+
+          sendEmailBtn.disabled = false;
+          sendEmailBtn.innerText = "Lưu & Tiếp tục";
+
+          if (error) return alert("Lỗi lưu Email bảo mật: " + error.message);
+
+          profile.otp_email = val;
+          profile.trusted_devices = initDevices;
+          modal.classList.add("hidden");
+          resolve(true);
+        };
+
+        resendBtn.onclick = async () => {
+          if (!activeEmail) return;
+          resendBtn.disabled = true;
+          resendBtn.innerText = "Đang gửi...";
+          const res = await callOtpApi("sendOtp", { targetEmail: activeEmail });
+          resendBtn.disabled = false;
+          resendBtn.innerText = "Gửi lại mã";
+          alert(res.success ? `Đã gửi lại mã mới tới ${maskEmail(activeEmail)}!` : ("Lỗi: " + res.error));
+        };
+
+        cancelBtn.onclick = async () => {
+          modal.classList.add("hidden");
+          await client.auth.signOut();
+          location.reload();
+          resolve(false);
+        };
+
+        verifyBtn.onclick = async () => {
+          const code = codeInput.value.trim();
+          if (!/^\d{6}$/.test(code)) return alert("Vui lòng nhập đủ 6 chữ số OTP!");
+
+          verifyBtn.disabled = true;
+          verifyBtn.innerText = "Đang kiểm tra...";
+          const res = await callOtpApi("verifyOtp", { otpCode: code });
+          verifyBtn.disabled = false;
+          verifyBtn.innerText = "Xác nhận OTP";
+
+          if (!res.success) {
+            alert(res.error || "Mã OTP không đúng!");
+            codeInput.select();
+            return;
+          }
+
+          if (trustChk.checked) {
+            const updatedList = [...new Set([...trustedList, deviceHash])].slice(-5);
+            await client.from("profiles").update({ trusted_devices: updatedList }).eq("id", profile.id);
+            profile.trusted_devices = updatedList;
+          }
+
+          modal.classList.add("hidden");
+          resolve(true);
+        };
+      });
+    }
+    async function getDeviceHash() {
+      let rawToken = localStorage.getItem("pct_device_token");
+      if (!rawToken) {
+        rawToken = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now());
+        localStorage.setItem("pct_device_token", rawToken);
+      }
+      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawToken));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function maskEmail(email) {
+      const [local, domain] = String(email || "").split("@");
+      if (!domain) return email;
+      const head = local.slice(0, Math.min(2, local.length));
+      return `${head}***@${domain}`;
+    }
+
+    async function callOtpApi(action, extraParams = {}) {
+      const { data: { session } } = await client.auth.getSession();
+      const formData = new URLSearchParams({
+        action,
+        accessToken: session ? session.access_token : "",
+        ...extraParams
+      });
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        body: formData,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      });
+      return await res.json();
+    }
+
+    async function verifyDeviceAnd2FA(profile) {
+      const deviceHash = await getDeviceHash();
+      const trustedList = Array.isArray(profile.trusted_devices) ? profile.trusted_devices : [];
+
+      // Đã có email nhận OTP và máy tính hiện tại đã được tin cậy -> Vào thẳng
+      if (profile.otp_email && trustedList.includes(deviceHash)) {
+        return true;
+      }
+
+      const modal = document.getElementById("twofa-modal");
+      const titleEl = document.getElementById("twofa-title");
+      const descEl = document.getElementById("twofa-desc");
+      const emailBox = document.getElementById("twofa-email-box");
+      const emailInput = document.getElementById("twofa-email-input");
+      const sendEmailBtn = document.getElementById("twofa-send-email-btn");
+      const otpBox = document.getElementById("twofa-otp-box");
+      const resendBtn = document.getElementById("twofa-resend-btn");
+      const codeInput = document.getElementById("twofa-code");
+      const trustWrap = document.getElementById("twofa-trust-wrap");
+      const trustChk = document.getElementById("twofa-trust-device");
+      const verifyBtn = document.getElementById("twofa-verify-btn");
+      const cancelBtn = document.getElementById("twofa-cancel-btn");
+
+      codeInput.value = "";
+      let activeEmail = profile.otp_email || "";
+      const isFirstSetup = !activeEmail;
+
+      if (isFirstSetup) {
+        titleEl.innerText = "Đăng ký Email bảo mật 2 lớp";
+        descEl.innerText = "Nhập Email thật của bạn để nhận mã OTP khi đăng nhập ở máy tính khác. Máy hiện tại sẽ tự động được lưu làm thiết bị tin cậy.";
+        emailBox.classList.remove("hidden");
+        otpBox.classList.add("hidden");
+        verifyBtn.classList.add("hidden");
+        trustWrap.classList.add("hidden");
+        trustChk.checked = true;
+        emailInput.value = "";
+      } else {
+        titleEl.innerText = "Phát hiện đăng nhập ở máy khác";
+        descEl.innerText = `Đang gửi mã OTP 6 số đến ${maskEmail(activeEmail)}...`;
+        emailBox.classList.add("hidden");
+        otpBox.classList.remove("hidden");
+        verifyBtn.classList.remove("hidden");
+        trustWrap.classList.remove("hidden");
+        trustChk.checked = false;
+
+        callOtpApi("sendOtp", { targetEmail: activeEmail }).then(res => {
+          if (res.success) {
+            descEl.innerText = `Mã OTP gồm 6 số đã được gửi tới ${maskEmail(activeEmail)} (hiệu lực 5 phút).`;
+          } else {
+            descEl.innerText = "Không gửi được email OTP: " + (res.error || "Lỗi máy chủ");
+          }
+        });
+      }
+
+      modal.classList.remove("hidden");
+
+      return new Promise((resolve) => {
+        sendEmailBtn.onclick = async () => {
+          const val = emailInput.value.trim().toLowerCase();
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return alert("Vui lòng nhập đúng định dạng Email!");
+
+          sendEmailBtn.disabled = true;
+          sendEmailBtn.innerText = "Đang gửi...";
+          const res = await callOtpApi("sendOtp", { targetEmail: val });
+          sendEmailBtn.disabled = false;
+          sendEmailBtn.innerText = "Gửi mã";
+
+          if (!res.success) return alert("Lỗi gửi OTP: " + (res.error || "Thử lại sau"));
+
+          activeEmail = val;
+          descEl.innerText = `Đã gửi mã OTP tới ${maskEmail(activeEmail)}. Nhập mã bên dưới để hoàn tất.`;
+          otpBox.classList.remove("hidden");
+          verifyBtn.classList.remove("hidden");
+          codeInput.focus();
+        };
+
+        resendBtn.onclick = async () => {
+          if (!activeEmail) return;
+          resendBtn.disabled = true;
+          resendBtn.innerText = "Đang gửi...";
+          const res = await callOtpApi("sendOtp", { targetEmail: activeEmail });
+          resendBtn.disabled = false;
+          resendBtn.innerText = "Gửi lại mã";
+          alert(res.success ? `Đã gửi lại mã mới tới ${maskEmail(activeEmail)}!` : ("Lỗi: " + res.error));
+        };
+
+        cancelBtn.onclick = async () => {
+          modal.classList.add("hidden");
+          await client.auth.signOut();
+          location.reload();
+          resolve(false);
+        };
+
+        verifyBtn.onclick = async () => {
+          const code = codeInput.value.trim();
+          if (!/^\d{6}$/.test(code)) return alert("Vui lòng nhập đủ 6 chữ số OTP!");
+
+          verifyBtn.disabled = true;
+          verifyBtn.innerText = "Đang kiểm tra...";
+          const res = await callOtpApi("verifyOtp", { otpCode: code });
+          verifyBtn.disabled = false;
+          verifyBtn.innerText = "Xác nhận OTP";
+
+          if (!res.success) {
+            alert(res.error || "Mã OTP không đúng!");
+            codeInput.select();
+            return;
+          }
+
+          const updates = {};
+          if (isFirstSetup) updates.otp_email = activeEmail;
+          if (isFirstSetup || trustChk.checked) {
+            updates.trusted_devices = [...new Set([...trustedList, deviceHash])].slice(-5);
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await client.from("profiles").update(updates).eq("id", profile.id);
+            Object.assign(profile, updates);
+          }
+
+          modal.classList.add("hidden");
+          resolve(true);
+        };
+      });
+    }
     // 2. Khởi tạo phiên làm việc sau khi login
     async function initApplication() {
       let { data: profile } = await client
@@ -789,7 +1174,9 @@
       }
 
       userProfile = profile;
-
+      const passed2FA = await verifyDeviceAnd2FA(profile);
+      if (!passed2FA) return;
+      
       // BẮT BUỘC ĐỔI MẬT KHẨU KHI ĐĂNG NHẬP LẦN ĐẦU (Chống lộ mật khẩu mặc định 123456)
       if (userProfile.must_change_pw === true && currentUser.email !== 'vulongdng@gmail.com') {
         document.getElementById("login-screen").classList.add("hidden");
