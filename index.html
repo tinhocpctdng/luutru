@@ -2047,11 +2047,12 @@
                      (user.role === 'vice_hod' ? 'Tổ phó' : 
                      (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))),
         "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
-                               (user.position === 'doan' ? 'Cán bộ Đoàn' : '')
+                               (user.position === 'doan' ? 'Cán bộ Đoàn' : ''),
+        "Email OTP": user.otp_email || ""
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
-      worksheet['!cols'] = [{ wch: 15 }, { wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 22 }];
+      worksheet['!cols'] = [{ wch: 15 }, { wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 22 }, { wch: 28 }];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "TaiKhoanDaChon");
       XLSX.writeFile(workbook, `DanhSach_DaChon_${selectedList.length}GV.xlsx`);
@@ -2260,11 +2261,12 @@
                      (user.role === 'vice_hod' ? 'Tổ phó' : 
                      (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))),
         "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
-                               (user.position === 'doan' ? 'Cán bộ Đoàn' : '')
+                               (user.position === 'doan' ? 'Cán bộ Đoàn' : ''),
+        "Email OTP": user.otp_email || ""
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(excelData);
-      worksheet['!cols'] = [{ wch: 15 }, { wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 22 }];
+      worksheet['!cols'] = [{ wch: 15 }, { wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 22 }, { wch: 28 }];
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachGiaoVien");
       XLSX.writeFile(workbook, "DanhSachGiaoVien.xlsx");
@@ -2305,7 +2307,10 @@
             let dept = normalizeDepartmentName(row["Tổ bộ môn"]);
             const roleStr = row["Quyền hạn"] ? String(row["Quyền hạn"]).trim() : "Giáo viên";
             const posStr = row["Chức vụ kiêm nhiệm"] ? String(row["Chức vụ kiêm nhiệm"]).trim().toLowerCase() : "";
-
+            const rawOtpEmail = row["Email OTP"] || row["Email nhận OTP"] || row["Gmail"] || (row["Mã GV"] !== undefined ? row["Email"] : "");
+            const otpEmail = (rawOtpEmail && String(rawOtpEmail).includes("@"))
+              ? String(rawOtpEmail).trim().toLowerCase()
+              : null;
             if (!teacherCode || !fullName) continue;
 
             tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(teacherCode)})...</td></tr>`;
@@ -2332,15 +2337,18 @@
               .maybeSingle();
 
             if (existingUser) {
+              const updatePayload = {
+                email: teacherCode,
+                full_name: fullName,
+                department: dept,
+                role: role,
+                position: position
+              };
+              if (otpEmail) updatePayload.otp_email = otpEmail;
+
               const { error: updateErr } = await client
                 .from("profiles")
-                .update({
-                  email: teacherCode,
-                  full_name: fullName,
-                  department: dept,
-                  role: role,
-                  position: position
-                })
+                .update(updatePayload)
                 .eq("id", existingUser.id);
 
               if (!updateErr) updatedCount++;
@@ -2372,7 +2380,8 @@
                     full_name: fullName,
                     department: dept,
                     role: role,
-                    position: position
+                    position: position,
+                    otp_email: otpEmail
                   });
                 }
                 createdCount++;
