@@ -790,8 +790,10 @@
       btn.disabled = true;
       btn.innerText = "Đang kiểm tra...";
 
+      const loginEmail = code.toLowerCase() === "admin" ? "vulongdng@gmail.com" : toAuthEmail(code);
+
       const { data, error } = await client.auth.signInWithPassword({
-        email: toAuthEmail(code),
+        email: loginEmail,
         password: password
       });
 
