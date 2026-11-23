@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kho Lưu Trữ Hồ Sơ - Trường THPT Phan Châu Trinh Đà Nẵng</title>
-  <link rel="icon" type="image/png" href="logopct.png">
-  <link rel="apple-touch-icon" href="logopct.png">
   <!-- Google Font Be Vietnam Pro tối ưu hiển thị tiếng Việt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,15 +14,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Thư viện SheetJS để đọc/xuất file Excel/CSV -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <style>
-    body {
-      font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
-    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-  </style>
+  <!-- CSS tùy chỉnh -->
+  <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body class="bg-slate-100/90 min-h-screen text-slate-800 antialiased">
 
@@ -34,11 +25,11 @@
       <div class="text-center mb-7">
         <!-- Logo Trường THPT Phan Châu Trinh Đà Nẵng -->
         <div class="mx-auto w-20 h-20 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm mb-4 overflow-hidden p-1.5">
-          <img src="logopct.png"
+          <img src="assets/img/logopct.png"
                alt="Logo THPT Phan Châu Trinh Đà Nẵng"
                class="w-full h-full object-contain"
                onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-          <!-- Huy hiệu trường dự phòng nếu link ảnh ngoài bị chặn -->
+          <!-- Huy hiệu trường dự phòng -->
           <svg class="hidden w-14 h-14" viewBox="0 0 64 64" fill="none">
             <path d="M32 4L8 14V30C8 45.5 18.2 58.8 32 62C45.8 58.8 56 45.5 56 30V14L32 4Z" fill="#1D4ED8" stroke="#F59E0B" stroke-width="3"/>
             <path d="M20 27C24 25 28 26 32 29C36 26 40 25 44 27V41C40 39 36 40 32 43C28 40 24 39 20 41V27Z" fill="#FFFFFF"/>
@@ -49,7 +40,7 @@
         <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">KHO LƯU TRỮ HỒ SƠ</h1>
         <p class="text-sm text-slate-500 mt-1">Cổng nộp và quản lý dữ liệu chuyên môn giáo viên</p>
       </div>
-      
+
       <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
         <div>
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Mã giáo viên</label>
@@ -60,11 +51,6 @@
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Mật khẩu</label>
           <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" required
                  class="w-full px-4 py-3 rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-none transition text-sm">
-          <label class="inline-flex items-center gap-2 mt-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
-            <input type="checkbox" id="show_login_password" onchange="togglePasswordVisibility(['password'], 'show_login_password')"
-                   class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-            <span>Hiện mật khẩu</span>
-          </label>
         </div>
         <button type="submit" id="btn-login"
                 class="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-800 hover:to-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-600/25 transition duration-200 mt-2">
@@ -73,64 +59,16 @@
       </form>
     </div>
   </div>
-  
-  <!-- MODAL BẢO MẬT 2 LỚP QUA EMAIL OTP -->
-  <div id="twofa-modal" class="hidden fixed inset-0 bg-slate-900/75 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200">
-      <div class="text-center mb-4">
-        <div class="mx-auto w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-        </div>
-        <h3 id="twofa-title" class="text-lg font-bold text-slate-900">Xác thực bảo mật 2 lớp</h3>
-        <p id="twofa-desc" class="text-xs text-slate-500 mt-1 leading-relaxed"></p>
-      </div>
 
-      <!-- Nhập email thật ở lần đăng nhập đầu tiên -->
-      <div id="twofa-email-box" class="hidden mb-4">
-        <label class="block text-xs font-bold text-slate-600 mb-1">Email thật nhận mã OTP (Gmail)</label>
-        <div class="flex gap-2">
-          <input type="email" id="twofa-email-input" placeholder="VD: giaovien@gmail.com"
-                 class="flex-1 border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
-          <button type="button" id="twofa-send-email-btn"
-                  class="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold whitespace-nowrap">
-            Lưu & Tiếp tục
-          </button>
-        </div>
-      </div>
-
-      <!-- Nhập mã OTP 6 số -->
-      <div id="twofa-otp-box" class="hidden space-y-3">
-        <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-slate-600">Mã OTP (6 chữ số)</label>
-            <button type="button" id="twofa-resend-btn" class="text-xs font-semibold text-blue-600 hover:underline">Gửi lại mã</button>
-          </div>
-          <input type="text" id="twofa-code" maxlength="6" inputmode="numeric" placeholder="Nhập 6 số..."
-                 class="w-full text-center tracking-[0.4em] text-lg font-bold border border-slate-300 p-2.5 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
-        </div>
-
-        <label id="twofa-trust-wrap" class="hidden inline-flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer select-none">
-          <input type="checkbox" id="twofa-trust-device" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-          <span>Tin cậy máy tính này (không hỏi OTP ở lần sau)</span>
-        </label>
-      </div>
-
-      <div class="mt-5 flex justify-end gap-2.5">
-        <button type="button" id="twofa-cancel-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Đăng xuất</button>
-        <button type="button" id="twofa-verify-btn" class="hidden px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm">Xác nhận OTP</button>
-      </div>
-    </div>
-  </div>
   <!-- MÀN HÌNH CHÍNH (SAU KHI ĐĂNG NHẬP) -->
   <div id="app-screen" class="hidden min-h-screen flex flex-col">
-    <!-- Header: Logo + Tên hệ thống + Nút Điều hành/Quản trị + Thông tin tài khoản -->
+    <!-- Header -->
     <header class="bg-white/95 backdrop-blur border-b border-slate-200 border-t-4 border-t-blue-700 sticky top-0 z-20 shadow-sm">
       <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 min-h-[68px] py-2 flex flex-wrap items-center justify-between gap-3">
-        
-        <!-- CỤM TRÁI: LOGO THPT PHAN CHÂU TRÌNH + KHO LƯU TRỮ HỒ SƠ -->
+        <!-- Cụm trái: Logo + Tên hệ thống -->
         <div class="flex items-center space-x-3">
           <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-xs">
-            <img src="logopct.png"
+            <img src="assets/img/logopct.png"
                  alt="Logo THPT Phan Châu Trinh"
                  class="w-full h-full object-contain"
                  onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
@@ -149,27 +87,22 @@
           </div>
         </div>
 
-        <!-- CỤM PHẢI: ĐIỀU HÀNH / QUẢN TRỊ NGANG HÀNG VỚI THÔNG TIN TÀI KHOẢN -->
+        <!-- Cụm phải: Điều hành / Quản trị & Tài khoản -->
         <div class="flex flex-wrap items-center gap-2 sm:gap-2.5 ml-auto">
-          
-          <!-- Nút Quản lý & Duyệt hồ sơ (Chỉ hiện cho BGH và Tổ trưởng) -->
           <button onclick="switchTab('review')" id="tab-btn-review"
                   class="hidden px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs sm:text-sm inline-flex items-center transition shadow-xs">
             <svg class="w-4 h-4 mr-1.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             Quản lý & Duyệt hồ sơ
           </button>
 
-          <!-- Nút Quản trị Hệ thống (Chỉ hiện cho Quản trị viên gốc) -->
           <button onclick="switchTab('users')" id="tab-btn-users"
                   class="hidden px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-semibold text-xs sm:text-sm inline-flex items-center transition shadow-xs">
             <svg class="w-4 h-4 mr-1.5 text-purple-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             Quản trị Hệ thống
           </button>
 
-          <!-- Vách ngăn dọc -->
           <div class="hidden sm:block h-7 w-px bg-slate-200 mx-0.5"></div>
 
-          <!-- Thông tin tài khoản đang đăng nhập -->
           <div class="flex items-center gap-2.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200/80">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-blue-500 text-white font-bold text-xs flex items-center justify-center shadow-xs shrink-0" id="user-avatar">
               GV
@@ -180,7 +113,6 @@
             </div>
           </div>
 
-          <!-- Nút Đổi mật khẩu & Đăng xuất -->
           <button onclick="openPasswordModal()" class="text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 px-3 py-2 rounded-xl border border-slate-200 transition">
             Đổi mật khẩu
           </button>
@@ -191,11 +123,11 @@
       </div>
     </header>
 
-    <!-- Main Content: Bố cục 2 cột (Cây thư mục bên trái + Nội dung bên phải) -->
+    <!-- Main Content: 2 cột -->
     <main class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
       <div class="flex flex-col lg:flex-row gap-6 items-start">
-        
-        <!-- CỘT TRÁI: CÂY THƯ MỤC LƯU TRỮ (Tự cuộn độc lập, không làm trôi trang) -->
+
+        <!-- CỘT TRÁI: CÂY THƯ MỤC LƯU TRỮ -->
         <aside class="w-full lg:w-72 bg-white rounded-2xl shadow-sm border border-slate-200/90 p-4 shrink-0 lg:sticky lg:top-24 lg:max-h-[calc(100vh-7.5rem)] lg:overflow-y-auto">
           <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
             <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center">
@@ -204,7 +136,6 @@
             </span>
           </div>
 
-          <!-- Khu vực thao tác nhanh -->
           <div class="space-y-1.5 mb-4">
             <button onclick="switchTab('upload')" id="tab-btn-upload" class="w-full text-left px-3.5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm flex items-center shadow-sm shadow-blue-600/20 transition">
               <svg class="w-4 h-4 mr-2.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -216,16 +147,13 @@
             </button>
           </div>
 
-          <!-- CÂY THƯ MỤC ĐỘNG (Render bằng JS theo phân quyền) -->
           <div class="border-t border-slate-100 pt-3.5">
             <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5 px-2">Kho dữ liệu nhà trường</div>
-            <div id="folder-tree-container" class="space-y-1 text-sm select-none">
-              <!-- Cây thư mục sẽ tự động sinh tại đây -->
-            </div>
+            <div id="folder-tree-container" class="space-y-1 text-sm select-none"></div>
           </div>
         </aside>
 
-        <!-- CỘT PHẢI: VÙNG HIỂN THỊ NỘI DUNG CHÍNH -->
+        <!-- CỘT PHẢI: NỘI DUNG CHÍNH -->
         <div id="right-content-area" class="flex-1 w-full min-w-0 space-y-6 scroll-mt-24">
 
           <!-- TAB 1: FORM NỘP BÀI GIẢNG / TÀI LIỆU -->
@@ -238,9 +166,7 @@
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label class="block text-xs font-bold text-slate-600 mb-1.5">Mục lưu trữ</label>
-                  <select id="category" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
-                    <!-- Tự động lọc bằng hàm renderAllowedCategories() -->
-                  </select>
+                  <select id="category" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm bg-slate-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required></select>
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-600 mb-1.5">Khối lớp</label>
@@ -290,9 +216,7 @@
                     <th class="p-3.5 text-right">Tác vụ</th>
                   </tr>
                 </thead>
-                <tbody id="my-docs-body" class="divide-y divide-slate-100">
-                  <!-- Render động bằng JS -->
-                </tbody>
+                <tbody id="my-docs-body" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </section>
@@ -300,8 +224,8 @@
           <!-- TAB 3: KHO CHUNG TOÀN TRƯỜNG -->
           <section id="tab-shared" class="hidden bg-white p-6 sm:p-7 rounded-2xl shadow-sm border border-slate-200/90">
             <h2 class="text-lg font-bold text-slate-900 mb-1.5 border-b border-slate-100 pb-3" id="shared-folder-title">Kho chung toàn trường</h2>
-                        
-            <!-- KHUNG TẢI BIỂU MẪU (Chỉ hiện với Ban Giám Hiệu và Nhân viên Văn thư) -->
+            <p class="text-sm text-slate-500 mb-5">Mọi giáo viên trong trường có thể xem và tải về các văn bản chỉ đạo, quy chế và biểu mẫu hành chính chung.</p>
+
             <div id="upload-template-box" class="hidden bg-blue-50/80 p-4 rounded-2xl border border-blue-200 mb-6">
               <h3 class="text-sm font-bold text-blue-900 mb-3 flex items-center">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -323,9 +247,7 @@
               </form>
             </div>
 
-            <div id="shared-docs-list" class="space-y-2.5">
-              <!-- Render động danh sách tài liệu công khai -->
-            </div>
+            <div id="shared-docs-list" class="space-y-2.5"></div>
           </section>
 
           <!-- TAB XEM TÀI LIỆU THEO NHÁNH CÂY THƯ MỤC -->
@@ -338,7 +260,6 @@
                 </h2>
               </div>
               <div class="flex flex-wrap items-center gap-2 self-start md:self-auto">
-                <!-- CÔNG CỤ LỌC HỒ SƠ THEO TỔ (Tự hiện khi chọn các mục con của Tổ chuyên môn) -->
                 <select id="folder_filter_department" onchange="reloadCurrentFolderNode()" class="hidden border border-slate-300 px-3 py-2 rounded-xl text-xs sm:text-sm bg-white font-medium text-slate-700 focus:ring-2 focus:ring-blue-500 focus:outline-none">
                   <option value="all">Tất cả các tổ (14 tổ)</option>
                 </select>
@@ -361,37 +282,29 @@
                     <th class="p-3.5 text-right">Tệp tin</th>
                   </tr>
                 </thead>
-                <tbody id="folder-docs-body" class="divide-y divide-slate-100">
-                  <!-- Dữ liệu tự động đổ vào khi bấm thư mục -->
-                </tbody>
+                <tbody id="folder-docs-body" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </section>
 
-          <!-- TAB 4: DUYỆT BÀI (Dành cho BGH và Tổ trưởng) -->
+          <!-- TAB 4: DUYỆT BÀI (BGH và Tổ trưởng) -->
           <section id="tab-review" class="hidden bg-white p-6 sm:p-7 rounded-2xl shadow-sm border border-slate-200/90">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-100 pb-4 mb-5 gap-4">
               <div>
                 <h2 class="text-lg font-bold text-slate-900">Duyệt và theo dõi hồ sơ chuyên môn</h2>
                 <p class="text-xs text-slate-500 mt-0.5">Quản lý, kiểm tra trạng thái và xuất báo cáo tiến độ nộp bài của giáo viên.</p>
               </div>
-              
+
               <div class="flex flex-wrap items-center gap-2">
-                <!-- BỘ LỌC THEO TỔ BỘ MÔN -->
                 <select id="filter_department" onchange="loadReviewSubmissions()" class="border border-slate-300 p-2 rounded-xl text-sm bg-white">
                   <option value="all">Tất cả các tổ bộ môn</option>
                 </select>
-
-                <!-- BỘ LỌC THEO TUẦN -->
                 <input type="number" id="filter_week" min="1" max="52" placeholder="Lọc Tuần..." onchange="loadReviewSubmissions()" class="border border-slate-300 p-2 rounded-xl text-sm bg-white w-28">
-
-                <!-- BỘ LỌC THEO TRẠNG THÁI -->
                 <select id="filter_status" onchange="loadReviewSubmissions()" class="border border-slate-300 p-2 rounded-xl text-sm bg-white font-medium text-slate-700">
                   <option value="all">Tất cả trạng thái</option>
                   <option value="pending">⏳ Chờ duyệt</option>
                   <option value="approved">✅ Đã duyệt</option>
                 </select>
-
                 <button onclick="exportProgressReport()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-sm font-semibold flex items-center shadow-sm transition">
                   <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                   Xuất báo cáo (.xlsx)
@@ -411,9 +324,7 @@
                     <th class="p-3.5 text-right">Hành động</th>
                   </tr>
                 </thead>
-                <tbody id="review-body" class="divide-y divide-slate-100">
-                  <!-- Dữ liệu sẽ tự động đổ vào đây -->
-                </tbody>
+                <tbody id="review-body" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </section>
@@ -442,36 +353,16 @@
               </div>
             </div>
 
-            <!-- THANH LỌC THEO TỔ & TÌM KIẾM NHANH -->
+            <!-- Thanh lọc theo tổ & tìm kiếm -->
             <div class="mb-4 flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
               <div class="flex flex-col sm:flex-row gap-2 flex-1">
-                <select id="filter_user_department" onchange="filterUserTable()" class="border border-slate-300 px-3 py-2 rounded-xl text-sm bg-white font-medium text-slate-700 focus:ring-2 focus:ring-purple-500 focus:outline-none">
-                  <option value="all">Tất cả các tổ (Toàn trường)</option>
-                  <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
-                  <option value="Toán học">Toán học</option>
-                  <option value="Vật lý">Vật lý</option>
-                  <option value="Hóa học">Hóa học</option>
-                  <option value="Sinh học">Sinh học</option>
-                  <option value="Tin học">Tin học</option>
-                  <option value="Ngữ văn">Ngữ văn</option>
-                  <option value="Lịch sử">Lịch sử</option>
-                  <option value="Địa lý">Địa lý</option>
-                  <option value="Tiếng Anh">Tiếng Anh</option>
-                  <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                  <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
-                  <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                  <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
-                  <option value="Văn phòng">Văn phòng</option>
-                  <option value="Chưa phân tổ">Chưa phân tổ</option>
-                </select>
-
+                <select id="filter_user_department" onchange="filterUserTable()" class="border border-slate-300 px-3 py-2 rounded-xl text-sm bg-white font-medium text-slate-700 focus:ring-2 focus:ring-purple-500 focus:outline-none"></select>
                 <input type="text" id="search_user_input" oninput="filterUserTable()" placeholder="🔍 Tìm theo Họ tên hoặc Mã GV..." class="w-full sm:max-w-xs border border-slate-300 px-3.5 py-2 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none">
               </div>
-
               <div class="text-xs text-slate-500 font-semibold self-end md:self-center" id="user-count-label">Hiển thị: 0 tài khoản</div>
             </div>
 
-            <!-- THANH TÁC VỤ KHI CHỌN TÀI KHOẢN RIÊNG LẺ -->
+            <!-- Thanh tác vụ hàng loạt -->
             <div id="bulk-user-actions" class="hidden mb-4 p-3.5 bg-purple-50 border border-purple-200 rounded-2xl flex flex-wrap items-center justify-between gap-3">
               <div class="flex items-center space-x-3">
                 <span class="text-sm font-bold text-purple-900">
@@ -483,31 +374,13 @@
               </div>
 
               <div class="flex flex-wrap items-center gap-2">
-                <select id="bulk_target_dept" class="border border-purple-300 bg-white px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700">
-                  <option value="">-- Chuyển sang tổ... --</option>
-                  <option value="Toán học">Toán học</option>
-                  <option value="Vật lý">Vật lý</option>
-                  <option value="Hóa học">Hóa học</option>
-                  <option value="Sinh học">Sinh học</option>
-                  <option value="Tin học">Tin học</option>
-                  <option value="Ngữ văn">Ngữ văn</option>
-                  <option value="Lịch sử">Lịch sử</option>
-                  <option value="Địa lý">Địa lý</option>
-                  <option value="Tiếng Anh">Tiếng Anh</option>
-                  <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                  <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
-                  <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                  <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
-                  <option value="Văn phòng">Văn phòng</option>
-                </select>
+                <select id="bulk_target_dept" class="border border-purple-300 bg-white px-2.5 py-1.5 rounded-xl text-xs font-medium text-slate-700"></select>
                 <button type="button" onclick="bulkChangeDepartment()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition">
                   Áp dụng tổ
                 </button>
-
                 <button type="button" onclick="exportSelectedUsersToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition">
                   Xuất Excel đã chọn
                 </button>
-
                 <button type="button" onclick="bulkDeleteSelectedUsers()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition">
                   Xóa đã chọn
                 </button>
@@ -528,9 +401,7 @@
                     <th class="p-3.5 text-right">Tác vụ</th>
                   </tr>
                 </thead>
-                <tbody id="users-body" class="divide-y divide-slate-100">
-                  <!-- Render danh sách user -->
-                </tbody>
+                <tbody id="users-body" class="divide-y divide-slate-100"></tbody>
               </table>
             </div>
           </section>
@@ -543,7 +414,7 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200">
           <h3 class="text-lg font-bold text-slate-900 mb-4">Cập nhật thông tin giáo viên</h3>
           <input type="hidden" id="edit_user_id">
-          
+
           <div class="space-y-4">
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Họ và tên</label>
@@ -551,24 +422,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Tổ chuyên môn</label>
-              <select id="edit_department" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
-                <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
-                <option value="Toán học">Toán học</option>
-                <option value="Vật lý">Vật lý</option>
-                <option value="Hóa học">Hóa học</option>
-                <option value="Sinh học">Sinh học</option>
-                <option value="Tin học">Tin học</option>
-                <option value="Ngữ văn">Ngữ văn</option>
-                <option value="Lịch sử">Lịch sử</option>
-                <option value="Địa lý">Địa lý</option>
-                <option value="Tiếng Anh">Tiếng Anh</option>
-                <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
-                <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
-                <option value="Văn phòng">Văn phòng</option>
-                <option value="Chưa phân tổ">Chưa phân tổ</option>
-              </select>
+              <select id="edit_department" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm"></select>
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Cấp quyền hệ thống</label>
@@ -589,7 +443,7 @@
               </select>
             </div>
           </div>
-          
+
           <div class="mt-6 flex justify-end space-x-2.5">
             <button onclick="closeEditModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Hủy</button>
             <button onclick="saveUserUpdate()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm">Lưu thay đổi</button>
@@ -601,7 +455,7 @@
       <div id="add-user-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-slate-200">
           <h3 class="text-lg font-bold text-slate-900 mb-4">Tạo tài khoản giáo viên mới</h3>
-          
+
           <div class="space-y-4">
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Mã giáo viên (Tên đăng nhập)</label>
@@ -609,7 +463,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Mật khẩu khởi tạo (Ít nhất 6 ký tự)</label>
-              <input type="password" id="add_password" placeholder="VD: 123456" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
+              <input type="password" id="add_password" placeholder="VD: Pct@2026" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Họ và tên tiếng Việt</label>
@@ -617,24 +471,7 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Tổ chuyên môn</label>
-              <select id="add_department" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm">
-                <option value="Ban Giám Hiệu">Ban Giám Hiệu</option>
-                <option value="Toán học">Toán học</option>
-                <option value="Vật lý">Vật lý</option>
-                <option value="Hóa học">Hóa học</option>
-                <option value="Sinh học">Sinh học</option>
-                <option value="Tin học" selected>Tin học</option>
-                <option value="Ngữ văn">Ngữ văn</option>
-                <option value="Lịch sử">Lịch sử</option>
-                <option value="Địa lý">Địa lý</option>
-                <option value="Tiếng Anh">Tiếng Anh</option>
-                <option value="Tiếng Pháp - Nhật">Tiếng Pháp - Nhật</option>
-                <option value="Giáo dục kinh tế và pháp luật">Giáo dục kinh tế và pháp luật</option>
-                <option value="Giáo dục thể chất">Giáo dục thể chất</option>
-                <option value="Giáo dục quốc phòng và an ninh">Giáo dục quốc phòng và an ninh</option>
-                <option value="Văn phòng">Văn phòng</option>
-                <option value="Chưa phân tổ">Chưa phân tổ</option>
-              </select>
+              <select id="add_department" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm"></select>
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Cấp quyền hệ thống</label>
@@ -655,7 +492,7 @@
               </select>
             </div>
           </div>
-          
+
           <div class="mt-6 flex justify-end space-x-2.5">
             <button onclick="closeAddModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Hủy</button>
             <button onclick="saveNewUser()" id="btn-save-new-user" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold shadow-sm">Tạo tài khoản</button>
@@ -666,27 +503,19 @@
       <!-- MODAL ĐỔI MẬT KHẨU CÁ NHÂN -->
       <div id="password-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
-          <h3 class="text-lg font-bold text-slate-900 mb-2">Đổi mật khẩu đăng nhập</h3>
-          <p class="text-xs text-slate-500 mb-4 leading-relaxed">
-            Yêu cầu tối thiểu <strong class="text-slate-700">6 ký tự</strong>, bao gồm đủ <strong class="text-slate-700">chữ cái</strong>, <strong class="text-slate-700">chữ số</strong> và <strong class="text-slate-700">ký tự đặc biệt</strong> (VD: <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-700">Pct@2026</code>).
-          </p>
-          <div class="space-y-3.5">
+          <h3 class="text-lg font-bold text-slate-900 mb-4">Đổi mật khẩu đăng nhập</h3>
+          <div class="space-y-4">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Mật khẩu mới</label>
-              <input type="password" id="new_password" placeholder="Nhập mật khẩu mới..." class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <label class="block text-xs font-bold text-slate-600 mb-1">Mật khẩu mới (tối thiểu 6 ký tự)</label>
+              <input type="password" id="new_password" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-600 mb-1">Nhập lại mật khẩu mới</label>
-              <input type="password" id="confirm_password" placeholder="Xác nhận lại mật khẩu..." class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              <input type="password" id="confirm_password" class="w-full border border-slate-300 p-2.5 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
             </div>
-            <label class="inline-flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none">
-              <input type="checkbox" id="show_new_password" onchange="togglePasswordVisibility(['new_password', 'confirm_password'], 'show_new_password')"
-                     class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
-              <span>Hiện mật khẩu</span>
-            </label>
           </div>
           <div class="mt-6 flex justify-end space-x-2.5">
-            <button onclick="closePasswordModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Hủy</button>
+            <button id="btn-cancel-password" onclick="closePasswordModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-semibold">Hủy</button>
             <button onclick="saveNewPassword()" id="btn-save-password" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm">Cập nhật</button>
           </div>
         </div>
@@ -694,1852 +523,14 @@
     </main>
   </div>
 
-  <script>
-    // ==========================================
-    // CẤU HÌNH SUPABASE & APPS SCRIPT
-    // ==========================================
-    const SUPABASE_URL = "https://kprcbeqbwsslbojedmvr.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwcmNiZXFid3NzbGJvamVkbXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQyNjQ5ODUsImV4cCI6MjEwOTg0MDk4NX0.qYqQojqnXJrpfCzrKYKgRezAlqEpq2Us5RRhGyD65b4";
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUdZgK7dYQFhJIUmhQRlDR8N1o9zjyw_A58qudOPxRVBqYjsGzpKCH8x8kffUefNfS/exec";
-
-    let currentUser = null;
-    let userProfile = null;
-    let currentSelectedCategory = null;
-    let currentFolderContext = null;
-    // Tự động cuộn mượt tới vùng nội dung bên phải khi chọn mục ở cây thư mục bên trái
-    function scrollToRightContent() {
-      const rightPanel = document.getElementById("right-content-area");
-      if (!rightPanel) return;
-      const headerOffset = 88;
-      const elementPosition = rightPanel.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-      window.scrollTo({
-        top: Math.max(0, offsetPosition),
-        behavior: "smooth"
-      });
-    }
-    let allUsersCache = [];
-    let selectedUserIds = new Set();
-    let currentFilteredUsers = [];
-
-    // Ghép đuôi nội bộ ngầm để Supabase Auth xác thực bằng Mã GV
-    function toAuthEmail(code) {
-      const clean = String(code || "").trim().toLowerCase().replace(/\s+/g, "");
-      if (!clean) return "";
-      return clean.includes("@") ? clean : `${clean}@noibo.edu.vn`;
-    }
-
-    // Hiển thị sạch Mã GV (loại bỏ đuôi @noibo.edu.vn nếu có, giữ nguyên email Admin)
-    function cleanTeacherCode(raw) {
-      if (!raw) return "";
-      const str = String(raw).trim();
-      if (str.toLowerCase().endsWith("@noibo.edu.vn")) {
-      return str.slice(0, -13);
-      }
-      return str;
-    }
-
-    // Chuẩn hóa tên tổ viết tắt trong Excel về đúng tên chuẩn trên hệ thống
-    function normalizeDepartmentName(rawDept) {
-      const d = String(rawDept || "").trim();
-      if (!d) return "Chưa phân tổ";
-      const lower = d.toLowerCase();
-      if (lower.includes("kt&pl") || lower.includes("kinh tế")) return "Giáo dục kinh tế và pháp luật";
-      if (lower.includes("qp&an") || lower.includes("quốc phòng")) return "Giáo dục quốc phòng và an ninh";
-      if (lower === "toán") return "Toán học";
-      if (lower === "văn") return "Ngữ văn";
-      if (lower === "lý") return "Vật lý";
-      if (lower === "hóa") return "Hóa học";
-      if (lower === "sinh") return "Sinh học";
-      if (lower === "sử") return "Lịch sử";
-      if (lower === "địa") return "Địa lý";
-      if (lower === "tin") return "Tin học";
-      return d;
-    }
-
-    // Chống XSS khi render dữ liệu ra bảng
-    function escapeHTML(str) {
-      if (!str) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    // Chuyển tên có dấu thành slug thư mục
-    function toSlug(str) {
-      return String(str || "").toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[đĐ]/g, "d")
-        .replace(/[^a-z0-9]/g, "-")
-        .replace(/-+/g, "-")
-        .replace(/^-|-$/g, "");
-    }
-
-    // 1. Xử lý Đăng Nhập
-    async function handleLogin() {
-      const code = document.getElementById("email").value.trim().replace(/\s+/g, "");
-      const password = document.getElementById("password").value;
-      const btn = document.getElementById("btn-login");
-
-      if (!code || !password) return alert("Vui lòng điền đủ Mã giáo viên và mật khẩu!");
-
-      btn.disabled = true;
-      btn.innerText = "Đang kiểm tra...";
-
-      const loginEmail = code.toLowerCase() === "admin" ? "vulongdng@gmail.com" : toAuthEmail(code);
-
-      const { data, error } = await client.auth.signInWithPassword({
-        email: loginEmail,
-        password: password
-      });
-
-      if (error) {
-        alert("Đăng nhập thất bại: Sai mã giáo viên hoặc mật khẩu!");
-        btn.disabled = false;
-        btn.innerText = "Đăng Nhập Hệ Thống";
-        return;
-      }
-
-      currentUser = data.user;
-      await initApplication();
-    }
-
-    // Tạo / lấy mã định danh trình duyệt và băm SHA-256 trước khi lưu DB
-    async function getDeviceHash() {
-      let rawToken = localStorage.getItem("pct_device_token");
-      if (!rawToken) {
-        rawToken = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now());
-        localStorage.setItem("pct_device_token", rawToken);
-      }
-      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawToken));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-    }
-
-    // Kiểm tra thiết bị quen hay máy lạ; bắt buộc OTP khi cần
-    async function verifyDeviceAnd2FA(profile) {
-      const deviceHash = await getDeviceHash();
-      const trustedList = Array.isArray(profile.trusted_devices) ? profile.trusted_devices : [];
-
-      // Trường hợp 1: Đã có email và máy hiện tại đã nằm trong danh sách tin cậy -> Vào thẳng
-      if (profile.otp_email && trustedList.includes(deviceHash)) {
-        return true;
-      }
-
-      // Trường hợp 2: Admin đã nhập sẵn email trước đó, đây là lần đăng nhập đầu tiên (chưa có máy nào được lưu) -> Tự tin cậy máy đầu tiên, không hỏi OTP
-      if (profile.otp_email && trustedList.length === 0) {
-        const initDevices = [deviceHash];
-        await client.from("profiles").update({ trusted_devices: initDevices }).eq("id", profile.id);
-        profile.trusted_devices = initDevices;
-        return true;
-      }
-
-      const modal = document.getElementById("twofa-modal");
-      const titleEl = document.getElementById("twofa-title");
-      const descEl = document.getElementById("twofa-desc");
-      const emailBox = document.getElementById("twofa-email-box");
-      const emailInput = document.getElementById("twofa-email-input");
-      const sendEmailBtn = document.getElementById("twofa-send-email-btn");
-      const otpBox = document.getElementById("twofa-otp-box");
-      const resendBtn = document.getElementById("twofa-resend-btn");
-      const codeInput = document.getElementById("twofa-code");
-      const trustWrap = document.getElementById("twofa-trust-wrap");
-      const trustChk = document.getElementById("twofa-trust-device");
-      const verifyBtn = document.getElementById("twofa-verify-btn");
-      const cancelBtn = document.getElementById("twofa-cancel-btn");
-
-      codeInput.value = "";
-      let activeEmail = profile.otp_email || "";
-      const isFirstSetup = !activeEmail;
-
-      if (isFirstSetup) {
-        // Lần đầu tiên đăng nhập: chỉ nhập Email thật để lưu lại và tự tin cậy máy này (KHÔNG hỏi OTP)
-        titleEl.innerText = "Đăng ký Email nhận OTP (Lần đầu)";
-        descEl.innerText = "Nhập Email thật của bạn để hệ thống gửi mã OTP khi phát hiện đăng nhập ở máy tính khác. Máy hiện tại sẽ được tự động ghi nhận.";
-        emailBox.classList.remove("hidden");
-        otpBox.classList.add("hidden");
-        verifyBtn.classList.add("hidden");
-        trustWrap.classList.add("hidden");
-        emailInput.value = "";
-      } else {
-        // Đã có máy tin cậy trước đó, nhưng nay đăng nhập trên máy lạ -> Bắt buộc nhập OTP
-        titleEl.innerText = "Phát hiện đăng nhập ở máy khác";
-        descEl.innerText = `Đang gửi mã OTP 6 số đến ${maskEmail(activeEmail)}...`;
-        emailBox.classList.add("hidden");
-        otpBox.classList.remove("hidden");
-        verifyBtn.classList.remove("hidden");
-        trustWrap.classList.remove("hidden");
-        trustChk.checked = false;
-
-        callOtpApi("sendOtp", { targetEmail: activeEmail }).then(res => {
-          if (res.success) {
-            descEl.innerText = `Mã OTP gồm 6 số đã được gửi tới ${maskEmail(activeEmail)} (hiệu lực 5 phút).`;
-          } else {
-            descEl.innerText = "Không gửi được email OTP: " + (res.error || "Lỗi máy chủ");
-          }
-        });
-      }
-
-      modal.classList.remove("hidden");
-
-      return new Promise((resolve) => {
-        // Lần đầu: lưu thẳng Email + máy hiện tại rồi cho vào hệ thống
-        sendEmailBtn.onclick = async () => {
-          const val = emailInput.value.trim().toLowerCase();
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return alert("Vui lòng nhập đúng định dạng Email!");
-
-          sendEmailBtn.disabled = true;
-          sendEmailBtn.innerText = "Đang lưu...";
-
-          const initDevices = [deviceHash];
-          const { error } = await client.from("profiles")
-            .update({ otp_email: val, trusted_devices: initDevices })
-            .eq("id", profile.id);
-
-          sendEmailBtn.disabled = false;
-          sendEmailBtn.innerText = "Lưu & Tiếp tục";
-
-          if (error) return alert("Lỗi lưu Email bảo mật: " + error.message);
-
-          profile.otp_email = val;
-          profile.trusted_devices = initDevices;
-          modal.classList.add("hidden");
-          resolve(true);
-        };
-
-        resendBtn.onclick = async () => {
-          if (!activeEmail) return;
-          resendBtn.disabled = true;
-          resendBtn.innerText = "Đang gửi...";
-          const res = await callOtpApi("sendOtp", { targetEmail: activeEmail });
-          resendBtn.disabled = false;
-          resendBtn.innerText = "Gửi lại mã";
-          alert(res.success ? `Đã gửi lại mã mới tới ${maskEmail(activeEmail)}!` : ("Lỗi: " + res.error));
-        };
-
-        cancelBtn.onclick = async () => {
-          modal.classList.add("hidden");
-          await client.auth.signOut();
-          location.reload();
-          resolve(false);
-        };
-
-        verifyBtn.onclick = async () => {
-          const code = codeInput.value.trim();
-          if (!/^\d{6}$/.test(code)) return alert("Vui lòng nhập đủ 6 chữ số OTP!");
-
-          verifyBtn.disabled = true;
-          verifyBtn.innerText = "Đang kiểm tra...";
-          const res = await callOtpApi("verifyOtp", { otpCode: code });
-          verifyBtn.disabled = false;
-          verifyBtn.innerText = "Xác nhận OTP";
-
-          if (!res.success) {
-            alert(res.error || "Mã OTP không đúng!");
-            codeInput.select();
-            return;
-          }
-
-          if (trustChk.checked) {
-            const updatedList = [...new Set([...trustedList, deviceHash])].slice(-5);
-            await client.from("profiles").update({ trusted_devices: updatedList }).eq("id", profile.id);
-            profile.trusted_devices = updatedList;
-          }
-
-          modal.classList.add("hidden");
-          resolve(true);
-        };
-      });
-    }
-    
-    function maskEmail(email) {
-      const [local, domain] = String(email || "").split("@");
-      if (!domain) return email;
-      const head = local.slice(0, Math.min(2, local.length));
-      return `${head}***@${domain}`;
-    }
-
-    async function callOtpApi(action, extraParams = {}) {
-      const { data: { session } } = await client.auth.getSession();
-      const formData = new URLSearchParams({
-        action,
-        accessToken: session ? session.access_token : "",
-        ...extraParams
-      });
-      const res = await fetch(APPS_SCRIPT_URL, {
-        method: "POST",
-        body: formData,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
-      });
-      return await res.json();
-    }
-
-    // 2. Khởi tạo phiên làm việc sau khi login
-    async function initApplication() {
-      let { data: profile } = await client
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUser.id)
-        .maybeSingle();
-
-      // CHẶN LỖ HỔNG: Nếu không có trong danh sách profiles (và không phải Admin gốc), lập tức đăng xuất!
-      if (!profile) {
-        if (currentUser.email === 'vulongdng@gmail.com') {
-          const { data: adminProf } = await client.from("profiles").insert({
-            id: currentUser.id,
-            email: currentUser.email,
-            full_name: "Quản trị Hệ thống",
-            department: "Ban Giám Hiệu",
-            role: "admin",
-            position: "none",
-            must_change_pw: false
-          }).select().single();
-          profile = adminProf;
-        } else {
-          await client.auth.signOut();
-          alert("Tài khoản của bạn chưa được cấp quyền hoặc đã bị thu hồi khỏi hệ thống!");
-          location.reload();
-          return;
-        }
-      }
-
-      userProfile = profile;
-      const passed2FA = await verifyDeviceAnd2FA(profile);
-      if (!passed2FA) return;
-      
-      // BẮT BUỘC ĐỔI MẬT KHẨU KHI ĐĂNG NHẬP LẦN ĐẦU (Chống lộ mật khẩu mặc định 123456)
-      if (userProfile.must_change_pw === true && currentUser.email !== 'vulongdng@gmail.com') {
-        document.getElementById("login-screen").classList.add("hidden");
-        document.getElementById("app-screen").classList.remove("hidden");
-        openPasswordModal(true); // Mở khóa bắt buộc đổi mật khẩu
-      }
-      userProfile = profile;
-
-      // Cập nhật giao diện Header
-      document.getElementById("login-screen").classList.add("hidden");
-      document.getElementById("app-screen").classList.remove("hidden");
-      document.getElementById("user-name").innerText = userProfile.full_name;
-
-      // Tạo chữ viết tắt cho Avatar tròn trên Header
-      const nameParts = String(userProfile.full_name || "GV").trim().split(" ");
-      const initials = nameParts.length >= 2
-        ? (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase()
-        : nameParts[0].slice(0, 2).toUpperCase();
-      const avatarEl = document.getElementById("user-avatar");
-      if (avatarEl) avatarEl.innerText = initials;
-      
-      // Hiển thị/ẩn nhãn Tổ bộ môn chuẩn xác
-      const deptBadge = document.getElementById("dept-badge");
-      if (userProfile.role === 'admin' || currentUser.email === 'vulongdng@gmail.com') {
-        deptBadge.classList.add("hidden");
-      } else {
-        deptBadge.innerText = "Tổ: " + userProfile.department;
-        deptBadge.classList.remove("hidden");
-      }
-      
-      const roleNames = { 
-        admin: "Ban Giám Hiệu", 
-        hod: "Tổ Trưởng", 
-        vice_hod: "Tổ Phó",
-        clerk: "Nhân viên Văn thư", 
-        teacher: "Giáo Viên" 
-      };
-      document.getElementById("user-role").innerText = currentUser.email === 'vulongdng@gmail.com'
-        ? "Quản trị Hệ thống"
-        : (roleNames[userProfile.role] || "Giáo Viên");
-
-      // Mở khung đăng tải ở "Kho chung toàn trường" CHỈ CHO Admin và Văn thư
-      if (userProfile.role === 'admin' || userProfile.role === 'clerk') {
-        const uploadBox = document.getElementById("upload-template-box");
-        if (uploadBox) uploadBox.classList.remove("hidden");
-      }
-
-      // 1. Hiển thị Tab duyệt bài trên Header cho HOD và Admin (BGH)
-      if (userProfile.role === 'admin' || userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
-        document.getElementById("tab-btn-review").classList.remove("hidden");
-        if (userProfile.role === 'admin') {
-          loadDepartmentOptions();
-        }
-        loadReviewSubmissions();
-      }
-
-      // 2. Hiển thị nút Quản trị Hệ thống trên Header CHỈ DÀNH CHO Quản trị viên gốc
-      if (currentUser.email === 'vulongdng@gmail.com') {
-        document.getElementById("tab-btn-users").classList.remove("hidden");
-        loadAllUsers(); 
-      }
-
-      // 3. Dựng danh mục lưu trữ và cây thư mục bên trái theo quyền
-      renderAllowedCategories();
-      renderFolderTree();
-
-      // 4. Tải dữ liệu cơ bản
-      loadMySubmissions();
-      loadSharedDocs();
-      switchTab('upload');
-    }
-
-    // Lọc các Mục lưu trữ trong Form tải lên theo Quyền hạn, Tổ & Chức vụ kiêm nhiệm
-    function renderAllowedCategories() {
-      const categorySelect = document.getElementById("category");
-      if (!categorySelect) return;
-
-      const role = userProfile.role;
-      const userPos = userProfile.position || 'none';
-      const isVanPhong = userProfile.department && userProfile.department.toLowerCase().includes("văn phòng");
-
-      const categoryGroups = [
-        {
-          label: "Kho chung toàn trường",
-          roles: ["admin", "clerk"],
-          options: [
-            { value: "van-ban-chi-dao", text: "Văn bản chỉ đạo cấp trên" },
-            { value: "quy-che", text: "Nội quy / Quy chế hoạt động" },
-            { value: "bieu-mau", text: "Biểu mẫu hành chính / Kế hoạch chung" }
-          ]
-        },
-        {
-          label: "Ban Giám Hiệu",
-          roles: ["admin"],
-          options: [
-            { value: "nghi-quyet", text: "Nghị quyết / Kế hoạch chiến lược" },
-            { value: "kiem-tra-noi-bo", text: "Hồ sơ Kiểm tra nội bộ" },
-            { value: "thi-dua", text: "Hồ sơ Thi đua - Khen thưởng" }
-          ]
-        },
-        {
-          label: "Tổ chuyên môn",
-          roles: ["admin", "hod","vice_hod", "teacher"],
-          excludeDept: "văn phòng",
-          options: [
-            { value: "ke-hoach-giao-duc", text: "Kế hoạch giáo dục tổ/nhóm", allowedRoles: ["admin", "hod", "vice_hod"] },
-            { value: "giao-an", text: "Kế hoạch bài dạy (Giáo án)" },
-            { value: "de-thi", text: "Ngân hàng đề thi / Ma trận" },
-            { value: "bien-ban", text: "Biên bản sinh hoạt tổ chuyên môn", allowedRoles: ["admin", "hod", "vice_hod"] },
-            { value: "hsg-khkt", text: "Bồi dưỡng HSG / Chuyên đề KHKT" },
-            { value: "so-diem", text: "Sổ theo dõi và đánh giá" }
-          ]
-        },
-        {
-          label: "Tổ Văn phòng (Hành chính)",
-          roles: ["admin", "clerk", "teacher"],
-          onlyDept: "văn phòng",
-          options: [
-            { value: "van-thu", text: "Công văn đi / đến (Văn thư)", allowedRoles: ["admin", "clerk"] },
-            { value: "nhan-su", text: "Hồ sơ Nhân sự - Lương" },
-            { value: "ke-toan", text: "Hồ sơ Kế toán - Tài chính" },
-            { value: "thu-vien-thiet-bi", text: "Hồ sơ Thư viện - Thiết bị" }
-          ]
-        },
-        {
-          label: "Chủ nhiệm & Đoàn thể",
-          roles: ["admin", "hod","vice_hod", "clerk", "teacher"],
-          requirePosition: true,
-          options: [
-            { value: "chu-nhiem", text: "Kế hoạch & Sổ Chủ nhiệm lớp", pos: ["gvcn"] },
-            { value: "hop-phu-huynh", text: "Biên bản họp Phụ huynh", pos: ["gvcn"] },
-            { value: "cong-doan", text: "Hồ sơ Công đoàn", pos: ["doan"] },
-            { value: "doan-thanh-nien", text: "Hồ sơ Đoàn Thanh niên", pos: ["doan"] }
-          ]
-        }
-      ];
-
-      categorySelect.innerHTML = "";
-
-      categoryGroups.forEach(group => {
-        if (!group.roles.includes(role)) return;
-
-        if (role !== "admin") {
-          if (group.excludeDept && isVanPhong) return;
-          if (group.onlyDept && !isVanPhong && role !== "clerk") return;
-          if (group.requirePosition && role !== "clerk" && userPos === "none") return;
-        }
-
-        const validOptions = group.options.filter(opt => {
-          if (opt.allowedRoles && !opt.allowedRoles.includes(role)) return false;
-          if (opt.pos && role !== "admin" && role !== "clerk") {
-            return opt.pos.includes(userPos);
-          }
-          return true;
-        });
-
-        if (validOptions.length === 0) return;
-
-        const optgroup = document.createElement("optgroup");
-        optgroup.label = group.label;
-
-        validOptions.forEach(opt => {
-          const optionEl = document.createElement("option");
-          optionEl.value = opt.value;
-          optionEl.innerText = opt.text;
-          optgroup.appendChild(optionEl);
-        });
-
-        categorySelect.appendChild(optgroup);
-      });
-    }
-
-    // Dựng cây thư mục bên trái
-    function renderFolderTree() {
-      const container = document.getElementById("folder-tree-container");
-      if (!container) return;
-
-      const role = userProfile.role;
-      const userPos = userProfile.position || 'none';
-      const isVanPhong = userProfile.department && userProfile.department.toLowerCase().includes("văn phòng");
-
-      const treeData = [
-        {
-          id: "shared",
-          name: "Kho chung toàn trường",
-          roles: ["admin", "hod", "vice_hod", "clerk", "teacher"],
-          isShared: true,
-          children: [
-            { value: "van-ban-chi-dao", name: "Văn bản chỉ đạo cấp trên" },
-            { value: "quy-che", name: "Nội quy / Quy chế" },
-            { value: "bieu-mau", name: "Biểu mẫu hành chính" }
-          ]
-        },
-        {
-          id: "bgh",
-          name: "Ban Giám Hiệu",
-          roles: ["admin"],
-          children: [
-            { value: "nghi-quyet", name: "Nghị quyết / Chiến lược" },
-            { value: "kiem-tra-noi-bo", name: "Kiểm tra nội bộ" },
-            { value: "thi-dua", name: "Thi đua - Khen thưởng" }
-          ]
-        },
-        {
-          id: "dept",
-          name: role === "admin" ? "Tổ chuyên môn (14 Tổ)" : `Tổ ${userProfile.department}`,
-          roles: ["admin", "hod", "vice_hod", "teacher"],
-          excludeDept: "văn phòng",
-          children: [
-            { value: "ke-hoach-giao-duc", name: "Kế hoạch giáo dục tổ" },
-            { value: "giao-an", name: "Kế hoạch bài dạy (Giáo án)" },
-            { value: "de-thi", name: "Ngân hàng đề thi / Ma trận" },
-            { value: "bien-ban", name: "Biên bản sinh hoạt tổ" },
-            { value: "hsg-khkt", name: "Bồi dưỡng HSG / KHKT" },
-            { value: "so-diem", name: "Sổ theo dõi & đánh giá" }
-          ]
-        },
-        {
-          id: "office",
-          name: "Tổ Văn phòng",
-          roles: ["admin", "clerk", "teacher"],
-          onlyDept: "văn phòng",
-          children: [
-            { value: "van-thu", name: "Công văn đi / đến" },
-            { value: "nhan-su", name: "Hồ sơ Nhân sự - Lương" },
-            { value: "ke-toan", name: "Kế toán - Tài chính" },
-            { value: "thu-vien-thiet-bi", name: "Thư viện - Thiết bị" }
-          ]
-        },
-        {
-          id: "union",
-          name: "Chủ nhiệm & Đoàn thể",
-          roles: ["admin", "hod", "vice_hod", "clerk", "teacher"],
-          requirePosition: true,
-          children: [
-            { value: "chu-nhiem", name: "Kế hoạch & Sổ Chủ nhiệm", pos: ["gvcn"] },
-            { value: "hop-phu-huynh", name: "Biên bản họp Phụ huynh", pos: ["gvcn"] },
-            { value: "cong-doan", name: "Hồ sơ Công đoàn", pos: ["doan"] },
-            { value: "doan-thanh-nien", name: "Hồ sơ Đoàn Thanh niên", pos: ["doan"] }
-          ]
-        }
-      ];
-
-      container.innerHTML = "";
-
-      treeData.forEach(folder => {
-        if (!folder.roles.includes(role)) return;
-        if (role !== "admin") {
-          if (folder.excludeDept && isVanPhong) return;
-          if (folder.onlyDept && !isVanPhong && role !== "clerk") return;
-          if (folder.requirePosition && role !== "clerk" && userPos === "none") return;
-        }
-
-        const validChildren = folder.children.filter(sub => {
-          if (sub.pos && role !== "admin" && role !== "clerk") {
-            return sub.pos.includes(userPos);
-          }
-          return true;
-        });
-
-        if (validChildren.length === 0) return;
-
-        const parentDiv = document.createElement("div");
-        parentDiv.className = "space-y-0.5";
-
-        const headerBtn = document.createElement("button");
-        headerBtn.type = "button";
-        headerBtn.className = "w-full flex items-center justify-between px-2.5 py-2 rounded-xl hover:bg-slate-100 text-slate-800 font-semibold text-left transition";
-        headerBtn.innerHTML = `
-          <span class="flex items-center truncate">
-            <span class="mr-2 text-amber-500">📁</span>
-            <span class="truncate">${escapeHTML(folder.name)}</span>
-          </span>
-          <svg class="w-3.5 h-3.5 text-slate-400 transform transition-transform duration-200 rotate-90" id="arrow-${folder.id}" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-        `;
-
-        const childrenContainer = document.createElement("div");
-        childrenContainer.id = `tree-children-${folder.id}`;
-        childrenContainer.className = "pl-4 space-y-0.5 border-l border-slate-200 ml-3.5";
-
-        headerBtn.onclick = () => {
-          if (folder.isShared) {
-            loadSharedDocs(null, "Kho chung toàn trường (Tất cả)");
-            switchTab('shared');
-          }
-          childrenContainer.classList.toggle("hidden");
-          document.getElementById(`arrow-${folder.id}`).classList.toggle("rotate-90");
-        };
-
-        validChildren.forEach(sub => {
-          const subBtn = document.createElement("button");
-          subBtn.type = "button";
-          subBtn.id = `tree-node-${sub.value}`;
-          subBtn.className = "tree-node-btn w-full text-left px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-blue-50 hover:text-blue-700 text-xs font-medium flex items-center transition";
-          subBtn.innerHTML = `<span class="mr-1.5 text-slate-400">└</span> <span class="truncate">${escapeHTML(sub.name)}</span>`;
-          subBtn.onclick = () => openFolderNode(folder.id, folder.name, sub.value, sub.name, folder.isShared);
-          childrenContainer.appendChild(subBtn);
-        });
-
-        parentDiv.appendChild(headerBtn);
-        parentDiv.appendChild(childrenContainer);
-        container.appendChild(parentDiv);
-      });
-    }
-
-    // Xử lý khi bấm vào 1 nhánh con trên cây thư mục
-    async function openFolderNode(folderId, parentName, categoryValue, categoryName, isShared) {
-      document.querySelectorAll(".tree-node-btn").forEach(el => {
-        el.classList.remove("bg-blue-100", "text-blue-800", "font-bold");
-      });
-      const activeNode = document.getElementById(`tree-node-${categoryValue}`);
-      if (activeNode) activeNode.classList.add("bg-blue-100", "text-blue-800", "font-bold");
-
-      if (isShared) {
-        loadSharedDocs(categoryValue, `Kho chung toàn trường / ${categoryName}`);
-        switchTab('shared');
-        scrollToRightContent();
-        return;
-      }
-
-      currentSelectedCategory = categoryValue;
-      currentFolderContext = { folderId, parentName, categoryValue, categoryName, isShared };
-
-      // Ẩn/hiện công cụ lọc theo Tổ đối với các mục con của "Tổ chuyên môn"
-      const folderDeptFilter = document.getElementById("folder_filter_department");
-      if (folderDeptFilter) {
-        if (folderId === "dept" && userProfile.role === "admin") {
-          folderDeptFilter.classList.remove("hidden");
-          folderDeptFilter.disabled = false;
-        } else if (folderId === "dept" && (userProfile.role === "hod" || userProfile.role === "vice_hod")) {
-          const normDept = normalizeDepartmentName(userProfile.department);
-          if (![...folderDeptFilter.options].some(o => o.value === normDept)) {
-            const opt = document.createElement("option");
-            opt.value = normDept;
-            opt.innerText = normDept;
-            folderDeptFilter.appendChild(opt);
-          }
-          folderDeptFilter.value = normDept;
-          folderDeptFilter.disabled = true;
-          folderDeptFilter.classList.remove("hidden");
-        } else {
-          folderDeptFilter.classList.add("hidden");
-          folderDeptFilter.value = "all";
-        }
-      }
-
-      switchTab('folder-view');
-      scrollToRightContent();
-      await reloadCurrentFolderNode();
-    }
-
-    // Tải và lọc danh sách hồ sơ của thư mục đang mở
-    async function reloadCurrentFolderNode() {
-      if (!currentFolderContext) return;
-      const { folderId, parentName, categoryValue, categoryName } = currentFolderContext;
-
-      const folderDeptFilter = document.getElementById("folder_filter_department");
-      const selectedDept = (folderId === "dept" && folderDeptFilter && !folderDeptFilter.classList.contains("hidden"))
-        ? folderDeptFilter.value
-        : "all";
-
-      const deptBadgeHtml = (folderId === "dept" && selectedDept !== "all")
-        ? `<span class="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full">${escapeHTML(selectedDept)}</span>`
-        : "";
-
-      document.getElementById("folder-view-breadcrumb").innerText =
-        (folderId === "dept" && selectedDept !== "all") ? `${parentName} / ${categoryName} / ${selectedDept}` : `${parentName} / ${categoryName}`;
-      document.getElementById("folder-view-title").innerHTML = `<span>📂 ${escapeHTML(categoryName)}</span> ${deptBadgeHtml}`;
-
-      const tbody = document.getElementById("folder-docs-body");
-      tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Đang tải dữ liệu thư mục...</td></tr>`;
-
-      let query = client.from("submissions")
-        .select("*")
-        .eq("category", categoryValue)
-        .order("submitted_at", { ascending: false })
-        .limit(2000);
-
-      if (userProfile.role === 'teacher') {
-        query = query.eq("teacher_id", currentUser.id);
-      } else if (userProfile.role === 'hod' || userProfile.role === 'vice_hod' || userProfile.role === 'clerk') {
-        query = query.eq("department", userProfile.department);
-      } else if (userProfile.role === 'admin' && folderId === 'dept' && selectedDept !== 'all') {
-        query = query.eq("department", selectedDept);
-      }
-
-      const { data, error } = await query;
-      tbody.innerHTML = "";
-
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Chưa có hồ sơ nào trong thư mục này.</td></tr>`;
-        return;
-      }
-
-      data.forEach(item => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-          <td class="p-3.5 font-medium text-slate-900">${escapeHTML(item.teacher_name)}</td>
-          <td class="p-3.5 text-slate-600">${escapeHTML(item.department)}</td>
-          <td class="p-3.5 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'} - T${item.week_no || '-'}</td>
-          <td class="p-3.5 text-slate-800">${escapeHTML(item.title)}</td>
-          <td class="p-3.5">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5 ${item.status === 'approved' ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-              ${item.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
-            </span>
-          </td>
-          <td class="p-3.5 text-right">
-            <a href="${encodeURI(item.file_url)}" target="_blank" class="text-blue-600 hover:underline font-semibold">Mở tệp</a>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-    function openUploadForCurrentFolder() {
-      switchTab('upload');
-      if (currentSelectedCategory) {
-        const catSelect = document.getElementById("category");
-        if (catSelect) catSelect.value = currentSelectedCategory;
-      }
-    }
-
-    // 3. Đăng Xuất & Đổi mật khẩu
-    async function handleLogout() {
-      await client.auth.signOut();
-      location.reload();
-    }
-
-    // Bật/tắt hiển thị mật khẩu khi tích vào checkbox
-    function togglePasswordVisibility(inputIds, checkboxId) {
-      const isChecked = document.getElementById(checkboxId)?.checked;
-      inputIds.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.type = isChecked ? "text" : "password";
-      });
-    }
-
-    function openPasswordModal(isForced = false) {
-      const p1El = document.getElementById("new_password");
-      const p2El = document.getElementById("confirm_password");
-      const chkEl = document.getElementById("show_new_password");
-
-      p1El.value = "";
-      p2El.value = "";
-      p1El.type = "password";
-      p2El.type = "password";
-      if (chkEl) chkEl.checked = false;
-
-      const modal = document.getElementById("password-modal");
-      const titleEl = modal.querySelector("h3");
-      const cancelBtn = modal.querySelector("button[onclick='closePasswordModal()']");
-
-      if (isForced) {
-        titleEl.innerText = isForced ? "⚠️ Khuyến nghị đổi mật khẩu lần đầu" : "Đổi mật khẩu đăng nhập";
-        if (cancelBtn) cancelBtn.classList.remove("hidden");
-      } else {
-        titleEl.innerText = "Đổi mật khẩu đăng nhập";
-        if (cancelBtn) cancelBtn.classList.remove("hidden");
-      }
-      modal.classList.remove("hidden");
-    }
-    function closePasswordModal() {
-      document.getElementById("password-modal").classList.add("hidden");
-    }
-
-    async function saveNewPassword() {
-      const p1 = document.getElementById("new_password").value;
-      const p2 = document.getElementById("confirm_password").value;
-      const btn = document.getElementById("btn-save-password");
-
-      const hasLetter = /[a-zA-Z]/.test(p1);
-      const hasNumber = /[0-9]/.test(p1);
-      const hasSpecial = /[^a-zA-Z0-9\s]/.test(p1);
-      const hasSpace = /\s/.test(p1);
-
-      if (!p1 || p1.length < 6 || !hasLetter || !hasNumber || !hasSpecial || hasSpace) {
-        return alert("Mật khẩu mới phải có tối thiểu 6 ký tự (không chứa dấu cách), bao gồm đầy đủ:\n- Chữ cái (a-z, A-Z)\n- Chữ số (0-9)\n- Ký tự đặc biệt (VD: @, #, $, !, _...)");
-      }
-      if (p1 !== p2) return alert("Mật khẩu xác nhận không khớp!");
-
-      btn.disabled = true;
-      btn.innerText = "Đang lưu...";
-
-      const { error } = await client.auth.updateUser({ password: p1 });
-      if (!error && userProfile) {
-        await client.from("profiles").update({ must_change_pw: false }).eq("id", currentUser.id);
-        userProfile.must_change_pw = false;
-      }
-
-      btn.disabled = false;
-      btn.innerText = "Cập nhật";
-
-      if (error) alert("Lỗi đổi mật khẩu: " + error.message);
-      else {
-        alert("Đã cập nhật mật khẩu bảo mật thành công!");
-        closePasswordModal();
-      }
-    }
-    // 4. Chuyển đổi qua lại giữa các Tab (Hỗ trợ nút Sidebar trái + nút trên Header)
-    function switchTab(tab) {
-      const tabs = ['upload', 'my-docs', 'shared', 'folder-view', 'review', 'users'];
-      
-      tabs.forEach(t => {
-        const section = document.getElementById(`tab-${t}`);
-        if (section) section.classList.add("hidden");
-      });
-
-      const btnUpload = document.getElementById("tab-btn-upload");
-      const btnDocs = document.getElementById("tab-btn-docs");
-      const btnReview = document.getElementById("tab-btn-review");
-      const btnUsers = document.getElementById("tab-btn-users");
-
-      if (btnUpload) btnUpload.className = "w-full text-left px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium text-sm flex items-center transition";
-      if (btnDocs) btnDocs.className = "w-full text-left px-3.5 py-2.5 rounded-xl hover:bg-slate-100 text-slate-700 font-medium text-sm flex items-center transition";
-      
-      if (btnReview) {
-        if (userProfile.role === 'admin' || userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
-          btnReview.className = "px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 font-semibold text-xs sm:text-sm inline-flex items-center transition shadow-xs";
-        } else {
-          btnReview.className = "hidden";
-        }
-      }
-
-      if (btnUsers) {
-        if (currentUser.email === 'vulongdng@gmail.com') {
-          btnUsers.className = "px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 font-semibold text-xs sm:text-sm inline-flex items-center transition shadow-xs";
-        } else {
-          btnUsers.className = "hidden";
-        }
-      }
-
-      const activeSection = document.getElementById(`tab-${tab}`);
-      if (activeSection) activeSection.classList.remove("hidden");
-
-      if (tab === 'upload' && btnUpload) {
-        btnUpload.className = "w-full text-left px-3.5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm flex items-center shadow-sm shadow-blue-600/20 transition";
-      } else if (tab === 'my-docs' && btnDocs) {
-        btnDocs.className = "w-full text-left px-3.5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm flex items-center shadow-sm shadow-blue-600/20 transition";
-      } else if (tab === 'review' && btnReview) {
-        btnReview.className = "px-3.5 py-2 rounded-xl bg-amber-500 text-white border border-amber-500 font-semibold text-xs sm:text-sm inline-flex items-center shadow-sm transition";
-      } else if (tab === 'users' && btnUsers) {
-        btnUsers.className = "px-3.5 py-2 rounded-xl bg-purple-600 text-white border border-purple-600 font-semibold text-xs sm:text-sm inline-flex items-center shadow-sm transition";
-      }
-    }
-
-    // Hàm gửi tệp có cơ chế tự động giãn luồng & thử lại khi > 30 người nộp cùng 1 giây
-    async function postToAppsScriptWithRetry(formData, btnElement, maxRetries = 3) {
-      for (let attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-          const res = await fetch(APPS_SCRIPT_URL, {
-            method: "POST",
-            body: formData,
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-          });
-
-          const textResult = await res.text();
-          // Khi quá 30 luồng đồng thời, Google trả về trang HTML báo bận thay vì JSON -> sẽ nhảy sang catch để thử lại
-          return JSON.parse(textResult);
-        } catch (err) {
-          if (attempt === maxRetries) {
-            throw new Error("Hệ thống đang quá tải do có quá nhiều người nộp cùng một giây. Vui lòng bấm Nộp lại sau vài giây!");
-          }
-          // Chờ ngẫu nhiên 1.5s - 4s để tránh các máy thử lại cùng một thời điểm
-          const waitMs = 1500 + Math.floor(Math.random() * 2500);
-          if (btnElement) {
-            btnElement.innerText = `Đang xếp hàng nộp (${attempt}/${maxRetries - 1})...`;
-          }
-          await new Promise(resolve => setTimeout(resolve, waitMs));
-        }
-      }
-    }
-    // 5. Tải file lên Google Drive qua Google Apps Script
-    async function handleUpload(e) {
-      e.preventDefault();
-      const fileInput = document.getElementById("file_input");
-      const file = fileInput.files[0];
-      if (!file) return;
-
-      if (file.size > 25 * 1024 * 1024) {
-        return alert("Tệp vượt quá 25MB! Vui lòng chọn tệp nhỏ hơn.");
-      }
-
-      const category = document.getElementById("category").value;
-      const grade = document.getElementById("grade").value;
-      const week_no = document.getElementById("week_no").value;
-      const title = document.getElementById("doc_title").value.trim();
-      const btn = document.getElementById("btn-submit");
-
-      const sharedCats = ["van-ban-chi-dao", "quy-che", "bieu-mau"];
-      const isSharedDoc = sharedCats.includes(category);
-
-      btn.disabled = true;
-      btn.innerText = "Đang đẩy tệp lên hệ thống...";
-
-      const reader = new FileReader();
-      reader.onload = async function() {
-        try {
-          const base64Data = reader.result.split(',')[1];
-
-          const formData = new URLSearchParams();
-          formData.append('fileName', file.name);
-          formData.append('mimeType', file.type);
-          formData.append('fileData', base64Data);
-          formData.append('teacherName', userProfile.full_name);
-          formData.append('week', week_no);
-          formData.append('department', userProfile.department);
-          formData.append('category', category);
-          if (isSharedDoc) formData.append('isTemplate', 'true');
-          const { data: { session } } = await client.auth.getSession();
-          formData.append('accessToken', session ? session.access_token : '');
-          
-          const result = await postToAppsScriptWithRetry(formData, btn);
-          if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
-
-          const driveFileUrl = result.fileUrl; 
-          const deptSlug = toSlug(userProfile.department);
-          const storageLabel = isSharedDoc
-            ? `00_cong-khai/${category}/${file.name}`
-            : `GoogleDrive/02_to-chuyen-mon/${deptSlug}/${category}`;
-
-          const { error: dbError } = await client.from("submissions").insert({
-            teacher_id: currentUser.id,
-            teacher_name: userProfile.full_name,
-            department: userProfile.department,
-            category: category,
-            grade: (grade && grade !== 'all') ? parseInt(grade) : null,
-            week_no: week_no ? parseInt(week_no) : null,
-            title: title,
-            file_name: file.name,
-            file_url: driveFileUrl,
-            storage_path: storageLabel,
-            status: isSharedDoc ? 'approved' : 'pending'
-          });
-
-          if (dbError) throw new Error("Lỗi lưu DB Supabase: " + dbError.message);
-
-          alert("Đã nộp hồ sơ thành công vào Kho lưu trữ của nhà trường!");
-          fileInput.value = "";
-          document.getElementById("doc_title").value = "";
-          loadMySubmissions();
-          if (isSharedDoc) loadSharedDocs();
-          switchTab('my-docs');
-
-        } catch (err) {
-          alert("Thao tác thất bại: " + err.message);
-          console.error(err);
-        } finally {
-          btn.disabled = false;
-          btn.innerText = "Nộp hồ sơ lên hệ thống";
-        }
-      };
-
-      reader.onerror = function() {
-        alert("Lỗi khi đọc tệp từ thiết bị!");
-        btn.disabled = false;
-        btn.innerText = "Nộp hồ sơ lên hệ thống";
-      };
-
-      reader.readAsDataURL(file);
-    }
-
-    // 6. Lấy danh sách hồ sơ cá nhân
-    async function loadMySubmissions() {
-      const { data } = await client.from("submissions")
-        .select("*")
-        .eq("teacher_id", currentUser.id)
-        .order("submitted_at", { ascending: false });
-
-      const tbody = document.getElementById("my-docs-body");
-      tbody.innerHTML = "";
-      if (!data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Chưa có tài liệu nào được tải lên.</td></tr>`;
-        return;
-      }
-
-      data.forEach(item => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-          <td class="p-3.5 font-semibold text-slate-700">Tuần ${item.week_no || '-'}</td>
-          <td class="p-3.5 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'}</td>
-          <td class="p-3.5 font-medium text-slate-900">${escapeHTML(item.title)}</td>
-          <td class="p-3.5 text-slate-500">${new Date(item.submitted_at).toLocaleDateString("vi-VN")}</td>
-          <td class="p-3.5">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5 ${item.status === 'approved' ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-              ${item.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
-            </span>
-          </td>
-          <td class="p-3.5 text-right space-x-3">
-            <a href="${encodeURI(item.file_url)}" target="_blank" class="text-blue-600 hover:underline font-semibold">Tải về</a>
-            ${item.status === 'pending' ? `<button onclick="deleteMySubmission(${item.id})" class="text-red-500 hover:underline text-xs font-semibold">Xóa</button>` : ''}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function deleteMySubmission(id) {
-      if (!confirm("Bạn muốn xóa hồ sơ đang chờ duyệt này để nộp lại?")) return;
-      const { error } = await client.from("submissions").delete().eq("id", id);
-      if (error) alert("Lỗi khi xóa: " + error.message);
-      else loadMySubmissions();
-    }
-
-    // 7. Lấy danh sách Kho chung toàn trường
-    async function loadSharedDocs(subCategory = null, customTitle = null) {
-      const titleEl = document.getElementById("shared-folder-title");
-      if (titleEl && customTitle) titleEl.innerText = customTitle;
-
-      let query = client.from("submissions")
-        .select("*")
-        .like("storage_path", "00_cong-khai/%")
-        .order("submitted_at", { ascending: false });
-
-      if (subCategory) {
-        query = query.eq("category", subCategory);
-      }
-
-      const { data } = await query;
-      const container = document.getElementById("shared-docs-list");
-      container.innerHTML = "";
-      if (!data || data.length === 0) {
-        container.innerHTML = `<div class="text-sm text-slate-400 italic py-4">Hiện chưa có văn bản / biểu mẫu nào trong mục này.</div>`;
-        return;
-      }
-      data.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "flex justify-between items-center p-3.5 bg-slate-50/80 hover:bg-slate-100/80 rounded-xl border border-slate-200/80 transition";
-        div.innerHTML = `
-          <div>
-            <div class="font-semibold text-slate-800">${escapeHTML(item.title)}</div>
-            <div class="text-xs text-slate-400 mt-0.5">Người đăng: ${escapeHTML(item.teacher_name)} • Ngày: ${new Date(item.submitted_at).toLocaleDateString("vi-VN")}</div>
-          </div>
-          <a href="${encodeURI(item.file_url)}" target="_blank" class="text-xs sm:text-sm bg-white border border-slate-300 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 px-3.5 py-1.5 rounded-xl text-slate-700 font-semibold transition">Tải xuống</a>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    // Xử lý đăng tải biểu mẫu chung (BGH và Nhân viên Văn thư)
-    async function handleUploadTemplate(e) {
-      e.preventDefault();
-      if (userProfile.role !== 'admin' && userProfile.role !== 'clerk') {
-        return alert("Bạn không có quyền thực hiện thao tác này!");
-      }
-
-      const subCatEl = document.getElementById("template_category");
-      const subCat = subCatEl ? subCatEl.value : "bieu-mau";
-      const title = document.getElementById("template_title").value.trim();
-      const fileInput = document.getElementById("template_file");
-      const file = fileInput.files[0];
-      const btn = document.getElementById("btn-upload-template");
-
-      if (!file || !title) return;
-      if (file.size > 25 * 1024 * 1024) return alert("Tệp vượt quá 25MB!");
-
-      btn.disabled = true;
-      btn.innerText = "Đang tải lên kho chung...";
-
-      const reader = new FileReader();
-      reader.onload = async function() {
-        try {
-          const base64Data = reader.result.split(',')[1];
-
-          const formData = new URLSearchParams();
-          formData.append('fileName', file.name);
-          formData.append('mimeType', file.type);
-          formData.append('fileData', base64Data);
-          formData.append('teacherName', userProfile.full_name || "Ban Giám Hiệu");
-          formData.append('category', subCat);
-          formData.append('isTemplate', 'true');
-          const { data: { session } } = await client.auth.getSession();
-          formData.append('accessToken', session ? session.access_token : '');
-          const result = await postToAppsScriptWithRetry(formData, btn);
-          if (!result.success) throw new Error(result.error || "Lỗi Google Drive");
-
-          const { error: dbError } = await client.from("submissions").insert({
-            teacher_id: currentUser.id,
-            teacher_name: userProfile.full_name || "Ban Giám Hiệu",
-            department: userProfile.department || "Ban Giám Hiệu",
-            category: subCat,
-            title: title,
-            file_name: file.name,
-            file_url: result.fileUrl,
-            storage_path: `00_cong-khai/${subCat}/${file.name}`,
-            status: 'approved'
-          });
-
-          if (dbError) {
-            throw new Error("Tệp đã lên Drive nhưng lỗi lưu Database Supabase: " + dbError.message);
-          }
-
-          alert("Đã đăng tải biểu mẫu lên kho chung thành công!");
-          document.getElementById("template_title").value = "";
-          fileInput.value = "";
-          loadSharedDocs(subCat);
-
-        } catch (err) {
-          alert("Thông báo lỗi: " + err.message);
-          console.error(err);
-        } finally {
-          btn.disabled = false;
-          btn.innerText = "Đăng tải";
-        }
-      };
-
-      reader.onerror = function() {
-        alert("Lỗi khi đọc tệp từ thiết bị!");
-        btn.disabled = false;
-        btn.innerText = "Đăng tải";
-      };
-
-      reader.readAsDataURL(file);
-    }
-
-    // 8. Tải danh sách duyệt dành cho Tổ trưởng và BGH
-    async function loadReviewSubmissions() {
-      let query = client.from("submissions")
-        .select("*")
-        .order("submitted_at", { ascending: false })
-        .limit(2000);
-      
-      if (userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
-        query = query.eq("department", userProfile.department);
-        const filterDeptEl = document.getElementById("filter_department");
-        if (filterDeptEl) filterDeptEl.classList.add("hidden");
-      } else if (userProfile.role === 'admin') {
-        const selectedDept = document.getElementById("filter_department").value;
-        if (selectedDept && selectedDept !== 'all') {
-          query = query.eq("department", selectedDept);
-        }
-      }
-
-      const selectedWeek = document.getElementById("filter_week").value;
-      if (selectedWeek) {
-        query = query.eq("week_no", parseInt(selectedWeek));
-      }
-
-      const selectedStatus = document.getElementById("filter_status").value;
-      if (selectedStatus && selectedStatus !== 'all') {
-        query = query.eq("status", selectedStatus);
-      }
-
-      const { data, error } = await query;
-      const tbody = document.getElementById("review-body");
-      tbody.innerHTML = "";
-
-      if (error || !data || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Không tìm thấy hồ sơ nào phù hợp với bộ lọc</td></tr>`;
-        return;
-      }
-
-      data.forEach(item => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-          <td class="p-3.5 font-semibold text-slate-900">${escapeHTML(item.teacher_name)}</td>
-          <td class="p-3.5 text-slate-600">${escapeHTML(item.department)}</td>
-          <td class="p-3.5 text-slate-600">${item.grade ? 'Khối ' + item.grade : 'Toàn trường'} - T${item.week_no || '-'}</td>
-          <td class="p-3.5 text-slate-800">${escapeHTML(item.title)}</td>
-          <td class="p-3.5">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}">
-              <span class="w-1.5 h-1.5 rounded-full mr-1.5 ${item.status === 'approved' ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-              ${item.status === 'approved' ? 'Đã duyệt' : 'Chờ duyệt'}
-            </span>
-          </td>
-          <td class="p-3.5 text-right space-x-2">
-            <a href="${encodeURI(item.file_url)}" target="_blank" class="text-blue-600 hover:underline font-medium">Xem file</a>
-            ${item.status === 'pending' ? `<button onclick="approveSubmission(${item.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1 rounded-lg shadow-xs transition">Duyệt</button>` : '<span class="text-xs text-slate-400 font-medium">Đã hoàn tất</span>'}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function approveSubmission(id) {
-      const { error } = await client.from("submissions").update({ status: 'approved' }).eq("id", id);
-      if (error) alert("Lỗi khi duyệt: " + error.message);
-      else {
-        loadReviewSubmissions();
-        loadMySubmissions();
-      }
-    }
-
-    // ==========================================
-    // QUẢN LÝ NGƯỜI DÙNG (DÀNH CHO QUẢN TRỊ VIÊN GỐC)
-    // ==========================================
-    async function loadAllUsers() {
-      const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
-      const tbody = document.getElementById("users-body");
-
-      if (error) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-red-500">Lỗi tải danh sách: ${error.message}</td></tr>`;
-        return;
-      }
-
-      allUsersCache = data || [];
-      const validIds = new Set(allUsersCache.map(u => u.id));
-      selectedUserIds.forEach(id => {
-        if (!validIds.has(id)) selectedUserIds.delete(id);
-      });
-
-      filterUserTable();
-    }
-
-    function filterUserTable() {
-      const selectedDept = document.getElementById("filter_user_department")?.value || "all";
-      const keyword = (document.getElementById("search_user_input")?.value || "").trim().toLowerCase();
-
-      const filtered = allUsersCache.filter(u => {
-        if (selectedDept !== "all") {
-          const userDept = u.role === 'admin' ? 'Ban Giám Hiệu' : (u.department || 'Chưa phân tổ');
-          if (userDept !== selectedDept) return false;
-        }
-        if (keyword) {
-          const displayCode = cleanTeacherCode(u.email).toLowerCase();
-          const matchName = u.full_name && u.full_name.toLowerCase().includes(keyword);
-          const matchCode = displayCode.includes(keyword);
-          if (!matchName && !matchCode) return false;
-        }
-        return true;
-      });
-
-      currentFilteredUsers = filtered;
-      renderUsersTable(filtered);
-    }
-
-    function renderUsersTable(usersList) {
-      const tbody = document.getElementById("users-body");
-      const countLabel = document.getElementById("user-count-label");
-      if (countLabel) countLabel.innerText = `Hiển thị: ${usersList.length} / ${allUsersCache.length} tài khoản`;
-
-      tbody.innerHTML = "";
-      if (usersList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 italic">Không tìm thấy tài khoản nào phù hợp với điều kiện lọc.</td></tr>`;
-        updateBulkActionUI();
-        return;
-      }
-
-      const posBadge = {
-        gvcn: '<span class="ml-1.5 px-2 py-0.5 text-[11px] bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">GVCN</span>',
-        doan: '<span class="ml-1.5 px-2 py-0.5 text-[11px] bg-sky-50 text-sky-700 border border-sky-200 rounded-full">Cán bộ Đoàn</span>'
-      };
-
-      usersList.forEach(user => {
-        const isChecked = selectedUserIds.has(user.id);
-        const displayCode = cleanTeacherCode(user.email);
-        const roleLabel = user.role === 'admin' ? '<span class="text-purple-600 font-bold">Ban Giám Hiệu</span>' : 
-                          user.role === 'hod' ? '<span class="text-blue-600 font-bold">Tổ trưởng</span>' : 
-                          user.role === 'vice_hod' ? '<span class="text-indigo-600 font-bold">Tổ phó</span>' : 
-                          user.role === 'clerk' ? '<span class="text-amber-600 font-bold">Văn thư</span>' : 'Giáo viên';
-        
-        const extraPos = posBadge[user.position] || '';
-
-        const tr = document.createElement("tr");
-        tr.className = isChecked ? "bg-purple-50/70 transition" : "hover:bg-slate-50 transition";
-        tr.innerHTML = `
-          <td class="p-3.5 text-center">
-            <input type="checkbox" ${isChecked ? "checked" : ""} onchange="toggleSingleUser('${user.id}', this.checked)"
-                   class="rounded border-slate-300 text-purple-600 focus:ring-purple-500 cursor-pointer">
-          </td>
-          <td class="p-3.5 font-semibold text-slate-900">${escapeHTML(user.full_name)}</td>
-          <td class="p-3.5 font-bold text-blue-700">${escapeHTML(displayCode || 'N/A')}</td>
-          <td class="p-3.5 text-slate-600">${user.role === 'admin' ? '<span class="text-slate-400 italic">- Ban Giám Hiệu -</span>' : escapeHTML(user.department)}</td>
-          <td class="p-3.5">${roleLabel}${extraPos}</td>
-          <td class="p-3.5 text-right space-x-2">
-            <button data-id="${user.id}" data-name="${escapeHTML(user.full_name)}" data-dept="${escapeHTML(user.department)}" data-role="${user.role}" data-pos="${user.position || 'none'}"
-                    onclick="openEditModalFromBtn(this)" 
-                    class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded-lg text-xs font-semibold transition">Sửa</button>
-            <button onclick="deleteUserProfile('${user.id}')" 
-                    class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded-lg text-xs font-semibold transition">Xóa</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      updateBulkActionUI();
-    }
-
-    function toggleSingleUser(userId, isChecked) {
-      if (isChecked) selectedUserIds.add(userId);
-      else selectedUserIds.delete(userId);
-      renderUsersTable(currentFilteredUsers);
-    }
-
-    function toggleSelectAllUsers(checkbox) {
-      if (checkbox.checked) {
-        currentFilteredUsers.forEach(u => selectedUserIds.add(u.id));
-      } else {
-        currentFilteredUsers.forEach(u => selectedUserIds.delete(u.id));
-      }
-      renderUsersTable(currentFilteredUsers);
-    }
-
-    function clearSelectedUsers() {
-      selectedUserIds.clear();
-      renderUsersTable(currentFilteredUsers);
-    }
-
-    function updateBulkActionUI() {
-      const bulkBar = document.getElementById("bulk-user-actions");
-      const countEl = document.getElementById("selected-users-count");
-      const selectAllEl = document.getElementById("select_all_users");
-
-      if (countEl) countEl.innerText = selectedUserIds.size;
-      if (bulkBar) {
-        if (selectedUserIds.size > 0) bulkBar.classList.remove("hidden");
-        else bulkBar.classList.add("hidden");
-      }
-
-      if (selectAllEl) {
-        if (currentFilteredUsers.length === 0) {
-          selectAllEl.checked = false;
-          selectAllEl.indeterminate = false;
-        } else {
-          const selectedInView = currentFilteredUsers.filter(u => selectedUserIds.has(u.id)).length;
-          selectAllEl.checked = (selectedInView === currentFilteredUsers.length);
-          selectAllEl.indeterminate = (selectedInView > 0 && selectedInView < currentFilteredUsers.length);
-        }
-      }
-    }
-
-    // Tác vụ 1: Xuất Excel CHỈ các tài khoản đã chọn
-    function exportSelectedUsersToExcel() {
-      if (selectedUserIds.size === 0) return alert("Vui lòng chọn ít nhất 1 tài khoản!");
-      const selectedList = allUsersCache.filter(u => selectedUserIds.has(u.id));
-
-      const excelData = selectedList.map(user => ({
-        "Mã GV": cleanTeacherCode(user.email),
-        "Mật khẩu": "",
-        "Họ và tên": user.full_name,
-        "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
-        "Quyền hạn": user.role === 'admin' ? 'Ban Giám Hiệu' : 
-                     (user.role === 'hod' ? 'Tổ trưởng' : 
-                     (user.role === 'vice_hod' ? 'Tổ phó' : 
-                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))),
-        "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
-                               (user.position === 'doan' ? 'Cán bộ Đoàn' : ''),
-        "Email OTP": user.otp_email || ""
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      worksheet['!cols'] = [{ wch: 15 }, { wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 22 }, { wch: 28 }];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "TaiKhoanDaChon");
-      XLSX.writeFile(workbook, `DanhSach_DaChon_${selectedList.length}GV.xlsx`);
-    }
-
-    // Tác vụ 2: Chuyển tổ hàng loạt
-    async function bulkChangeDepartment() {
-      const targetDept = document.getElementById("bulk_target_dept").value;
-      if (!targetDept) return alert("Vui lòng chọn tổ bộ môn muốn chuyển đến!");
-      if (selectedUserIds.size === 0) return;
-
-      const ids = Array.from(selectedUserIds).filter(id => id !== currentUser.id);
-      if (ids.length === 0) return alert("Không thể thay đổi tổ của tài khoản Admin đang đăng nhập!");
-
-      if (!confirm(`Chuyển ${ids.length} tài khoản đã chọn sang tổ "${targetDept}"?`)) return;
-
-      const { error } = await client.from("profiles")
-        .update({ department: targetDept })
-        .in("id", ids);
-
-      if (error) {
-        alert("Lỗi cập nhật tổ: " + error.message);
-      } else {
-        alert(`Đã chuyển ${ids.length} tài khoản sang tổ ${targetDept} thành công!`);
-        document.getElementById("bulk_target_dept").value = "";
-        loadAllUsers();
-      }
-    }
-
-    // Tác vụ 3: Xóa hàng loạt
-    async function bulkDeleteSelectedUsers() {
-      if (selectedUserIds.size === 0) return;
-
-      const idsToDelete = Array.from(selectedUserIds).filter(id => id !== currentUser.id);
-      if (idsToDelete.length === 0) {
-        return alert("Bạn không thể tự xóa tài khoản của chính mình đang đăng nhập!");
-      }
-
-      if (!confirm(`CẢNH BÁO: Bạn có chắc chắn muốn xóa ${idsToDelete.length} tài khoản đã chọn khỏi hệ thống?`)) return;
-
-      const { error } = await client.from("profiles")
-        .delete()
-        .in("id", idsToDelete);
-
-      if (error) {
-        alert("Lỗi khi xóa hàng loạt: " + error.message);
-      } else {
-        alert(`Đã xóa thành công ${idsToDelete.length} tài khoản!`);
-        selectedUserIds.clear();
-        loadAllUsers();
-      }
-    }
-
-    function openEditModalFromBtn(btn) {
-      openEditModal(
-        btn.getAttribute("data-id"),
-        btn.getAttribute("data-name"),
-        btn.getAttribute("data-dept"),
-        btn.getAttribute("data-role"),
-        btn.getAttribute("data-pos")
-      );
-    }
-
-    function openEditModal(id, name, dept, role, pos) {
-      document.getElementById("edit_user_id").value = id;
-      document.getElementById("edit_full_name").value = name;
-      document.getElementById("edit_department").value = dept;
-      document.getElementById("edit_role").value = role;
-      document.getElementById("edit_position").value = pos || 'none';
-      document.getElementById("edit-user-modal").classList.remove("hidden");
-      document.getElementById("edit_department").disabled = (role === 'admin');
-    }
-
-    function closeEditModal() {
-      document.getElementById("edit-user-modal").classList.add("hidden");
-    }
-
-    async function saveUserUpdate() {
-      const id = document.getElementById("edit_user_id").value;
-      const full_name = document.getElementById("edit_full_name").value.trim();
-      let department = document.getElementById("edit_department").value;
-      const role = document.getElementById("edit_role").value;
-      const position = document.getElementById("edit_position").value;
-
-      if (role === 'admin') department = 'Không áp dụng';
-      if (!full_name) return alert("Vui lòng nhập tên");
-
-      const { error } = await client.from("profiles")
-        .update({ full_name, department, role, position })
-        .eq("id", id);
-
-      if (error) {
-        alert("Lỗi cập nhật: " + error.message);
-      } else {
-        alert("Cập nhật thông tin thành công!");
-        closeEditModal();
-        loadAllUsers();
-      }
-    }
-
-    function openAddModal() {
-      document.getElementById("add_email").value = "";
-      document.getElementById("add_password").value = "";
-      document.getElementById("add_full_name").value = "";
-      document.getElementById("add_position").value = "none";
-      document.getElementById("add-user-modal").classList.remove("hidden");
-      document.getElementById("add_department").disabled = (document.getElementById("add_role").value === 'admin');
-    }
-
-    function closeAddModal() {
-      document.getElementById("add-user-modal").classList.add("hidden");
-    }
-
-    // Tạo tài khoản mới bằng Mã giáo viên
-    async function saveNewUser() {
-      const teacherCode = document.getElementById("add_email").value.trim().replace(/\s+/g, "");
-      const password = document.getElementById("add_password").value;
-      const full_name = document.getElementById("add_full_name").value.trim();
-      let department = document.getElementById("add_department").value;
-      const role = document.getElementById("add_role").value;
-      const position = document.getElementById("add_position").value;
-
-      if (role === 'admin') department = 'Không áp dụng';
-      const btn = document.getElementById("btn-save-new-user");
-
-      if (!teacherCode || !password || !full_name) {
-        return alert("Vui lòng nhập đầy đủ Mã giáo viên, Mật khẩu và Họ tên!");
-      }
-      if (password.length < 6) {
-        return alert("Mật khẩu phải có ít nhất 6 ký tự!");
-      }
-
-      btn.disabled = true;
-      btn.innerText = "Đang tạo...";
-
-      const authEmail = toAuthEmail(teacherCode);
-
-      const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-      });
-
-      const { data, error } = await adminAuthClient.auth.signUp({
-        email: authEmail,
-        password: password,
-        options: {
-          data: { full_name, department, role, position }
-        }
-      });
-
-      if (!error && data && data.user) {
-        await new Promise(resolve => setTimeout(resolve, 200));
-        await client.from("profiles").upsert({
-          id: data.user.id,
-          email: teacherCode,
-          full_name: full_name,
-          department: department,
-          role: role,
-          position: position
-        });
-      }
-
-      btn.disabled = false;
-      btn.innerText = "Tạo tài khoản";
-
-      if (error) {
-        alert("Lỗi tạo tài khoản: " + error.message);
-      } else {
-        alert(`Đã tạo tài khoản "${teacherCode}" thành công!`);
-        closeAddModal();
-        setTimeout(() => loadAllUsers(), 800);
-      }
-    }
-
-    async function deleteUserProfile(id) {
-      if (id === currentUser.id) {
-        return alert("Bạn không thể tự xóa tài khoản của chính mình đang đăng nhập!");
-      }
-
-      const confirmDelete = confirm("CẢNH BÁO: Hành động này sẽ xóa hồ sơ giáo viên khỏi danh sách hệ thống. Bạn có chắc chắn xóa?");
-      if (!confirmDelete) return;
-
-      const { error } = await client.from("profiles").delete().eq("id", id);
-
-      if (error) {
-        alert("Lỗi xóa tài khoản: " + error.message);
-      } else {
-        alert("Đã xóa hồ sơ giáo viên thành công!");
-        loadAllUsers();
-      }
-    }
-
-    // ==========================================
-    // XUẤT / NHẬP EXCEL NGƯỜI DÙNG HÀNG LOẠT
-    // ==========================================
-    async function exportUsersToExcel() {
-      const { data, error } = await client.from("profiles").select("*").order("created_at", { ascending: false });
-      if (error) return alert("Lỗi tải dữ liệu: " + error.message);
-
-      const excelData = data.map(user => ({
-        "Mã GV": cleanTeacherCode(user.email),
-        "Mật khẩu": "",
-        "Họ và tên": user.full_name,
-        "Tổ bộ môn": user.role === 'admin' ? 'Không áp dụng' : user.department,
-        "Quyền hạn": user.role === 'admin' ? 'Ban Giám Hiệu' : 
-                     (user.role === 'hod' ? 'Tổ trưởng' : 
-                     (user.role === 'vice_hod' ? 'Tổ phó' : 
-                     (user.role === 'clerk' ? 'Nhân viên Văn thư' : 'Giáo viên'))),
-        "Chức vụ kiêm nhiệm": user.position === 'gvcn' ? 'Giáo viên chủ nhiệm' :
-                               (user.position === 'doan' ? 'Cán bộ Đoàn' : ''),
-        "Email OTP": user.otp_email || ""
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      worksheet['!cols'] = [{ wch: 15 }, { wch: 14 }, { wch: 25 }, { wch: 28 }, { wch: 18 }, { wch: 22 }, { wch: 28 }];
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "DanhSachGiaoVien");
-      XLSX.writeFile(workbook, "DanhSachGiaoVien.xlsx");
-    }
-
-    async function importUsersFromExcel(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        try {
-          const data = new Uint8Array(evt.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
-
-          if (jsonData.length === 0) return alert("File Excel trống!");
-
-          let createdCount = 0;
-          let updatedCount = 0;
-          let failCount = 0;
-          let errorLogs = [];
-
-          const adminAuthClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-            auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-          });
-
-          const tbody = document.getElementById("users-body");
-
-          for (let i = 0; i < jsonData.length; i++) {
-            const row = jsonData[i];
-            const rawCode = row["Mã GV"] !== undefined ? row["Mã GV"] : row["Email"];
-            const teacherCode = rawCode ? String(rawCode).trim().replace(/\s+/g, "") : "";
-            
-            const password = row["Mật khẩu"] ? String(row["Mật khẩu"]).trim() : "123456";
-            const fullName = row["Họ và tên"] ? String(row["Họ và tên"]).trim() : "";
-            let dept = normalizeDepartmentName(row["Tổ bộ môn"]);
-            const roleStr = row["Quyền hạn"] ? String(row["Quyền hạn"]).trim() : "Giáo viên";
-            const posStr = row["Chức vụ kiêm nhiệm"] ? String(row["Chức vụ kiêm nhiệm"]).trim().toLowerCase() : "";
-            const rawOtpEmail = row["Email OTP"] || row["Email nhận OTP"] || row["Gmail"] || (row["Mã GV"] !== undefined ? row["Email"] : "");
-            const otpEmail = (rawOtpEmail && String(rawOtpEmail).includes("@"))
-              ? String(rawOtpEmail).trim().toLowerCase()
-              : null;
-            if (!teacherCode || !fullName) continue;
-
-            tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-blue-600 font-semibold">Đang đồng bộ dòng ${i + 1}/${jsonData.length}: ${escapeHTML(fullName)} (${escapeHTML(teacherCode)})...</td></tr>`;
-
-            const roleLower = roleStr.toLowerCase();
-            let role = 'teacher';
-            if (roleStr === 'Quản trị viên' || roleStr === 'Admin' || roleStr === 'Ban Giám Hiệu') role = 'admin';
-            else if (roleStr === 'Tổ trưởng') role = 'hod';
-            else if (roleStr === 'Tổ phó') role = 'vice_hod';
-            else if (roleStr === 'Nhân viên Văn thư' || roleStr === 'Văn thư') role = 'clerk';
-
-            if (role === 'admin') dept = 'Không áp dụng';
-
-            let position = 'none';
-            if (posStr.includes('chủ nhiệm') || posStr === 'gvcn') position = 'gvcn';
-            else if (posStr.includes('đoàn') || posStr.includes('bí thư') || posStr.includes('công đoàn') || posStr === 'doan') position = 'doan';
-
-            const authEmail = toAuthEmail(teacherCode);
-
-            const { data: existingUser } = await client
-              .from("profiles")
-              .select("id")
-              .or(`email.ilike.${teacherCode},email.eq.${authEmail}`)
-              .maybeSingle();
-
-            if (existingUser) {
-              const updatePayload = {
-                email: teacherCode,
-                full_name: fullName,
-                department: dept,
-                role: role,
-                position: position
-              };
-              if (otpEmail) updatePayload.otp_email = otpEmail;
-
-              const { error: updateErr } = await client
-                .from("profiles")
-                .update(updatePayload)
-                .eq("id", existingUser.id);
-
-              if (!updateErr) updatedCount++;
-              else {
-                failCount++;
-                errorLogs.push(`${teacherCode}: ${updateErr.message}`);
-              }
-            } else {
-              if (password.length < 6) {
-                failCount++;
-                errorLogs.push(`${teacherCode}: Mật khẩu phải từ 6 ký tự trở lên`);
-                continue;
-              }
-
-              const { data: signUpData, error: signUpErr } = await adminAuthClient.auth.signUp({
-                email: authEmail,
-                password: password,
-                options: {
-                  data: { full_name: fullName, department: dept, role: role, position: position }
-                }
-              });
-
-              if (!signUpErr) {
-                if (signUpData && signUpData.user) {
-                  await new Promise(resolve => setTimeout(resolve, 200));
-                  await client.from("profiles").upsert({
-                    id: signUpData.user.id,
-                    email: teacherCode,
-                    full_name: fullName,
-                    department: dept,
-                    role: role,
-                    position: position,
-                    otp_email: otpEmail
-                  });
-                }
-                createdCount++;
-              } else {
-                failCount++;
-                errorLogs.push(`${teacherCode}: ${signUpErr.message}`);
-              }
-
-              await new Promise(resolve => setTimeout(resolve, 250));
-            }
-          }
-
-          let summary = `Hoàn tất đồng bộ dữ liệu!\n- Tạo mới: ${createdCount} tài khoản\n- Cập nhật: ${updatedCount} tài khoản\n- Lỗi/Bỏ qua: ${failCount} dòng`;
-          if (errorLogs.length > 0) summary += `\n\nChi tiết lỗi:\n` + errorLogs.slice(0, 5).join("\n");
-          alert(summary);
-
-          setTimeout(() => loadAllUsers(), 1000);
-        } catch (error) {
-          alert("Lỗi đọc file Excel: " + error.message);
-          loadAllUsers();
-        }
-      };
-      
-      reader.readAsArrayBuffer(file);
-      e.target.value = "";
-    }
-
-    // ==========================================
-    // GIỮ PHIÊN ĐĂNG NHẬP KHI TẢI LẠI TRANG (F5)
-    // ==========================================
-    document.addEventListener("DOMContentLoaded", async () => {
-      document.getElementById("add_role").addEventListener("change", (e) => {
-        document.getElementById("add_department").disabled = (e.target.value === 'admin');
-      });
-      document.getElementById("edit_role").addEventListener("change", (e) => {
-        document.getElementById("edit_department").disabled = (e.target.value === 'admin');
-      });
-
-      const { data: { session } } = await client.auth.getSession();
-      if (session && session.user) {
-        currentUser = session.user;
-        const btn = document.getElementById("btn-login");
-        if (btn) {
-          btn.disabled = true;
-          btn.innerText = "Đang khôi phục phiên...";
-        }
-        await initApplication();
-      }
-    });
-
-    client.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        currentUser = null;
-        userProfile = null;
-        document.getElementById("app-screen").classList.add("hidden");
-        document.getElementById("login-screen").classList.remove("hidden");
-      }
-    });
-
-    // ==========================================
-    // XUẤT BÁO CÁO TIẾN ĐỘ NỘP BÀI (.XLSX)
-    // ==========================================
-    async function exportProgressReport() {
-      const { data: profiles, error: profileErr } = await client.from("profiles").select("*");
-      if (profileErr) return alert("Lỗi tải danh sách giáo viên: " + profileErr.message);
-
-      const { data: submissions, error: subErr } = await client.from("submissions").select("*").range(0, 9999);
-      if (subErr) return alert("Lỗi tải danh sách nộp bài: " + subErr.message);
-
-      let targetProfiles = profiles.filter(p => p.role !== 'admin');
-      let reportTitle = "BaoCaoTienDo_ToanTruong";
-
-      if (userProfile.role === 'hod' || userProfile.role === 'vice_hod') {
-        targetProfiles = targetProfiles.filter(p => p.department === userProfile.department);
-        reportTitle = `BaoCaoTienDo_${toSlug(userProfile.department)}`;
-      } else if (userProfile.role === 'admin') {
-        const selectedDept = document.getElementById("filter_department").value;
-        if (selectedDept && selectedDept !== 'all') {
-          targetProfiles = targetProfiles.filter(p => p.department === selectedDept);
-          reportTitle = `BaoCaoTienDo_${toSlug(selectedDept)}`;
-        }
-      }
-
-      const reportData = targetProfiles.map(teacher => {
-        const teacherSubs = submissions.filter(s => s.teacher_id === teacher.id);
-        const totalSubmitted = teacherSubs.length;
-        const hasLessonPlan = teacherSubs.some(s => s.category === 'giao-an');
-        const weeksList = [...new Set(teacherSubs.map(s => s.week_no).filter(Boolean))].sort((a,b) => a - b).join(", ");
-
-        return {
-          "Họ và tên": teacher.full_name,
-          "Mã GV": cleanTeacherCode(teacher.email) || 'N/A',
-          "Tổ bộ môn": teacher.department,
-          "Chức vụ": teacher.role === 'hod' ? 'Tổ trưởng' : (teacher.role === 'vice_hod' ? 'Tổ phó' : (teacher.role === 'clerk' ? 'Văn thư' : 'Giáo viên')),
-          "Kiêm nhiệm": teacher.position === 'gvcn' ? 'GVCN' : (teacher.position === 'doan' ? 'Cán bộ Đoàn' : ''),
-          "Tổng số bài đã nộp": totalSubmitted,
-          "Đã nộp Giáo án": hasLessonPlan ? "Đã nộp" : "Chưa nộp",
-          "Các tuần đã nộp": weeksList || "Không có",
-          "Trạng thái chung": totalSubmitted > 0 ? "Đã tham gia nộp bài" : "Chưa nộp bài nào"
-        };
-      });
-
-      if (reportData.length === 0) return alert("Không có dữ liệu để xuất báo cáo!");
-
-      const worksheet = XLSX.utils.json_to_sheet(reportData);
-      worksheet['!cols'] = [
-        {wch: 25}, {wch: 15}, {wch: 24}, {wch: 15}, {wch: 15}, {wch: 18}, {wch: 15}, {wch: 25}, {wch: 22}
-      ];
-
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "BaoCaoTienDo");
-      
-      const dateStr = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(workbook, `${reportTitle}_${dateStr}.xlsx`);
-    }
-
-    function loadDepartmentOptions() {
-      const standardDepartments = [
-        "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tin học",
-        "Ngữ văn", "Lịch sử", "Địa lý", "Tiếng Anh", "Tiếng Pháp - Nhật",
-        "Giáo dục kinh tế và pháp luật", "Giáo dục thể chất", "Giáo dục quốc phòng và an ninh", "Văn phòng"
-      ];
-
-      ["filter_department", "folder_filter_department"].forEach(selectId => {
-        const selectEl = document.getElementById(selectId);
-        if (!selectEl) return;
-        selectEl.innerHTML = `<option value="all">Tất cả các tổ bộ môn (14 tổ)</option>`;
-        standardDepartments.forEach(dept => {
-          const option = document.createElement("option");
-          option.value = dept;
-          option.innerText = dept;
-          selectEl.appendChild(option);
-        });
-      });
-    }
-    // ==========================================
-    // BẢO MẬT PHÒNG MÁY: TỰ ĐĂNG XUẤT SAU 15 PHÚT KHÔNG THAO TÁC
-    // ==========================================
-    let idleTimer;
-    const IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 phút
-
-    function resetIdleTimer() {
-      clearTimeout(idleTimer);
-      if (currentUser) {
-        idleTimer = setTimeout(async () => {
-          await client.auth.signOut();
-          alert("Phiên làm việc đã tự động đăng xuất do không có thao tác trong 15 phút để bảo vệ dữ liệu!");
-          location.reload();
-        }, IDLE_TIMEOUT_MS);
-      }
-    }
-
-    ["mousemove", "mousedown", "keydown", "touchstart", "scroll"].forEach(evt => {
-      document.addEventListener(evt, resetIdleTimer, true);
-    });
-  </script>
+  <!-- Scripts mô-đun (tải theo đúng thứ tự phụ thuộc) -->
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/folders.js"></script>
+  <script src="js/documents.js"></script>
+  <script src="js/review.js"></script>
+  <script src="js/users.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>
