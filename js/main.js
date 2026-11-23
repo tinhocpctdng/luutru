@@ -74,6 +74,8 @@ async function initApplication() {
     document.getElementById("tab-btn-review").classList.remove("hidden");
     if (userProfile.role === "admin") {
       loadDepartmentOptions();
+      const syncBtn = document.getElementById("btn-sync-drive");
+      if (syncBtn) syncBtn.classList.remove("hidden");
     }
     loadReviewSubmissions();
   }

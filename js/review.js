@@ -56,6 +56,7 @@ async function loadReviewSubmissions() {
       <td class="p-3.5 text-right space-x-2">
         <a href="${safeUrl(item.file_url)}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-medium">Xem file</a>
         ${item.status === "pending" && Number.isFinite(safeId) ? `<button onclick="approveSubmission(${safeId})" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1 rounded-lg shadow-xs transition">Duyệt</button>` : '<span class="text-xs text-slate-400 font-medium">Đã hoàn tất</span>'}
+        ${userProfile.role === "admin" && Number.isFinite(safeId) ? `<button onclick="deleteReviewSubmission(${safeId})" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold px-2.5 py-1 rounded-lg transition">Xóa</button>` : ""}
       </td>
     `;
     tbody.appendChild(tr);
@@ -127,4 +128,62 @@ async function exportProgressReport() {
 
   const dateStr = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(workbook, `${reportTitle}_${dateStr}.xlsx`);
+}
+
+async function deleteReviewSubmission(id) {
+  const deleted = await deleteSubmissionAndDrive(
+    id,
+    "Xóa hồ sơ này khỏi cả Website và Google Drive (chuyển vào Thùng rác Drive)?"
+  );
+  if (deleted) {
+    loadReviewSubmissions();
+    loadSharedDocs();
+    loadMySubmissions();
+  }
+}
+
+// Đồng bộ 2 chiều thủ công từ nút BGH trên giao diện Web
+async function syncDriveNow() {
+  if (!userProfile || userProfile.role !== "admin") {
+    return alert("Chỉ Ban Giám Hiệu mới có quyền đồng bộ toàn trường!");
+  }
+
+  const btn = document.getElementById("btn-sync-drive");
+  const originalHtml = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = "Đang đồng bộ...";
+  }
+
+  try {
+    const { data: { session } } = await client.auth.getSession();
+    const formData = new URLSearchParams({
+      action: "syncDrive",
+      accessToken: session ? session.access_token : ""
+    });
+
+    const res = await postToAppsScriptWithRetry(formData, btn, 2);
+    if (!res.success) {
+      throw new Error(res.error || "Đồng bộ thất bại");
+    }
+
+    alert(
+      `Đồng bộ 2 chiều hoàn tất!\n` +
+      `- Tổng tệp trên Drive: ${res.totalDriveFiles}\n` +
+      `- Thêm mới từ Drive về Web: ${res.inserted}\n` +
+      `- Cập nhật tên/thư mục: ${res.updated}\n` +
+      `- Gỡ bản ghi đã xóa trên Drive: ${res.deleted}`
+    );
+
+    loadReviewSubmissions();
+    loadSharedDocs();
+    loadMySubmissions();
+  } catch (err) {
+    alert("Lỗi đồng bộ: " + err.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+  }
 }

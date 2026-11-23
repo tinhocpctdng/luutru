@@ -80,6 +80,16 @@ function getPositionLabel(pos) {
   return POSITION_LABELS[pos] || "";
 }
 
+// Trích xuất File ID từ URL Google Drive
+function extractDriveFileId(url) {
+  const str = String(url || "");
+  const pathMatch = str.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (pathMatch) return pathMatch[1];
+  const queryMatch = str.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (queryMatch) return queryMatch[1];
+  return "";
+}
+
 // Tự động cuộn mượt tới vùng nội dung bên phải khi chọn mục ở cây thư mục bên trái
 function scrollToRightContent() {
   const rightPanel = document.getElementById("right-content-area");

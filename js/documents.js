@@ -116,11 +116,55 @@ async function loadMySubmissions() {
   });
 }
 
-async function deleteMySubmission(id) {
-  if (!confirm("Bạn muốn xóa hồ sơ đang chờ duyệt này để nộp lại?")) return;
+async function deleteSubmissionAndDrive(id, confirmMessage) {
+  if (!confirm(confirmMessage)) return false;
+
+  const { data: row, error: fetchErr } = await client
+    .from("submissions")
+    .select("id, file_url")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchErr || !row) {
+    alert("Không tìm thấy hồ sơ cần xóa!");
+    return false;
+  }
+
+  const fileId = extractDriveFileId(row.file_url);
+  if (fileId) {
+    try {
+      const { data: { session } } = await client.auth.getSession();
+      const formData = new URLSearchParams({
+        action: "deleteFile",
+        submissionId: String(id),
+        fileId: fileId,
+        accessToken: session ? session.access_token : ""
+      });
+      const driveRes = await postToAppsScriptWithRetry(formData, null, 2);
+      if (!driveRes.success) {
+        alert("Không thể xóa tệp trên Google Drive: " + (driveRes.error || "Lỗi máy chủ"));
+        return false;
+      }
+    } catch (err) {
+      alert("Lỗi kết nối Google Drive khi xóa tệp: " + err.message);
+      return false;
+    }
+  }
+
   const { error } = await client.from("submissions").delete().eq("id", id);
-  if (error) alert("Lỗi khi xóa: " + error.message);
-  else loadMySubmissions();
+  if (error) {
+    alert("Lỗi khi xóa dữ liệu: " + error.message);
+    return false;
+  }
+  return true;
+}
+
+async function deleteMySubmission(id) {
+  const deleted = await deleteSubmissionAndDrive(
+    id,
+    "Bạn muốn xóa hồ sơ đang chờ duyệt này (xóa cả trên Google Drive) để nộp lại?"
+  );
+  if (deleted) loadMySubmissions();
 }
 
 // 3. Lấy danh sách Kho chung toàn trường
