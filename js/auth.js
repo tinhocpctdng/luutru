@@ -38,11 +38,27 @@ async function handleLogout() {
   location.reload();
 }
 
+// Bật/tắt hiển thị mật khẩu
+function togglePasswordVisibility(inputIds, checkboxId) {
+  const isChecked = Boolean(document.getElementById(checkboxId)?.checked);
+  inputIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.type = isChecked ? "text" : "password";
+  });
+}
+
 // 3. Đổi mật khẩu (bắt buộc ở lần đăng nhập đầu tiên)
 function openPasswordModal(isForced = false) {
   isForcedPasswordChange = Boolean(isForced);
-  document.getElementById("new_password").value = "";
-  document.getElementById("confirm_password").value = "";
+  const p1El = document.getElementById("new_password");
+  const p2El = document.getElementById("confirm_password");
+  const chkEl = document.getElementById("show_new_password");
+
+  p1El.value = "";
+  p2El.value = "";
+  p1El.type = "password";
+  p2El.type = "password";
+  if (chkEl) chkEl.checked = false;
 
   const modal = document.getElementById("password-modal");
   const titleEl = modal.querySelector("h3");
