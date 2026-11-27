@@ -68,6 +68,7 @@ async function handleUpload(e) {
     document.getElementById("doc_title").value = "";
     loadMySubmissions();
     if (isSharedDoc) loadSharedDocs();
+    if (typeof loadFooterStats === "function") loadFooterStats();
     switchTab("my-docs");
   } catch (err) {
     alert("Thao tác thất bại: " + err.message);
@@ -164,7 +165,10 @@ async function deleteMySubmission(id) {
     id,
     "Bạn muốn xóa hồ sơ đang chờ duyệt này (xóa cả trên Google Drive) để nộp lại?"
   );
-  if (deleted) loadMySubmissions();
+  if (deleted) {
+    loadMySubmissions();
+    if (typeof loadFooterStats === "function") loadFooterStats();
+  }
 }
 
 // 3. Lấy danh sách Kho chung toàn trường
@@ -260,6 +264,7 @@ async function handleUploadTemplate(e) {
     document.getElementById("template_title").value = "";
     fileInput.value = "";
     loadSharedDocs(subCat);
+    if (typeof loadFooterStats === "function") loadFooterStats();
   } catch (err) {
     alert("Thông báo lỗi: " + err.message);
     console.error(err);

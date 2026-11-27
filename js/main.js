@@ -93,8 +93,45 @@ async function initApplication() {
   // Tải dữ liệu cơ bản & kích hoạt đếm giờ tự đăng xuất
   loadMySubmissions();
   loadSharedDocs();
+  loadFooterStats();
   switchTab("upload");
   resetIdleTimer();
+}
+
+function footerNavigate(tab, openSharedAll = false) {
+  if (openSharedAll && typeof loadSharedDocs === "function") {
+    loadSharedDocs(null, "Kho chung toàn trường (Tất cả)");
+  }
+  switchTab(tab);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+async function loadFooterStats() {
+  const formatStat = (res) => {
+    if (!res || res.error || res.count === null || res.count === undefined) return "—";
+    return Number(res.count).toLocaleString("vi-VN");
+  };
+
+  try {
+    const [usersRes, totalRes, approvedRes, sharedRes] = await Promise.all([
+      client.from("profiles").select("id", { count: "exact", head: true }),
+      client.from("submissions").select("id", { count: "exact", head: true }),
+      client.from("submissions").select("id", { count: "exact", head: true }).eq("status", "approved"),
+      client.from("submissions").select("id", { count: "exact", head: true }).like("storage_path", "00_cong-khai/%")
+    ]);
+
+    const setEl = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.innerText = val;
+    };
+
+    setEl("stat-users-count", formatStat(usersRes));
+    setEl("stat-total-docs", formatStat(totalRes));
+    setEl("stat-approved-docs", formatStat(approvedRes));
+    setEl("stat-shared-docs", formatStat(sharedRes));
+  } catch (err) {
+    console.warn("Không thể tải thống kê chân trang:", err);
+  }
 }
 
 function switchTab(tab) {

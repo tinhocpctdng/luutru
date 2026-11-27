@@ -70,6 +70,7 @@ async function approveSubmission(id) {
   } else {
     loadReviewSubmissions();
     loadMySubmissions();
+    if (typeof loadFooterStats === "function") loadFooterStats();
   }
 }
 
@@ -139,6 +140,7 @@ async function deleteReviewSubmission(id) {
     loadReviewSubmissions();
     loadSharedDocs();
     loadMySubmissions();
+    if (typeof loadFooterStats === "function") loadFooterStats();
   }
 }
 
@@ -178,6 +180,7 @@ async function syncDriveNow() {
     loadReviewSubmissions();
     loadSharedDocs();
     loadMySubmissions();
+    if (typeof loadFooterStats === "function") loadFooterStats();
   } catch (err) {
     alert("Lỗi đồng bộ: " + err.message);
   } finally {
