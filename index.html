@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kho Lưu Trữ Hồ Sơ - Trường THPT Phan Châu Trinh Đà Nẵng </title>
+  <title>Kho Lưu Trữ Hồ Sơ - Trường THPT Phan Châu Trinh Đà Nẵng</title>
+  <!-- Logo trên thanh tiêu đề trình duyệt (Favicon) -->
   <link rel="icon" type="image/png" href="assets/img/logopct.png">
   <link rel="apple-touch-icon" href="assets/img/logopct.png">
   <!-- Google Font Be Vietnam Pro tối ưu hiển thị tiếng Việt -->
@@ -22,8 +23,9 @@
 <body class="bg-slate-100/90 min-h-screen text-slate-800 antialiased">
 
   <!-- MÀN HÌNH ĐĂNG NHẬP -->
-  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
-    <div class="bg-white p-8 sm:p-9 rounded-3xl shadow-2xl w-full max-w-md border border-slate-200/80">
+  <div id="login-screen" class="min-h-screen flex flex-col items-center justify-between p-4 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900">
+    <div class="w-full flex-1 flex items-center justify-center">
+      <div class="bg-white p-8 sm:p-9 rounded-3xl shadow-2xl w-full max-w-md border border-slate-200/80">
       <div class="text-center mb-7">
         <!-- Logo Trường THPT Phan Châu Trinh Đà Nẵng -->
         <div class="mx-auto w-20 h-20 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm mb-4 overflow-hidden p-1.5">
@@ -40,7 +42,7 @@
         </div>
         <div class="text-xs font-bold uppercase tracking-widest text-blue-700 mb-1">Trường THPT Phan Châu Trinh • Đà Nẵng</div>
         <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">KHO LƯU TRỮ HỒ SƠ</h1>
-        <p class="text-sm text-slate-500 mt-1">Cổng nộp và quản lý  chuyên môn</p>
+        <p class="text-sm text-slate-500 mt-1">Cổng nộp và quản lý dữ liệu chuyên môn giáo viên</p>
       </div>
 
       <form onsubmit="event.preventDefault(); handleLogin();" class="space-y-4">
@@ -64,7 +66,11 @@
           Đăng Nhập Hệ Thống
         </button>
       </form>
+      </div>
     </div>
+    <footer class="w-full text-center text-xs text-slate-300/80 pt-4 pb-1">
+      © 2026 Trường THPT Phan Châu Trinh • Đà Nẵng — Hệ thống quản lý &amp; lưu trữ hồ sơ chuyên môn
+    </footer>
   </div>
 
   <!-- MÀN HÌNH CHÍNH (SAU KHI ĐĂNG NHẬP) -->
@@ -537,6 +543,19 @@
         </div>
       </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-auto">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+        <div class="flex items-center gap-2 font-medium text-slate-600">
+          <img src="assets/img/logopct.png" alt="Logo PCT" class="w-5 h-5 object-contain" onerror="this.classList.add('hidden')">
+          <span>© 2026 Trường THPT Phan Châu Trinh • Đà Nẵng</span>
+        </div>
+        <div class="text-center sm:text-right">
+          Kho Lưu Trữ Hồ Sơ Chuyên Môn • Tự động đăng xuất sau 15 phút không thao tác
+        </div>
+      </div>
+    </footer>
   </div>
 
   <!-- Scripts mô-đun (tải theo đúng thứ tự phụ thuộc) -->
