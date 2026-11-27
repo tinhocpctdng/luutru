@@ -545,14 +545,95 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 mt-auto">
-      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
-        <div class="flex items-center gap-2 font-medium text-slate-600">
-          <img src="assets/img/logopct.png" alt="Logo PCT" class="w-5 h-5 object-contain" onerror="this.classList.add('hidden')">
-          <span>© 2026 Trường THPT Phan Châu Trinh • Đà Nẵng</span>
+    <footer class="bg-[#0b1324] text-slate-300 border-t border-slate-800 mt-10">
+      <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 pb-8 border-b border-slate-800/80">
+          <!-- Cột 1: Giới thiệu hệ thống -->
+          <div class="md:col-span-5 space-y-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-blue-600/90 flex items-center justify-center shadow-sm shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
+                </svg>
+              </div>
+              <span class="text-base font-bold text-white tracking-tight">Kho Lưu Trữ Hồ Sơ THPT Phan Châu Trinh</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-md">
+              Hệ thống lưu trữ và quản lý hồ sơ chuyên môn trực tuyến hỗ trợ nộp giáo án, kiểm duyệt và thống kê tiến độ dành riêng cho giáo viên, tổ chuyên môn Trường THPT Phan Châu Trinh, TP. Đà Nẵng.
+            </p>
+          </div>
+
+          <!-- Cột 2: Liên kết nổi bật -->
+          <div class="md:col-span-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Liên kết nổi bật</h3>
+            <ul class="space-y-2.5 text-xs sm:text-sm text-slate-400">
+              <li>
+                <button type="button" onclick="footerNavigate('upload')" class="inline-flex items-center gap-2 hover:text-white transition text-left">
+                  <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                  <span>Cổng nộp hồ sơ chuyên môn</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" onclick="footerNavigate('shared', true)" class="inline-flex items-center gap-2 hover:text-white transition text-left">
+                  <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                  <span>Kho văn bản &amp; biểu mẫu chung</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" onclick="footerNavigate('my-docs')" class="inline-flex items-center gap-2 hover:text-white transition text-left">
+                  <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  <span>Hồ sơ cá nhân của tôi</span>
+                </button>
+              </li>
+              <li>
+                <button type="button" onclick="openPasswordModal()" class="inline-flex items-center gap-2 hover:text-white transition text-left">
+                  <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                  <span>Đổi mật khẩu tài khoản</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Cột 3: Thống kê hệ thống -->
+          <div class="md:col-span-4">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Thống kê hệ thống</h3>
+            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl px-4 py-1 divide-y divide-slate-800/80 text-xs sm:text-sm">
+              <div class="flex items-center justify-between py-2.5">
+                <span class="inline-flex items-center gap-2 text-slate-400">
+                  <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                  <span>Tài khoản giáo viên:</span>
+                </span>
+                <span id="stat-users-count" class="font-bold text-emerald-400 tabular-nums">—</span>
+              </div>
+              <div class="flex items-center justify-between py-2.5">
+                <span class="inline-flex items-center gap-2 text-slate-400">
+                  <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  <span>Tổng hồ sơ lưu trữ:</span>
+                </span>
+                <span id="stat-total-docs" class="font-bold text-blue-400 tabular-nums">—</span>
+              </div>
+              <div class="flex items-center justify-between py-2.5">
+                <span class="inline-flex items-center gap-2 text-slate-400">
+                  <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span>Hồ sơ đã duyệt:</span>
+                </span>
+                <span id="stat-approved-docs" class="font-bold text-amber-400 tabular-nums">—</span>
+              </div>
+              <div class="flex items-center justify-between py-2.5">
+                <span class="inline-flex items-center gap-2 text-slate-400">
+                  <svg class="w-4 h-4 text-pink-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                  <span>Văn bản kho chung:</span>
+                </span>
+                <span id="stat-shared-docs" class="font-bold text-pink-400 tabular-nums">—</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="text-center sm:text-right">
-          Kho Lưu Trữ Hồ Sơ Chuyên Môn • Tự động đăng xuất sau 15 phút không thao tác
+
+        <!-- Dòng bản quyền dưới cùng -->
+        <div class="pt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+          <div>© 2026 Bản quyền thuộc về Trường THPT Phan Châu Trinh, TP. Đà Nẵng.</div>
+          <div>Hệ thống Kho Lưu Trữ Hồ Sơ • Tự động đăng xuất sau 15 phút không thao tác</div>
         </div>
       </div>
     </footer>
